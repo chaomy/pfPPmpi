@@ -22,8 +22,8 @@ LMP_LIB     =  ${SRC}/lammps/src/
 MY_INC 		=  /home/chaomy/src/armadillo-8.300.3/include/
 #BOOST_INC   =  /sw/arcts/centos7/boost/1.61.0/include
 CINCLUDE 	=  -I../include  -I${HOME}/install/include  -I${MPI_HOME}/include  -I${LMP_LIB} -I${MY_INC} -I${BOOST_INCLUDE} 
-LIBS   		=  -L${HOME}/install/lib  -L${MPI_HOME}/lib -L${LMP_LIB} -L${$BOOST_LIB} 
-CDLINK  	=  ${LIBS} -lm -lnlopt -lmpi -lpthread -llammps -DARMA_DONT_USE_WRAPPER -lblas -llapack  -lboost_mpi -lboost_serialization
+LIBS   		=  -L${HOME}/install/lib  -L${MPI_HOME}/lib -L${LMP_LIB} -L${BOOST_LIB} 
+CDLINK  	=  ${LIBS} -lm -lnlopt -lmpi -lpthread -llammps -DARMA_DONT_USE_WRAPPER -lblas -llapack -lboost_mpi -lboost_serialization
 
 MAKETARGET 	=  pfmpi 
 
