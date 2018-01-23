@@ -78,8 +78,6 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfMPI.cpp  \
 			   ./pfMain.cpp
 
-			   # ./pfForceMEAMtb.cpp  \
-
 # parallel
 PARALLEL = MPI
 CC = ${CC_MPI}

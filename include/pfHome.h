@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <boost/function.hpp>
 #include <chrono>
 #include <cstdlib>
 #include <fstream>
@@ -24,7 +25,6 @@
 using std::string;
 using std::unordered_map;
 using std::vector;
-using namespace MMatrix;
 namespace mpi = boost::mpi;
 
 class pfLMPdrv;
@@ -74,6 +74,11 @@ class pfHome {
   unordered_map<string, double> exprs;
   unordered_map<string, double> weigh;
   unordered_map<string, double> error;
+
+  /* map functions */
+  unordered_map<string, void (pfHome::*)(Config&)> calfrc;
+  unordered_map<string, double (pfHome::*)(const arma::mat& vv, int tg)> calobj;
+  unordered_map<string, void (pfHome::*)()> write;
 
   vector<Config> configs;
   vector<Func> funcs;
@@ -155,14 +160,6 @@ class pfHome {
   void forceMEAM(Config& cc);
   void forceEAM(Config& cc);
   void stressMEAM(Config& cc);
-
-  // haven't use it yet (need debug)
-  double forceMEAMtb(const vector<double>& vv, int tag);
-  void changePHI();
-  void changeRHO();
-  void changeEMF();
-  void changeMEAMF();
-  void changeMEAMG();
 
   // optimization
   void simAnneal();

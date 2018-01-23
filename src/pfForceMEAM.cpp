@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-22 21:22:07
+ * @Last Modified time: 2018-01-23 12:15:16
  */
 
 #include "pfHome.h"
@@ -55,6 +55,7 @@ double pfHome::forceMEAM(const arma::mat &vv, int tg) {
         for (int it : {X, Y, Z}) {
           atm.fitfrc[it] =
               atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
+          cout << atm.fweigh[it] << endl;
           efrc += square11(atm.fitfrc[it] * atm.fweigh[it]);
         }
       }

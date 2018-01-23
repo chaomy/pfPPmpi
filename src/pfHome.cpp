@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-22 10:37:27
+ * @Last Modified time: 2018-01-23 15:50:38
  */
 
 #include "pfHome.h"
@@ -12,6 +12,16 @@ namespace mpi = boost::mpi;
 
 pfHome::pfHome(int argc, char* argv[]) : ricut(2.08), rocut(5.05), mfrc(3) {
   printf("I am %d of %d \n", cmm.rank(), cmm.size());
+
+  calfrc["MEAM"] = &pfHome::forceMEAM;
+  calfrc["EAM"] = &pfHome::forceEAM;
+  calobj["MEAM"] = &pfHome::forceMEAM;
+  calobj["EAM"] = &pfHome::forceEAM;
+
+  write["MEAM"] = &pfHome::writeMEAM;
+  write["EAM"] = &pfHome::writeLMPS;
+  write["TMP"] = &pfHome::writePot;
+
   if (cmm.rank() == PFROOT) {
     ftn = tln = 0;
     for (int ii : {0, 1, 2}) mfrc[ii] = 0.0;
@@ -26,7 +36,7 @@ pfHome::pfHome(int argc, char* argv[]) : ricut(2.08), rocut(5.05), mfrc(3) {
     sparams["parfile"] = string("dummy.param");
     sparams["cnffile"] = string("dummy.config");
     sparams["potfile"] = string("dummy.pot");
-    sparams["lmppot"] = string("lmp.pot");
+    sparams["lmppot"] = string("dummy.lmp");
 
     // set the boundary
     double hilim[6] = {2., 0.5, -5., 0.5, 0.5, 20};

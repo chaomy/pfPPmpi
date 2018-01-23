@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-20 16:53:38
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-21 10:51:52
+ * @Last Modified time: 2018-01-23 12:17:00
  */
 
 #include "pfHome.h"
@@ -55,12 +55,12 @@ void pfHome::readConfig() { /* read atomic force file */
         sscanf(buff.c_str(), "%s %lf %lf %lf %lf %lf %lf", tmp, &atom.pst[0],
                &atom.pst[1], &atom.pst[2], &atom.frc[0], &atom.frc[1],
                &atom.frc[2]);
-
         atom.absfrc = sqrt(square33(atom.frc));
         for (int ii : {0, 1, 2}) {
-          atom.fweigh[ii] =
-              1e4 * exp(-dparams["bwidth"] * atom.frc[ii] * atom.frc[ii]);
-          mfrc[ii] += fabs(atom.frc[ii]);
+          atom.fweigh[ii] = 1. / abs(atom.frc[ii]);
+          // atom.fweigh[ii] =
+          //     1e4 * exp(-dparams["bwidth"] * atom.frc[ii] * atom.frc[ii]);
+          // mfrc[ii] += fabs(atom.frc[ii]);
         }
         config.atoms.push_back(atom);
       }
