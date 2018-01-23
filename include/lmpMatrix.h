@@ -49,12 +49,15 @@ class Mmatrix {
 
   // vector-vector
   inline static void scalarDotVec(T a, vector<T> v, vector<T>& b);
-  inline static double vecInnProd(vector<T> a, vector<T> b);
+  inline static double vecInnProd(const vector<T>& a, const vector<T>& b);
+  inline static double vecInnProd33(const vector<T>& a, const vector<T>& b);
   inline static double vecInnProd33(T a[3], T b[3]);
   inline static double calNorm(const int dim, std::vector<T> vect);
   inline static void vecOutProd(vector<T> a, vector<T> b, T** M);
   inline static void crossProd(vector<T> a, vector<T> b, vector<T>& res);
   inline static void crossProd33(const T a[3], const T b[3], T res[3]);
+  inline static void crossProd33(const vector<T>& a, const vector<T>& b,
+                                 vector<T>& res);
 
   // vector-matrix
   inline static void mtxDotVec(T** M, vector<T> x, vector<T>& b);
@@ -96,21 +99,24 @@ inline void Mmatrix<T>::mtxMultmtx(const int rowA, const int clnA,
  * perform outer product btw two vectors <a|b>
  * *******************************************************/
 template <class T>
-inline double Mmatrix<T>::vecInnProd(vector<T> a, vector<T> b) {
+inline double Mmatrix<T>::vecInnProd(const vector<T>& a, const vector<T>& b) {
   const int n = a.size();
   double res = 0;
-  for (int i = 0; i < n; i++) {
-    res += a[i] * b[i];
-  }
+  for (int i = 0; i < n; i++) res += a[i] * b[i];
+  return res;
+}
+
+template <class T>
+inline double Mmatrix<T>::vecInnProd33(const vector<T>& a, const vector<T>& b) {
+  double res = 0;
+  for (int i = 0; i < 3; i++) res += a[i] * b[i];
   return res;
 }
 
 template <class T>
 inline double Mmatrix<T>::vecInnProd33(T a[3], T b[3]) {
   double res = 0;
-  for (int i = 0; i < 3; i++) {
-    res += a[i] * b[i];
-  }
+  for (int i = 0; i < 3; i++) res += a[i] * b[i];
   return res;
 }
 
@@ -129,6 +135,14 @@ inline void Mmatrix<T>::crossProd(vector<T> a, vector<T> b, vector<T>& res) {
 
 template <class T>
 inline void Mmatrix<T>::crossProd33(const T a[3], const T b[3], T res[3]) {
+  res[0] = a[1] * b[2] - a[2] * b[1];
+  res[1] = a[2] * b[0] - a[0] * b[2];
+  res[2] = a[0] * b[1] - a[1] * b[0];
+}
+
+template <class T>
+inline void Mmatrix<T>::crossProd33(const vector<T>& a, const vector<T>& b,
+                                    vector<T>& res) {
   res[0] = a[1] * b[2] - a[2] * b[1];
   res[1] = a[2] * b[0] - a[0] * b[2];
   res[2] = a[0] * b[1] - a[1] * b[0];

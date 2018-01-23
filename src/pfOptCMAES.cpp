@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-20 16:30:34
+ * @Last Modified time: 2018-01-22 23:22:38
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -29,19 +29,26 @@ double pfHome::testFunc(arma::mat& vc) {
 void pfHome::cntcmaes() {
   arma::mat iterate(nvars, 1, arma::fill::randu);
   for (int i = 0; i < nvars; i++) iterate[i] = ini[i];
-  double cr = cmaes(iterate);
-  sparams["tmpfile"] = sparams["tmpdir"] + "/dummy.cnt." + "_" + to_string(cr);
-  writePot();
-  sparams["lmpfile"] = sparams["lmpdir"] + "/dummy." + sparams["ptype"];
-  sparams["ptype"] == "MEAM" ? writeMEAM() : writeLMPS();
+
+  sparams["ptype"] == "MEAM" ? forceMEAM(iterate, 1)
+                             : forceEAM(iterate, 1);  // starting
+  if (cmm.rank() == PFROOT) {
+    double cr = cmaes(iterate);
+    sparams["tmpfile"] =
+        sparams["tmpdir"] + "/dummy.cnt." + "_" + to_string(cr);
+    writePot();
+    sparams["lmpfile"] = sparams["lmpdir"] + "/dummy." + sparams["ptype"];
+    sparams["ptype"] == "MEAM" ? writeMEAM() : writeLMPS();
+    sparams["ptype"] == "MEAM" ? forceMEAM(iterate, EXT)
+                               : forceEAM(iterate, EXT);  // starting
+  }
 }
 
 void pfHome::loopcmaes() {
-  vector<double> hbd;
-  vector<double> lbd;
+  vector<double> hbd, lbd;
   if (sparams["ptype"] == "MEAM") {
-    hbd = vector<double>({4.0, 1.0, 4.0, 0.5, 0.5});
-    lbd = vector<double>({-2.0, -0.5, -4.0, -0.25, -0.25});
+    hbd = vector<double>({1.0, 1.0, 5.0, 1.0, 1.0});
+    lbd = vector<double>({-0.5, -0.5, -5.0, -0.5, -0.5});
   } else {
     hbd = vector<double>({2.0, 2.0, -5.0});
     lbd = vector<double>({-1.0, -1.0, -15.0});
@@ -49,31 +56,34 @@ void pfHome::loopcmaes() {
 
   arma::mat iterate(nvars, 1, arma::fill::randu);
   double cr = 1e30, op = 1e30;
-  for (int i = 0; i < 10; i++) {
+
+  for (int i = 0; i < 1; i++) {
     int cn = 0;
     for (int k = 0; k < nfuncs; k++) {
-      if (k == PHI || k == RHO || k == MEAMF)
-        for (int j = 0; j < funcs[k].npts - 1; j++)
-          iterate[cn++] = lbd[k] + randUniform() * (hbd[k] - lbd[k]);
-      else
-        for (int j = 0; j < funcs[k].npts; j++)
-          iterate[cn++] = lbd[k] + randUniform() * (hbd[k] - lbd[k]);
+      int np = (k == PHI || k == RHO || k == MEAMF) ? funcs[k].npts - 1
+                                                    : funcs[k].npts;
+      for (int j = 0; j < np; j++)
+        iterate[cn++] = lbd[k] + randUniform() * (hbd[k] - lbd[k]);
     }
-
-    cr = cmaes(iterate);
-    if (cr < op) op = cr;
-    // save
-    sparams["tmpfile"] =
-        sparams["tmpdir"] + "/dummy.tmp." + to_string(i) + "_" + to_string(cr);
-    writePot();
-    sparams["lmpfile"] =
-        sparams["lmpdir"] + "/dummy." + sparams["ptype"] + "." + to_string(i);
-    sparams["ptype"] == "MEAM" ? writeMEAM() : writeLMPS();
+    sparams["ptype"] == "MEAM" ? forceMEAM(iterate, 1)
+                               : forceEAM(iterate, 1);  // starting
+    if (cmm.rank() == PFROOT) {
+      cr = cmaes(iterate);
+      // save
+      sparams["tmpfile"] = sparams["tmpdir"] + "/dummy.tmp." + to_string(i) +
+                           "_" + to_string(cr);
+      writePot();
+      sparams["lmpfile"] =
+          sparams["lmpdir"] + "/dummy." + sparams["ptype"] + "." + to_string(i);
+      sparams["ptype"] == "MEAM" ? writeMEAM() : writeLMPS();
+      sparams["ptype"] == "MEAM" ? forceMEAM(iterate, EXT)
+                                 : forceEAM(iterate, EXT);  // starting
+    }
   }
 }
 
 double pfHome::cmaes(arma::mat& iterate) {
-  int maxIt = 1000;
+  int maxIt = 50000;
   double tolerance = 1e-18;
 
   // Population size.
@@ -132,8 +142,8 @@ double pfHome::cmaes(arma::mat& iterate) {
   arma::mat step = arma::zeros(iterate.n_rows, iterate.n_cols);
 
   // Calculate the first objective function.
-  double currentobj = (sparams["ptype"] == "MEAM") ? forceMEAM(mps.slice(0))
-                                                   : forceEAM(mps.slice(0));
+  double currentobj = (sparams["ptype"] == "MEAM") ? forceMEAM(mps.slice(0), 1)
+                                                   : forceEAM(mps.slice(0), 1);
   double overallobj = currentobj;
   double lastobj = 1e30;
 
@@ -170,8 +180,9 @@ double pfHome::cmaes(arma::mat& iterate) {
       }
       pps.slice(idx(j)) = mps.slice(idx0) + sigma(idx0) * pStep.slice(idx(j));
       // Calculate the objective function.
-      pobj(idx(j)) = (sparams["ptype"] == "MEAM") ? forceMEAM(pps.slice(idx(j)))
-                                                  : forceEAM(pps.slice(idx(j)));
+      pobj(idx(j)) = (sparams["ptype"] == "MEAM")
+                         ? forceMEAM(pps.slice(idx(j)), 1)
+                         : forceEAM(pps.slice(idx(j)), 1);
     }
 
     // Sort population.
@@ -183,8 +194,8 @@ double pfHome::cmaes(arma::mat& iterate) {
     mps.slice(idx1) = mps.slice(idx0) + sigma(idx0) * step;
 
     // Calculate the objective function.
-    currentobj = (sparams["ptype"] == "MEAM") ? forceMEAM(mps.slice(idx1))
-                                              : forceEAM(mps.slice(idx1));
+    currentobj = (sparams["ptype"] == "MEAM") ? forceMEAM(mps.slice(idx1), 1)
+                                              : forceEAM(mps.slice(idx1), 1);
     // Update best parameters.
     if (currentobj < overallobj) {
       overallobj = currentobj;
@@ -275,7 +286,7 @@ double pfHome::cmaes(arma::mat& iterate) {
       return overallobj;
     }
 
-    if (std::abs(lastobj - overallobj) < tolerance && i > 300) {
+    if (std::abs(lastobj - overallobj) < tolerance && i > 5000) {
       cout << "CMA-ES: minimized within tolerance " << tolerance << "; "
            << "terminating optimization." << std::endl;
       return overallobj;
@@ -283,8 +294,8 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     if (i % iparams["resfreq"] == 1 && rescaleEMF()) {
       cout << "before rescale " << currentobj << endl;
-      currentobj = (sparams["ptype"] == "MEAM") ? forceMEAM(mps.slice(idx1))
-                                                : forceEAM(mps.slice(idx1));
+      currentobj = (sparams["ptype"] == "MEAM") ? forceMEAM(mps.slice(idx1), 1)
+                                                : forceEAM(mps.slice(idx1), 1);
       cout << "after rescale " << currentobj << endl;
       overallobj = currentobj;
     }

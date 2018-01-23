@@ -25,12 +25,16 @@ using std::string;
 using std::unordered_map;
 using std::vector;
 using namespace MMatrix;
+namespace mpi = boost::mpi;
 
 class pfLMPdrv;
 class pfOptimizer;
 
 class pfHome {
  private:
+  mpi::environment env;
+  mpi::communicator cmm;
+
   int ftn;  // number of atoms used for fitting
   int tln;  // total number of atoms
   int chid;
@@ -41,7 +45,6 @@ class pfHome {
   int nconfs;
   int locstt;
   int locend;
-  double mfrc[3];
   double fsm;
 
   double ricut;
@@ -83,6 +86,7 @@ class pfHome {
   pfOptimizer* optdrv;
   Melem mele;
 
+  vector<double> mfrc;
   vector<double> hil;  // 5 + 1
   vector<double> lol;  // 5 + 1
   vector<double> recorderr;
@@ -145,7 +149,9 @@ class pfHome {
   double forceADP(const vector<double>& vv, int tag);
   double forceMEAM(const vector<double>& vv);
   double forceEAM(const arma::mat& vv);
+  double forceEAM(const arma::mat& vv, int tg);
   double forceMEAM(const arma::mat& vv);
+  double forceMEAM(const arma::mat& vv, int tg);
   void forceMEAM(Config& cc);
   void forceEAM(Config& cc);
   void stressMEAM(Config& cc);
@@ -225,9 +231,7 @@ class pfHome {
   void calSurf();
 
   // MPI utilitis
-  void pfMPIinit(int argc, char* argv[]);
-  void pfMPIfinalize();
-  int createMPIdataTypes();
+  void bcdata();
 
   Config addvolm(const Config&, const double& dl);
   Config addotho(const Config&, const double& dl);

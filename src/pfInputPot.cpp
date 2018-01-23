@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-20 14:04:47
+ * @Last Modified time: 2018-01-22 21:22:25
  */
 
 #include "pfHome.h"
@@ -80,41 +80,24 @@ void pfHome::readPot() {
   }
   fid.close();
 
-  // assign cutoffs
-  ricut = funcs[PHI].xx.front();
-  rocut = funcs[PHI].xx.back();
-  rhcut = funcs[RHO].xx.back();
-
   // func -> ini
   nvars = 0;
   for (Func& ff : funcs) ff.step = ff.xx[1] - ff.xx[0];
   for (int i = 0; i < nfuncs; i++) {
     Func& ff = funcs[i];
     startps.push_back(nvars);
-    endps.push_back(nvars + ff.npts);
     int nt = (i == PHI || i == RHO || i == MEAMF) ? ff.npts - 1 : ff.npts;
     for (int j = 0; j < nt; j++) {
-      printf("i = %d yy[%d] = %f\n", i, j, ff.yy[j]);
       ini.push_back(ff.yy[j]);
       lob.push_back(lol[i]);
       hib.push_back(hil[i]);
       nvars++;
     }
+    endps.push_back(nvars);
   }  // i
 
-  if (!sparams["ptype"].compare("MEAM")) {  // boundary
-    funcs[MEAMF].s.set_boundary(tk::spline::first_deriv, 0.0,
-                                tk::spline::first_deriv, 0.0, true);
-    funcs[MEAMG].s.set_boundary(tk::spline::second_deriv, 0.0,
-                                tk::spline::second_deriv, 0.0, true);
+  if (!sparams["ptype"].compare("MEAM"))  // boundary
     funcs[MEAMF].yy.back() = 0.0;
-  }
-  funcs[PHI].s.set_boundary(tk::spline::second_deriv, 0.0,
-                            tk::spline::first_deriv, 0.0, true);
-  funcs[RHO].s.set_boundary(tk::spline::second_deriv, 0.0,
-                            tk::spline::first_deriv, 0.0, true);
-  funcs[EMF].s.set_boundary(tk::spline::second_deriv, 0.0,
-                            tk::spline::second_deriv, 0.0, true);
   funcs[PHI].yy.back() = 0.0;
   funcs[RHO].yy.back() = 0.0;
 }

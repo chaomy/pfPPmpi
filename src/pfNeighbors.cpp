@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-05 10:49:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-18 23:05:31
+ * @Last Modified time: 2018-01-21 14:16:55
  */
 
 #include "pfHome.h"
@@ -51,13 +51,12 @@ void pfHome::initNeighs() {
 }
 
 void pfHome::initNeighs(Config& tmpc) {
-  double d0[3];
-  double dij[3];
-
+  vector<double> d0(3);
+  vector<double> dij(3);
   for (int ii = 0; ii < tmpc.natoms; ii++) {
     pfAtom& atmii = tmpc.atoms[ii];
     atmii.nneighs = 0;
-    atmii.neighs.clear();
+    if (!atmii.neighs.empty()) atmii.neighs.clear();
 
     for (int jj = ii; jj < tmpc.natoms; jj++) {
       pfAtom& atmjj = tmpc.atoms[jj];
@@ -69,12 +68,9 @@ void pfHome::initNeighs(Config& tmpc) {
           for (int iz = -tmpc.scale[2]; iz <= tmpc.scale[2]; iz++) {
             if ((ii == jj) && (ix == 0) && (iy == 0) && (iz == 0)) continue;
 
-            dij[0] =
-                d0[0] + ix * tmpc.bvx[0] + iy * tmpc.bvy[0] + iz * tmpc.bvz[0];
-            dij[1] =
-                d0[1] + ix * tmpc.bvx[1] + iy * tmpc.bvy[1] + iz * tmpc.bvz[1];
-            dij[2] =
-                d0[2] + ix * tmpc.bvx[2] + iy * tmpc.bvy[2] + iz * tmpc.bvz[2];
+            for (int k : {0, 1, 2})
+              dij[k] = d0[k] + ix * tmpc.bvx[k] + iy * tmpc.bvy[k] +
+                       iz * tmpc.bvz[k];
 
             double r = sqrt(square33(dij));
 

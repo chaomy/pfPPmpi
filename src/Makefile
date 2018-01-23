@@ -21,7 +21,7 @@ CPPFLAGS	  =  -std=c++11
 LMP_LIB     =  ${SRC}/lammps/src/
 CINCLUDE 	=  -I../include  -I${LMP_LIB}
 LIBS   		=  -L${LMP_LIB} # -L${MPI_HOME}/lib
-CDLINK  	=  ${LIBS} -lm -lnlopt -lmpi -lpthread  -llammps -larmadillo -framework Accelerate
+CDLINK  	=  ${LIBS} -lm -lnlopt -lmpi -lpthread  -llammps -larmadillo -framework Accelerate -lboost_mpi -lboost_serialization
 
 MAKETARGET 	=  pot.exe
 
@@ -75,6 +75,7 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfPhyPV.cpp \
 			   ./pfPhySur.cpp \
 			   ./pfPhyD03.cpp \
+			   ./pfMPI.cpp  \
 			   ./pfMain.cpp
 
 			   # ./pfForceMEAMtb.cpp  \

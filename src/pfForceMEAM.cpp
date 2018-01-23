@@ -2,21 +2,81 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-18 14:27:15
+ * @Last Modified time: 2018-01-22 21:22:07
  */
 
 #include "pfHome.h"
 #include "pfLmpDrv.h"
 
-double pfHome::forceMEAM(const arma::mat &vv) {
-  error["frc"] = 0.0;
-  error["punish"] = 0.0;
-  error["shift"] = 0.0;
-  omaxrho = -1e10;
-  ominrho = 1e10;
-  int cnt = 0;
+double pfHome::forceMEAM(const arma::mat &vv, int tg) {
+  while (true) {
+    broadcast(cmm, tg, PFROOT);
+    if (tg == EXT) break;
 
-  // careful !!!
+    int cnt = 0;
+    for (int i = 0; i < nfuncs; i++) { /* interpolates */
+      Func &ff = funcs[i];
+      double mxf = -1e10, mif = 1e10;
+      int nt = (i == PHI || i == RHO || i == MEAMF) ? ff.npts - 1 : ff.npts;
+      for (int j = 0; j < nt; j++) {
+        ff.yy[j] = vv[cnt++];
+        mxf = ff.yy[j] > mxf ? ff.yy[j] : mxf;
+        mif = ff.yy[j] < mif ? ff.yy[j] : mif;
+      }
+      ff.rng = mxf - mif;
+    }
+
+    for (int i = 0; i < nfuncs; i++) {  // broadcast functions
+      broadcast(cmm, funcs[i].xx, PFROOT);
+      broadcast(cmm, funcs[i].yy, PFROOT);
+      broadcast(cmm, funcs[i].rng, PFROOT);
+    }
+
+    for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
+    double efrc = 0.0, epsh = 0.0;
+    error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
+    omaxrho = -1e10, ominrho = 1e10;
+
+    int ls[] = {PHI, RHO, MEAMF};
+    for (int it : ls) {
+      double invrg = 1. / square11(funcs[it].rng);
+      double tm = 0.0;
+      for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
+        tm += (square11(funcs[it].s.m_b[i]) +
+               0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1]);
+      tm += square11(funcs[it].s.m_b.back());
+      epsh += tm * invrg;
+    }
+
+    for (int i = locstt; i < locend; i++) {
+      Config &cnf = configs[i];
+      forceMEAM(cnf);
+      for (pfAtom &atm : cnf.atoms) {
+        for (int it : {X, Y, Z}) {
+          atm.fitfrc[it] =
+              atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
+          efrc += square11(atm.fitfrc[it] * atm.fweigh[it]);
+        }
+      }
+      efrc += square11(cnf.fitengy - cnf.engy);
+      omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
+      ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
+    }
+
+    efrc *= 1e2;
+    epsh *= dparams["pweight"];
+    reduce(cmm, epsh, error["punish"], std::plus<double>(), PFROOT);
+    reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
+    if (cmm.rank() == PFROOT) break;
+  }
+  return error["frc"] * error["punish"];
+}
+
+double pfHome::forceMEAM(const arma::mat &vv) {
+  error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
+  omaxrho = -1e10, ominrho = 1e10;
+
+  int cnt = 0;
   for (int i = 0; i < nfuncs; i++) {
     Func &ff = funcs[i];
     if (i == PHI || i == RHO || i == MEAMF) {

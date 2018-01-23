@@ -2,12 +2,11 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-18 15:00:36
+ * @Last Modified time: 2018-01-21 14:11:15
  */
 
 #include "pfHome.h"
 
-using namespace MMatrix;
 using std::cout;
 using std::endl;
 using std::vector;
@@ -29,11 +28,11 @@ void pfHome::initNeighsFull() {
 }
 
 void pfHome::initBox(Config &tmpc) {
-  Mmatrix<double>::crossProd33(tmpc.bvy, tmpc.bvz, tmpc.tvx);
-  Mmatrix<double>::crossProd33(tmpc.bvz, tmpc.bvx, tmpc.tvy);
-  Mmatrix<double>::crossProd33(tmpc.bvx, tmpc.bvy, tmpc.tvz);
+  crossProd33(tmpc.bvy, tmpc.bvz, tmpc.tvx);
+  crossProd33(tmpc.bvz, tmpc.bvx, tmpc.tvy);
+  crossProd33(tmpc.bvx, tmpc.bvy, tmpc.tvz);
 
-  tmpc.vol = Mmatrix<double>::vecInnProd33(tmpc.bvx, tmpc.tvx);
+  tmpc.vol = vecInnProd33(tmpc.bvx, tmpc.tvx);
   double inv = 1. / tmpc.vol;
 
   // normalize
@@ -71,9 +70,8 @@ void pfHome::initAngles(Config &tmpc) {
 }
 
 void pfHome::initNeighsFull(Config &tmpc) {
-  double d0[3];
-  double dij[3];
-
+  vector<double> d0(3);
+  vector<double> dij(3);
   for (int ii = 0; ii < tmpc.natoms; ii++) {
     pfAtom &atmii = tmpc.atoms[ii];
     atmii.nneighsFull = 0;

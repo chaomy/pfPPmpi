@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-18 22:12:25
+ * @Last Modified time: 2018-01-22 12:41:47
  */
 
 #include "pfHome.h"
@@ -58,14 +58,21 @@ void pfHome::run(int argc, char *argv[]) {
 void pfHome::calErr() {  // make potential
   arma::mat mm(nvars, 1, arma::fill::randu);
   for (int i = 0; i < nvars; i++) mm[i] = ini[i];
-    
-  if (!sparams["ptype"].compare("EAM"))
-    cout << "error = " << forceEAM(mm) << endl;
-  else if (!sparams["ptype"].compare("ADP"))
+  if (!sparams["ptype"].compare("EAM")) {
+    forceEAM(mm, 1);
+    if (cmm.rank() == PFROOT) {
+      for (int i = 0; i < 10; i++) {
+        double err = forceEAM(mm, 1);
+        cout << "Err " << i << " " << err << endl;
+      }
+      forceEAM(mm, EXT);
+    }
+  } else if (!sparams["ptype"].compare("ADP")) {
     cout << "error = " << forceADP(ini, 0) << endl;
-  else if (!sparams["ptype"].compare("MEAM"))
+  } else if (!sparams["ptype"].compare("MEAM"))
     cout << "error = " << forceMEAM(mm) << endl;
-  sparams["ptype"] == "MEAM" ? writeMEAM() : writeLMPS();
+  // if (cmm.rank() == PFROOT)
+  //   sparams["ptype"] == "MEAM" ? writeMEAM() : writeLMPS();
 }
 
 void pfHome::nloptGlobal() {

@@ -5,7 +5,6 @@ typedef std::chrono::high_resolution_clock Clock;
 
 int main(int argc, char* argv[]) {
   auto t1 = Clock::now();
-
   pfHome* pfdrv = new pfHome(argc, argv);
   pfdrv->run(argc, argv);
   delete pfdrv;

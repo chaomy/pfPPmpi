@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-15 00:26:50
+ * @Last Modified time: 2018-01-21 14:21:26
  */
 
 #include "pfHome.h"
@@ -43,20 +43,18 @@ void pfHome::loopBwth() {
 }
 
 void pfHome::forceDis() {
-  printf("meam force  %f %f %f\n", mfrc[X], mfrc[Y], mfrc[Z]);
   vector<double> mtm(3, 0);
   for (Config& tmpc : configs) {
     for (pfAtom& atm : tmpc.atoms)
       for (int ii : {0, 1, 2}) mtm[ii] += fabs(atm.frc[ii]) * atm.fweigh[ii];
   }
-
   for (int ii : {0, 1, 2}) mtm[ii] /= ftn;
-
   for (Config& tmpc : configs) {
     for (pfAtom& atm : tmpc.atoms)
       for (int ii : {0, 1, 2}) atm.fweigh[ii] *= (mfrc[ii] / mtm[ii]);
   }
   fsm = square11(mfrc[X]) + square11(mfrc[Y]) + square11(mfrc[Z]);
+  broadcast(cmm, mfrc, PFROOT);
 }
 
 void pfHome::deleteAtoms() { /* delete some atoms */
