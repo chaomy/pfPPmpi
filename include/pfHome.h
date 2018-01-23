@@ -201,6 +201,7 @@ class pfHome {
   // outputs
   void writePot();
   void writePot(const vector<double>& vv);
+  void writePot(const string& s);
   void writeLMPS();
   void writeLMPS(const vector<double>& vv);
   void writeMEAM();

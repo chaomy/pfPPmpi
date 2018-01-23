@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-21 14:11:15
+ * @Last Modified time: 2018-01-23 16:21:45
  */
 
 #include "pfHome.h"
@@ -17,14 +17,10 @@ void pfHome::initAngles() {
 
 void pfHome::initNeighsFull() {
   ricut = rocut;
-  ftn = 0;
   for (Config &tmpc : configs) {
     initBox(tmpc);
     initNeighsFull(tmpc);
-    for (pfAtom &atm : tmpc.atoms)
-      if (atm.nneighsFull == N5) ftn++;
   }
-  cout << "incut= " << ricut << "atm / tol= " << ftn << " /" << tln << endl;
 }
 
 void pfHome::initBox(Config &tmpc) {

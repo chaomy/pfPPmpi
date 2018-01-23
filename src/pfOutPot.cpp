@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 18:46:14
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-20 14:27:48
+ * @Last Modified time: 2018-01-23 16:09:14
  */
 
 #include "pfHome.h"
@@ -53,6 +53,36 @@ void pfHome::writePot(const vector<double>& vv) {
     fprintf(fid, "%.16e %.16e\n", funcs[i].g1.front(), funcs[i].g1.back());
     for (int j = 0; j < funcs[i].npts; j++)
       fprintf(fid, "%.16e %.16e\n", funcs[i].xx[j], vv[stpnt + j]);
+    fprintf(fid, "\n");
+  }
+  fclose(fid);
+}
+
+void pfHome::writePot(const string& fname) {
+  FILE* fid = fopen(fname.c_str(), "w");
+  if (!fid) cerr << "error opening " + sparams["tmpfile"] << endl;
+
+  fprintf(fid, "#F 4 %d\n", nfuncs);
+  fprintf(fid, "#T %s \n", sparams["ptype"].c_str());
+  fprintf(fid, "#C %s \n", sparams["elem"].c_str());
+  fprintf(fid, "## %s-%s %s %s\n", sparams["elem"].c_str(),
+          sparams["elem"].c_str(), sparams["elem"].c_str(),
+          sparams["elem"].c_str());
+
+  if (sparams["ptype"] == "EAM")
+    fprintf(fid, "#G 3 3 3\n");
+  else if (sparams["ptype"] == "ADP")
+    fprintf(fid, "#G 3 3 3 3 3\n");
+  else if (sparams["ptype"] == "MEAM")
+    fprintf(fid, "#G 3 3 3 3 3\n");
+  fprintf(fid, "#E\n");
+  for (int i = 0; i < nfuncs; i++) fprintf(fid, "%d\n", funcs[i].npts);
+  fprintf(fid, "\n");
+
+  for (int i = 0; i < nfuncs; i++) {
+    fprintf(fid, "%.16e %.16e\n", funcs[i].s.m_c0, funcs[i].s.m_c.back());
+    for (int j = 0; j < funcs[i].npts; j++)
+      fprintf(fid, "%.16e %.16e\n", funcs[i].xx[j], funcs[i].yy[j]);
     fprintf(fid, "\n");
   }
   fclose(fid);

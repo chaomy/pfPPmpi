@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 15:47:44
+ * @Last Modified time: 2018-01-23 16:26:09
  */
 
 #include "pfHome.h"
@@ -58,15 +58,12 @@ void pfHome::run(int argc, char *argv[]) {
 void pfHome::calErr() {  // make potential
   arma::mat mm(nvars, 1, arma::fill::randu);
   for (int i = 0; i < nvars; i++) mm[i] = ini[i];
-
-  if (!sparams["ptype"].compare("EAM")) {
-    (this->*calobj[sparams["ptype"]])(mm, 1);
-    if (cmm.rank() == PFROOT) {
-      double err = (this->*calobj[sparams["ptype"]])(mm, 1);
-      cout << "Err " << err << endl;
-      (this->*calobj[sparams["ptype"]])(mm, EXT);
-      (this->*write[sparams["ptype"]])();
-    }
+  (this->*calobj[sparams["ptype"]])(mm, 1);
+  if (cmm.rank() == PFROOT) {
+    double err = (this->*calobj[sparams["ptype"]])(mm, 1);
+    cout << "Err " << err << endl;
+    (this->*calobj[sparams["ptype"]])(mm, EXT);
+    (this->*write[sparams["ptype"]])();
   }
 }
 

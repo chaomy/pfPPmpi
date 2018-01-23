@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 15:32:35
+ * @Last Modified time: 2018-01-23 17:08:57
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -29,26 +29,21 @@ double pfHome::testFunc(arma::mat& vc) {
 void pfHome::cntcmaes() {
   arma::mat iterate(nvars, 1, arma::fill::randu);
   for (int i = 0; i < nvars; i++) iterate[i] = ini[i];
-
-  sparams["ptype"] == "MEAM" ? forceMEAM(iterate, 1)
-                             : forceEAM(iterate, 1);  // starting
+  (this->*calobj[sparams["ptype"]])(iterate, 1);
   if (cmm.rank() == PFROOT) {
     double cr = cmaes(iterate);
-    sparams["tmpfile"] =
-        sparams["tmpdir"] + "/dummy.cnt." + "_" + to_string(cr);
     writePot();
-    sparams["lmpfile"] = sparams["lmpdir"] + "/dummy." + sparams["ptype"];
-    sparams["ptype"] == "MEAM" ? writeMEAM() : writeLMPS();
-    sparams["ptype"] == "MEAM" ? forceMEAM(iterate, EXT)
-                               : forceEAM(iterate, EXT);  // starting
+    sparams["lmpfile"] = "dummy." + sparams["ptype"];
+    (this->*write[sparams["ptype"]])();
+    (this->*calobj[sparams["ptype"]])(iterate, EXT);
   }
 }
 
 void pfHome::loopcmaes() {
   vector<double> hbd, lbd;
   if (sparams["ptype"] == "MEAM") {
-    hbd = vector<double>({1.0, 1.0, 5.0, 1.0, 1.0});
-    lbd = vector<double>({-0.5, -0.5, -5.0, -0.5, -0.5});
+    hbd = vector<double>({1.0, 1.0, 0.0, 1.0, 1.0});
+    lbd = vector<double>({-0.5, -0.5, -10.0, -0.5, -0.5});
   } else {
     hbd = vector<double>({2.0, 2.0, -5.0});
     lbd = vector<double>({-1.0, -1.0, -15.0});
@@ -56,7 +51,6 @@ void pfHome::loopcmaes() {
 
   arma::mat iterate(nvars, 1, arma::fill::randu);
   double cr = 1e30, op = 1e30;
-
   for (int i = 0; i < 1; i++) {
     int cn = 0;
     for (int k = 0; k < nfuncs; k++) {
@@ -65,19 +59,13 @@ void pfHome::loopcmaes() {
       for (int j = 0; j < np; j++)
         iterate[cn++] = lbd[k] + randUniform() * (hbd[k] - lbd[k]);
     }
-    sparams["ptype"] == "MEAM" ? forceMEAM(iterate, 1)
-                               : forceEAM(iterate, 1);  // starting
+    (this->*calobj[sparams["ptype"]])(iterate, 1);
     if (cmm.rank() == PFROOT) {
-      cr = cmaes(iterate);
-      // save
-      sparams["tmpfile"] = sparams["tmpdir"] + "/dummy.tmp." + to_string(i) +
-                           "_" + to_string(cr);
-      writePot();
-      sparams["lmpfile"] =
-          sparams["lmpdir"] + "/dummy." + sparams["ptype"] + "." + to_string(i);
-      sparams["ptype"] == "MEAM" ? writeMEAM() : writeLMPS();
-      sparams["ptype"] == "MEAM" ? forceMEAM(iterate, EXT)
-                                 : forceEAM(iterate, EXT);  // starting
+      op = (cr = cmaes(iterate)) < op ? cr : op;
+      writePot("dummy.tmp." + to_string(i) + "_" + to_string(cr));
+      sparams["lmpfile"] = "dummy." + sparams["ptype"] + "." + to_string(i);
+      (this->*write[sparams["ptype"]])();
+      (this->*calobj[sparams["ptype"]])(iterate, EXT);
     }
   }
 }
@@ -142,8 +130,7 @@ double pfHome::cmaes(arma::mat& iterate) {
   arma::mat step = arma::zeros(iterate.n_rows, iterate.n_cols);
 
   // Calculate the first objective function.
-  double currentobj = (sparams["ptype"] == "MEAM") ? forceMEAM(mps.slice(0), 1)
-                                                   : forceEAM(mps.slice(0), 1);
+  double currentobj = (this->*calobj[sparams["ptype"]])(mps.slice(0), 1);
   double overallobj = currentobj;
   double lastobj = 1e30;
 
@@ -179,10 +166,7 @@ double pfHome::cmaes(arma::mat& iterate) {
             arma::randn(iterate.n_rows, iterate.n_cols) * covLower;
       }
       pps.slice(idx(j)) = mps.slice(idx0) + sigma(idx0) * pStep.slice(idx(j));
-      // Calculate the objective function.
-      pobj(idx(j)) = (sparams["ptype"] == "MEAM")
-                         ? forceMEAM(pps.slice(idx(j)), 1)
-                         : forceEAM(pps.slice(idx(j)), 1);
+      pobj(idx(j)) = (this->*calobj[sparams["ptype"]])(pps.slice(idx(j)), 1);
     }
 
     // Sort population.
@@ -193,18 +177,15 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     mps.slice(idx1) = mps.slice(idx0) + sigma(idx0) * step;
 
-    // Calculate the objective function.
-    currentobj = (sparams["ptype"] == "MEAM") ? forceMEAM(mps.slice(idx1), 1)
-                                              : forceEAM(mps.slice(idx1), 1);
+    currentobj = (this->*calobj[sparams["ptype"]])(mps.slice(idx1), 1);
+
     // Update best parameters.
     if (currentobj < overallobj) {
       overallobj = currentobj;
       iterate = mps.slice(idx1);
       // output
-      sparams["tmpfile"] = "dummy.tmp";
-      writePot();
-      sparams["lmpfile"] = "dummy.lammps." + sparams["ptype"];
-      sparams["ptype"] == "MEAM" ? writeMEAM() : writeLMPS();
+      writePot("dummy.tmp");
+      (this->*write[sparams["ptype"]])();
     }
 
     // Update Step Size.
@@ -277,7 +258,8 @@ double pfHome::cmaes(arma::mat& iterate) {
          << error["frc"] << " " << error["punish"] << " cs " << sigma(idx1)
          << " " << ominrho << " " << omaxrho << " " << funcs[EMF].xx.front()
          << " " << funcs[EMF].xx.back() << " "
-         << (lastobj - overallobj) / lastobj << endl;
+         << (lastobj - overallobj) / lastobj << " " << configs[locstt].fitengy
+         << endl;
 
     if (std::isnan(overallobj) || std::isinf(overallobj)) {
       cout << "CMA-ES: converged to " << overallobj << "; "
@@ -294,8 +276,7 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     if (i % iparams["resfreq"] == 1 && rescaleEMF()) {
       cout << "before rescale " << currentobj << endl;
-      currentobj = (sparams["ptype"] == "MEAM") ? forceMEAM(mps.slice(idx1), 1)
-                                                : forceEAM(mps.slice(idx1), 1);
+      currentobj = (this->*calobj[sparams["ptype"]])(mps.slice(idx1), 1);
       cout << "after rescale " << currentobj << endl;
       overallobj = currentobj;
     }

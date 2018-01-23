@@ -2,11 +2,13 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 12:15:16
+ * @Last Modified time: 2018-01-23 17:17:48
  */
 
 #include "pfHome.h"
 #include "pfLmpDrv.h"
+using std::cout;
+using std::endl;
 
 double pfHome::forceMEAM(const arma::mat &vv, int tg) {
   while (true) {
@@ -33,6 +35,7 @@ double pfHome::forceMEAM(const arma::mat &vv, int tg) {
     }
 
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
+
     double efrc = 0.0, epsh = 0.0;
     error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
@@ -55,7 +58,6 @@ double pfHome::forceMEAM(const arma::mat &vv, int tg) {
         for (int it : {X, Y, Z}) {
           atm.fitfrc[it] =
               atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
-          cout << atm.fweigh[it] << endl;
           efrc += square11(atm.fitfrc[it] * atm.fweigh[it]);
         }
       }
@@ -64,13 +66,12 @@ double pfHome::forceMEAM(const arma::mat &vv, int tg) {
       ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
     }
 
-    efrc *= 1e2;
     epsh *= dparams["pweight"];
     reduce(cmm, epsh, error["punish"], std::plus<double>(), PFROOT);
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"] * error["punish"];
+  return error["frc"] * (1. + error["punish"]);
 }
 
 double pfHome::forceMEAM(const arma::mat &vv) {

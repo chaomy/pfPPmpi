@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 12:08:47
+ * @Last Modified time: 2018-01-23 16:32:14
  */
 
 #include "pfHome.h"
@@ -48,13 +48,12 @@ void pfHome::forceDis() {
     for (pfAtom& atm : tmpc.atoms)
       for (int ii : {0, 1, 2}) mtm[ii] += fabs(atm.frc[ii]) * atm.fweigh[ii];
   }
-  for (int ii : {0, 1, 2}) mtm[ii] /= ftn;
-  for (Config& tmpc : configs) {
-    for (pfAtom& atm : tmpc.atoms)
-      for (int ii : {0, 1, 2}) atm.fweigh[ii] *= (mfrc[ii] / mtm[ii]);
-  }
+  // for (int ii : {0, 1, 2}) mtm[ii] /= ftn;
+  // for (Config& tmpc : configs) {
+  //   for (pfAtom& atm : tmpc.atoms)
+  //     for (int ii : {0, 1, 2}) atm.fweigh[ii] *= (mfrc[ii] / mtm[ii]);
+  // }
   fsm = square11(mfrc[X]) + square11(mfrc[Y]) + square11(mfrc[Z]);
-  broadcast(cmm, mfrc, PFROOT);
 }
 
 void pfHome::deleteAtoms() { /* delete some atoms */

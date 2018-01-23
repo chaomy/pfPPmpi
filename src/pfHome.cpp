@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 15:50:38
+ * @Last Modified time: 2018-01-23 16:43:28
  */
 
 #include "pfHome.h"
@@ -60,7 +60,7 @@ pfHome::pfHome(int argc, char* argv[]) : ricut(2.08), rocut(5.05), mfrc(3) {
     initAngles();
   } else
     initNeighs();
-  forceDis();
+  // forceDis();
 
   int del = nconfs / cmm.size();
   locstt = del * cmm.rank();

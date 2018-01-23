@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-22 21:23:03
+ * @Last Modified time: 2018-01-23 17:31:50
  */
 
 #include "pfHome.h"
@@ -44,7 +44,7 @@ void pfHome::bcdata() {
   rhcut = funcs[RHO].xx.back();
 
   if (!sparams["ptype"].compare("MEAM")) {  // boundary
-    funcs[MEAMF].s.set_boundary(tk::spline::first_deriv, 0.0,
+    funcs[MEAMF].s.set_boundary(tk::spline::second_deriv, 0.0,
                                 tk::spline::first_deriv, 0.0, true);
     funcs[MEAMG].s.set_boundary(tk::spline::second_deriv, 0.0,
                                 tk::spline::second_deriv, 0.0, true);
