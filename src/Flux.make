@@ -18,12 +18,13 @@ CPPFLAGS	  =  -std=c++11
 #   if I want to link in libraries (libx.so or libx.a) I use the -llibname
 #   option, something like (this will link in libmylib.so and libm.so:
 
-LMP_LIB        =  ${SRC}/lammps/src/
-MY_LIB 		   =  /home/chaomy/mylib/usr
-CINCLUDE 	   =  -I../include  -I${HOME}/install/include  -I${MPI_HOME}/include  -I${LMP_LIB} -I${MY_LIB}/include
-LIBS   		   =  -L${HOME}/install/lib  -L${MPI_HOME}/lib -L${LMP_LIB} -L${MY_LIB}/lib64
-CDLINK  	   =  ${LIBS} -lm  -lnlopt  -lmpi -lpthread  -llammps
-MAKETARGET 	   =  pot.exe
+LMP_LIB     =  ${SRC}/lammps/src/
+MY_INC 		=  /home/chaomy/src/armadillo-8.300.3/include/
+CINCLUDE 	=  -I../include  -I${HOME}/install/include  -I${MPI_HOME}/include  -I${LMP_LIB} -I${MY_INC}
+LIBS   		=  -L${HOME}/install/lib  -L${MPI_HOME}/lib -L${LMP_LIB} 
+CDLINK  	=  ${LIBS} -lm -lnlopt -lmpi -lpthread -llammps -DARMA_DONT_USE_WRAPPER -lblas -llapack  -lboost_mpi -lboost_serialization
+
+MAKETARGET 	=  pfmpi 
 
 # The source files
 POTFITSRC 	=  ./pfConfig.cpp     \
@@ -75,7 +76,10 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfPhyPV.cpp \
 			   ./pfPhySur.cpp \
 			   ./pfPhyD03.cpp \
+			   ./pfMPI.cpp  \
 			   ./pfMain.cpp
+
+			   # ./pfForceMEAMtb.cpp  \
 
 # parallel
 PARALLEL = MPI
@@ -90,7 +94,7 @@ CC = ${CC_MPI}
 OBJECTS := $(subst .cpp,.o,${POTFITSRC})
 
 %.o: %.cpp
-	${CC} -c  $<  ${CINCLUDE}  ${OPTFLAGS}  ${CPPFLAGS}
+	${CC} -c  $<  ${CINCLUDE}  ${OPTFLAGS}  ${CPPFLAGS}  # ${LIBS}
 
 ${MAKETARGET}:$(OBJECTS)
 
