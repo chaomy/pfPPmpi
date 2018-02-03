@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-22 15:55:26
+ * @Last Modified time: 2018-01-24 13:26:53
  */
 
 #include "pfHome.h"
@@ -15,37 +15,39 @@ double pfHome::forceEAM(const arma::mat& vv, int tg) {
     int cnt = 0;
     for (int i = 0; i < nfuncs; i++) { /* interpolates */
       Func& ff = funcs[i];
-      double mxf = -1e10, mif = 1e10;
+      // double mxf = -1e10, mif = 1e10;
       int nt = (i == PHI || i == RHO) ? ff.npts - 1 : ff.npts;
       for (int j = 0; j < nt; j++) {
         ff.yy[j] = vv[cnt++];
-        mxf = ff.yy[j] > mxf ? ff.yy[j] : mxf;
-        mif = ff.yy[j] < mif ? ff.yy[j] : mif;
+        // mxf = ff.yy[j] > mxf ? ff.yy[j] : mxf;
+        // mif = ff.yy[j] < mif ? ff.yy[j] : mif;
       }
-      ff.rng = mxf - mif;
+      // ff.rng = mxf - mif;
     }
 
     for (int i = 0; i < nfuncs; i++) {  // broadcast functions
       broadcast(cmm, funcs[i].xx, PFROOT);
       broadcast(cmm, funcs[i].yy, PFROOT);
-      broadcast(cmm, funcs[i].rng, PFROOT);
+      // broadcast(cmm, funcs[i].rng, PFROOT);
     }
 
     for (Func& ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
     error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
+    double efrc = 0.0, epsf = 0.0;
 
     int ls[] = {PHI, RHO};
     for (int it : ls) {
-      double invrg = 1. / square11(funcs[it].rng);
+      // double invrg = 1. / square11(funcs[it].rng);
       double tm = 0.0;
       for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
         tm += (square11(funcs[it].s.m_b[i]) +
                0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1]);
       tm += square11(funcs[it].s.m_b.back());
-      error["punish"] += 1e-4 * tm * invrg;
+      error["punish"] += tm;  //  * invrg;
     }
+    error["punish"] = exp(error["punish"] / dparams["pweight"]);
 
     for (int i = locstt; i < locend; i++) {
       Config& cnf = configs[i];
@@ -53,24 +55,22 @@ double pfHome::forceEAM(const arma::mat& vv, int tg) {
       for (pfAtom& atm : cnf.atoms) {
         for (int it : {X, Y, Z}) {
           atm.fitfrc[it] = atm.phifrc[it] + atm.rhofrc[it] - atm.frc[it];
-          error["frc"] += square11(atm.fitfrc[it] * atm.fweigh[it]);
+          efrc += square11(atm.fitfrc[it] * atm.fweigh[it]);
         }
       }
-      error["frc"] += square11(cnf.fitengy - cnf.engy);
+      efrc += square11(cnf.fitengy - cnf.engy);
       omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
       ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
     }
-    error["shift"] += square11(omaxrho - funcs[EMF].xx.back());
-    error["shift"] += square11(ominrho - funcs[EMF].xx.front());
-    error["frc"] *= 1e2;
-    error["shift"] *= dparams["pshift"] /
-                      square11(funcs[EMF].xx.back() - funcs[EMF].xx.front());
-                      
-    double tmp = error["frc"] * (1 + error["punish"]);
-    reduce(cmm, tmp, error["sum"], std::plus<double>(), PFROOT);
+    // epsf += square11(omaxrho - funcs[EMF].xx.back());
+    // epsf += square11(ominrho - funcs[EMF].xx.front());
+    // epsf *= dparams["pshift"];
+
+    // reduce(cmm, epsf, error["shift"], std::plus<double>(), PFROOT);
+    reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["sum"];
+  return error["frc"];  // error["punish"] + error["shift"];
 }
 
 double pfHome::forceEAM(const vector<double>& vv) { return 0.0; }
@@ -91,17 +91,6 @@ double pfHome::forceEAM(const arma::mat& vv) {
     ff.s.set_points(ff.xx, ff.yy);
     ff.rng = mxf - mif;
   }
-
-  /* reverse */
-  // for (int it : {2}) {
-  //   double rverse = 0.;
-  //   int npt = (it == 2) ? funcs[it].s.m_b.size() : funcs[it].s.m_b.size() -
-  //   1; for (int i = 0; i < npt; i++) {
-  //     cout << "m_b = " << funcs[it].s.m_b[i] << endl;
-  //     rverse += funcs[it].s.m_b[i];
-  //   }
-  //   if (rverse < 0) return -1;  // return if isn't quaqatic
-  // }
 
   int ls[] = {PHI, RHO};
   for (int it : ls) {
@@ -169,10 +158,12 @@ void pfHome::forceEAM(Config& cnf) {
       cnf.atoms[ngb.aid].crho += ngb.rho;
     }  // nn
 
+    double embE;
+    funcs[EMF].s.deriv(atm.crho, embE, atm.gradF);
+    cnf.emfengy += (embE);
+
     cnf.rhomx = atm.crho > cnf.rhomx ? atm.crho : cnf.rhomx;
     cnf.rhomi = atm.crho < cnf.rhomi ? atm.crho : cnf.rhomi;
-
-    cnf.emfengy += funcs[EMF].s(atm.crho) - e0;
   }  // ii
 
   for (pfAtom& atm : cnf.atoms) /* eambedding forces */

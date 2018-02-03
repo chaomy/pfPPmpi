@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 16:21:45
+ * @Last Modified time: 2018-02-01 23:44:14
  */
 
 #include "pfHome.h"
@@ -19,6 +19,7 @@ void pfHome::initNeighsFull() {
   ricut = rocut;
   for (Config &tmpc : configs) {
     initBox(tmpc);
+    wrapAtomPos(tmpc);
     initNeighsFull(tmpc);
   }
 }
@@ -65,6 +66,38 @@ void pfHome::initAngles(Config &tmpc) {
   }    // ii
 }
 
+void pfHome::wrapAtomPos(Config &tmpc) {
+  vector<double> boxsidelo(3), boxsidehi(3), npst(3);
+
+  for (int k : {0, 1, 2}) {
+    boxsidelo[k] = 0.0 * tmpc.bvx[k] + 0.0 * tmpc.bvy[k] + 0.0 * tmpc.bvz[k];
+    boxsidehi[k] = 1.0 * tmpc.bvx[k] + 1.0 * tmpc.bvy[k] + 1.0 * tmpc.bvz[k];
+  }
+
+  for (pfAtom &atm : tmpc.atoms) {
+    for (int ix = -1; ix <= 1; ix++) {
+      for (int iy = -1; iy <= 1; iy++) {
+        for (int iz = -1; iz <= 1; iz++) {
+          if ((ix == 0) && (iy == 0) && (iz == 0)) continue;
+          npst[0] = atm.pst[0] + ix * tmpc.bvx[0] + iy * tmpc.bvy[0] +
+                    iz * tmpc.bvz[0];
+          if (npst[0] > boxsidehi[0] || npst[0] < boxsidelo[0]) continue;
+
+          npst[1] = atm.pst[1] + ix * tmpc.bvx[1] + iy * tmpc.bvy[1] +
+                    iz * tmpc.bvz[1];
+          if (npst[1] > boxsidehi[1] || npst[1] < boxsidelo[1]) continue;
+
+          npst[2] = atm.pst[2] + ix * tmpc.bvx[2] + iy * tmpc.bvy[2] +
+                    iz * tmpc.bvz[2];
+          if (npst[2] > boxsidehi[2] || npst[2] < boxsidelo[2]) continue;
+          // update
+          for (int it : {0, 1, 2}) atm.pst[it] = npst[it];
+        }
+      }
+    }
+  }
+}
+
 void pfHome::initNeighsFull(Config &tmpc) {
   vector<double> d0(3);
   vector<double> dij(3);
@@ -72,7 +105,7 @@ void pfHome::initNeighsFull(Config &tmpc) {
     pfAtom &atmii = tmpc.atoms[ii];
     atmii.nneighsFull = 0;
     atmii.neighsFull.clear();
-
+    int cn = 0;
     for (int jj = 0; jj < tmpc.natoms; jj++) {
       pfAtom &atmjj = tmpc.atoms[jj];
 
@@ -92,10 +125,11 @@ void pfHome::initNeighsFull(Config &tmpc) {
             if (r < rocut) {
               ricut = fmin(ricut, r);
 
-              Neigh tmpn;
+              Neigh tmpn(cn++);
               double invr = 1. / r;
 
               tmpn.r = r;
+              tmpn.r2 = r * r;
               tmpn.invr = invr;
               tmpn.aid = atmjj.id;
 
@@ -112,6 +146,17 @@ void pfHome::initNeighsFull(Config &tmpc) {
               setNeighslotStd(tmpn, funcs[MEAMF], r);
 
               atmii.neighsFull.push_back(tmpn);
+
+              if ((ix == 0) && (iy == 0) && (iz == 0)) {
+                if (tmpn.aid < ii) continue;
+              } else {
+                if (dij[Z] < 0.0) continue;
+                if (dij[Z] == 0.0) {
+                  if (dij[Y] < 0.0) continue;
+                  if (dij[Y] == 0.0 && dij[X] < 0.0) continue;
+                }
+              }
+              atmii.neighidxHalf.push_back(tmpn.nid);
             }  // rcut
           }    // iz
         }      // iy

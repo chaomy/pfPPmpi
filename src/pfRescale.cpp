@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 21:34:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-18 14:10:10
+ * @Last Modified time: 2018-01-24 12:34:51
  */
 
 #include "pfHome.h"
@@ -20,17 +20,26 @@ void pfHome::shiftEMF(double shift) {
     funcs[EMF].xx[i] += shift;
 }
 
-int pfHome::rescaleEMF() {
+int pfHome::rescaleEMF(arma::mat& in) {
   Func& ff = funcs[EMF];
   int npts = ff.npts;
   double delt = ff.step;
-  if (fabs(ominrho - ff.xx.front()) > delt ||
-      fabs(omaxrho - ff.xx.back()) > delt) {
+  if (fabs(ominrho - ff.xx.front()) > 2. * delt ||
+      fabs(omaxrho - ff.xx.back()) > 2. * delt) {
+    arma::mat iterate = decodev(in);  // -> [a, b]
     double ndelt = (omaxrho - ominrho) / (npts - 1);
-    for (int i = 0; i < npts; i++) ff.yy[i] = ff.s(ominrho + i * ndelt);
-    for (int i = 0; i < npts; i++) ff.xx[i] = ominrho + i * ndelt;
-    ff.s.set_points(ff.xx, ff.yy);
+    for (int i = 0; i < npts; i++) {
+      double tt = ff.s(ff.xx[i] = ominrho + i * ndelt);
+      int ii = startps[EMF] + i;
+      if (tt < lob[ii])
+        iterate[ii] = lob[ii] + 0.01 * arma::randu();
+      else if (tt > lob[ii])
+        iterate[ii] = hib[ii] - 0.01 * arma::randu();
+      else
+        iterate[ii] = tt;
+    }
     ff.step = ndelt;
+    in = encodev(iterate);
     return 1;
   } else
     return 0;

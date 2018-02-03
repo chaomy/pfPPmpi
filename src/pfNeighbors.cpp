@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-05 10:49:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 12:06:00
+ * @Last Modified time: 2018-02-01 14:10:03
  */
 
 #include "pfHome.h"
@@ -54,6 +54,7 @@ void pfHome::initNeighs(Config& tmpc) {
   vector<double> d0(3);
   vector<double> dij(3);
   for (int ii = 0; ii < tmpc.natoms; ii++) {
+    int cn = 0;
     pfAtom& atmii = tmpc.atoms[ii];
     atmii.nneighs = 0;
     if (!atmii.neighs.empty()) atmii.neighs.clear();
@@ -77,10 +78,11 @@ void pfHome::initNeighs(Config& tmpc) {
             if (r < rocut) {
               ricut = r < ricut ? r : ricut;
 
-              Neigh tmpn;
+              Neigh tmpn(cn++);
               double invr = 1. / r;
 
               tmpn.r = r;
+              tmpn.r2 = r * r;
               tmpn.invr = invr;
               tmpn.aid = atmjj.id;
 

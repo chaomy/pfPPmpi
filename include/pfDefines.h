@@ -29,6 +29,8 @@ using std::vector;
 #define PWEIGHT 100
 #define EWEIGH 500
 #define FRCEPS 0.1
+#define PI 3.14159265359
+#define INVPI 0.31830988618
 #define PFROOT 0
 #define PFERROR 1
 #define PFSUCCESS 0
@@ -88,19 +90,22 @@ class Neigh {
   friend class boost::serialization::access;
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
-    ar &aid &r &invr &psum &phi &phig &rho &rhog &uval &ugrad &wval &wgrad &fval
-        &fgrad &dist &dist2r &dis2mat &slots &steps &shifts;
+    ar &nid &aid &r &r2 &invr &psum &phi &phig &rho &rhog &uval &ugrad &wval
+        &wgrad &fval &fgrad &scrfcn &dscrfcn &fcpair &dist &dist2r &dis2mat
+            &slots &steps &shifts;
   }
 
-  int aid;
-  double r, invr, psum;
+  int nid, aid;
+  double r, r2, invr, psum;
   double phi, phig, rho, rhog, uval, ugrad, wval, wgrad, fval, fgrad;
+  double scrfcn, dscrfcn, fcpair;
   vector<double> dist, dist2r, dis2mat;  // xx yy zz xy yz zx
   vector<int> slots;
   vector<double> steps, shifts;
 
  public:
   Neigh() : dist(3), dist2r(3), dis2mat(6) {}
+  Neigh(int ii) : nid(ii), dist(3), dist2r(3), dis2mat(6) {}
   friend class pfAtom;
   friend class pfHome;
 };
@@ -110,16 +115,17 @@ class pfAtom {
   friend class boost::serialization::access;
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
-    ar &id &tp &nneighs &nneighsFull &rho &crho &prho &gradF &absfrc &pst &prl
-        &frc &fitfrc &fweigh &phifrc &rhofrc &trifrc &mu &nu &lambda &neighs
-            &neighsFull &angMat;
+    ar &id &tp &nneighs &nneighsFull &rho &crho &prho &gradF &absfrc &eng &pst
+        &prl &frc &fitfrc &fweigh &phifrc &rhofrc &trifrc &sts &mu &nu &lambda
+            &neighs &neighsFull &angMat &neighidxHalf;
   }
 
   int id, tp, nneighs, nneighsFull;
-  double rho, crho, prho, gradF, absfrc;
+  double rho, crho, prho, gradF, absfrc, eng;
 
   vector<double> pst, prl;
   vector<double> frc, fitfrc, fweigh, phifrc, rhofrc, trifrc;
+  vector<double> sts;
 
   /* ADP */
   vector<double> mu;
@@ -130,32 +136,39 @@ class pfAtom {
   /* MEAM */
   vector<Neigh> neighsFull;
   vector<vector<Angle>> angMat;
+  vector<int> neighidxHalf;
 
  public:
   pfAtom()
       : id(0),
+        tp(0),
+        eng(0),
         pst(3),
         prl(3),
         frc(3),
-        fitfrc(3),
-        fweigh(3),
-        phifrc(3),
-        rhofrc(3),
-        trifrc(3),
-        mu(3),
-        lambda(6){};
+        fitfrc(3, 0.),
+        fweigh(3, 0.),
+        phifrc(3, 0.),
+        rhofrc(3, 0.),
+        trifrc(3, 0.),
+        sts(6, 0.),
+        mu(3, 0.),
+        lambda(6, 0.){};
   pfAtom(int n)
       : id(n),
+        tp(0),
+        eng(0),
         pst(3),
         prl(3),
         frc(3),
-        fitfrc(3),
-        fweigh(3),
-        phifrc(3),
-        rhofrc(3),
-        trifrc(3),
-        mu(3),
-        lambda(6){};
+        fitfrc(3, 0),
+        fweigh(3, 0),
+        phifrc(3, 0),
+        rhofrc(3, 0),
+        trifrc(3, 0),
+        sts(6, 0),
+        mu(3, 0),
+        lambda(6, 0){};
   ~pfAtom(){};
   friend class Config;
   friend class pfHome;

@@ -10,6 +10,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <queue>
 #include <random>
@@ -17,6 +18,7 @@
 #include <unordered_map>
 #include "armadillo"
 #include "lmpMatrix.h"
+#include "math_special.h"
 #include "nlopt.hpp"
 #include "pfDefines.h"
 #include "pfEle.h"
@@ -26,6 +28,7 @@ using std::string;
 using std::unordered_map;
 using std::vector;
 namespace mpi = boost::mpi;
+typedef enum { FCC, BCC, HCP, DAM, DIA, B1, C11, L12, B2 } lattice_t;
 
 class pfLMPdrv;
 class pfOptimizer;
@@ -86,7 +89,6 @@ class pfHome {
 
   vector<int> startps;
   vector<int> endps;
-  vector<int> gradRight;
   pfLMPdrv* lmpdrv;
   pfOptimizer* optdrv;
   Melem mele;
@@ -96,8 +98,10 @@ class pfHome {
   vector<double> lol;  // 5 + 1
   vector<double> recorderr;
   vector<double> ini;
-  vector<double> lob;
   vector<double> hib;
+  vector<double> lob;
+  vector<double> deb;  // hib - lob
+  vector<int> gradRight;
 
  public:
   pfHome(int argc, char* argv[]);
@@ -113,6 +117,8 @@ class pfHome {
   void initParam();
   void initTargs();
 
+  void setupMEAMC();  // setup meam params
+  void wrapAtomPos(Config& cc);
   void initBox(Config& cc);
   void initNeighs();
   void initNeighs(Config& cc);
@@ -145,6 +151,7 @@ class pfHome {
   void run();
   void run(int argc, char* argv[]);
   void calErr();
+  void calErr(int tm);  // for debugging
   void updaterho(vector<double>& vv);
   void updaterhoMEAM(vector<double>& vv);
   double errFunct(const vector<double>& x);
@@ -157,16 +164,20 @@ class pfHome {
   double forceEAM(const arma::mat& vv, int tg);
   double forceMEAM(const arma::mat& vv);
   double forceMEAM(const arma::mat& vv, int tg);
+  double forceMEAMC();
   void forceMEAM(Config& cc);
   void forceEAM(Config& cc);
   void stressMEAM(Config& cc);
 
   // optimization
+  arma::mat encodev(const arma::mat& vv);
+  arma::mat encodev(const vector<double>& vv);
+  arma::mat decodev(const arma::mat& vv);
   void simAnneal();
   void simAnnealEAM();
   void randomize(vector<double>& vv, const int n, const vector<double>& v);
   int rescaleEMF(vector<double>& vv);
-  int rescaleEMF();
+  int rescaleEMF(arma::mat& vv);
   int rescaleRHO(vector<double>& vv);
   void shiftRHO(vector<double>& vv);
   void shiftEMF(double shift);
@@ -242,16 +253,235 @@ class pfHome {
   void loopBwth();
   void forceDis();
 
+  // MEAM
+ private:
+  int nelt;
+  double cutforce, cutforcesq;
+  vector<vector<double>> Ec_meam, re_meam;
+  vector<double> Omega_meam, Z_meam, A_meam;
+  vector<vector<double>> alpha_meam;
+  vector<double> rho0_meam;
+  vector<vector<double>> delta_meam;
+  vector<double> beta0_meam, beta1_meam, beta2_meam, beta3_meam;
+  vector<double> t0_meam, t1_meam, t2_meam, t3_meam, rho_ref_meam;
+  vector<int> ibar_meam, ielt_meam;
+  vector<vector<lattice_t>> lattce_meam;
+  vector<vector<int>> nn2_meam, zbl_meam, eltind;
+  vector<vector<double>> attrac_meam, repuls_meam;
+  vector<vector<vector<double>>> Cmin_meam, Cmax_meam;
+  vector<vector<double>> ebound_meam;
+
+  vector<vector<double>> phir, phirar, phirar1, phirar2, phirar3, phirar4,
+      phirar5, phirar6;
+  double rc_meam, delr_meam, gsmooth_factor;
+  int augt1, ialloy, mix_ref_t, emb_lin_neg, bkgd_dyn, erose_form;
+  int vind2D[3][3], vind3D[3][3][3];
+  int v2D[6], v3D[10];
+
+  int nr, nrar;
+  double dr, rdrar;
+
+ public:
+  int errorflag;
+  vector<double> rho, rho0, rho1, rho2, rho3, frhop;
+  vector<double> gamma, dgamma1, dgamma2, dgamma3, arho2b;
+  vector<vector<double>> arho1, arho2, arho3, arho3b, t_ave, tsq_ave;
+
+ private:
+  static double fcut(const double xi);
+  static double dfcut(const double xi, double& dfc);
+  static double dCfunc(const double rij2, const double rik2, const double rjk2);
+  static void dCfunc2(const double rij2, const double rik2, const double rjk2,
+                      double& dCikj1, double& dCikj2);
+
+  double G_gam(const double gamma, const int ibar, int& errorflag) const;
+  double dG_gam(const double gamma, const int ibar, double& dG) const;
+  static double zbl(const double r, const int z1, const int z2);
+  static double erose(const double r, const double re, const double alpha,
+                      const double Ec, const double repuls, const double attrac,
+                      const int form);
+
+  static void get_shpfcn(const lattice_t latt, double (&s)[3]);
+  static int get_Zij(const lattice_t latt);
+  static int get_Zij2(const lattice_t latt, const double cmin,
+                      const double cmax, double& a, double& S);
+
+ protected:
+  void meam_checkindex(int, int, int, int*, int*);
+  // void getscreen(int i, double* scrfcn, double* dscrfcn, double* fcpair,
+  //                double** x, int numneigh, int* firstneigh, int
+  //                numneigh_full, int* firstneigh_full, int ntype, int* type,
+  //                int* fmap);
+  // void getscreen(pfAtom& aa);
+  void getscreen(Config& cc);
+  // void calc_rho1(int i, int ntype, int* type, int* fmap, double** x,
+  //                int numneigh, int* firstneigh, double* scrfcn, double*
+  //                fcpair);
+  void calc_rho1(Config& cc);
+
+  void alloyparams();
+  void compute_pair_meam();
+  void compute_pair_meam(int debug);
+  double phi_meam(double, int, int);
+  void compute_reference_density();
+  void get_tavref(double*, double*, double*, double*, double*, double*, double,
+                  double, double, double, double, double, double, int, int,
+                  lattice_t);
+  void get_sijk(double, int, int, int, double*);
+  void get_densref(double, int, int, double*, double*, double*, double*,
+                   double*, double*, double*, double*);
+  void interpolate_meam(int);
+  double compute_phi(double, int, int);
+  // void meam_setup_global(int nelt, lattice_t* lat, double* z, int* ielement,
+  //                        double* atwt, double* alpha, double* b0, double* b1,
+  //                        double* b2, double* b3, double* alat, double* esub,
+  //                        double* asub, double* t0, double* t1, double* t2,
+  //                        double* t3, double* rozero, int* ibar);
+  void meam_setup_global();
+
+  void meam_setup_param(int which, double value, int nindex,
+                        int* index /*index(3)*/, int* errorflag);
+
+  // void meam_setup_done(double* cutmax);
+  void meam_setup_done();
+  // void meam_dens_setup(int atom_nmax, int nall, int n_neigh);
+  void meam_dens_setup(Config& cc);
+  // void meam_dens_init(int i, int ntype, int* type, int* fmap, double** x,
+  //                     int numneigh, int* firstneigh, int numneigh_full,
+  //                     int* firstneigh_full, int fnoffset);
+  void meam_dens_init(Config& cc);
+  // void meam_dens_final(int nlocal, int eflag_either, int eflag_global,
+  //                      int eflag_atom, double* eng_vdwl, double* eatom,
+  //                      int ntype, int* type, int* fmap, int& errorflag);
+  void meam_dens_final(Config& cc);
+  // void meam_force(int i, int eflag_either, int eflag_global, int eflag_atom,
+  //                 int vflag_atom, double* eng_vdwl, double* eatom, int ntype,
+  //                 int* type, int* fmap, double** x, int numneigh,
+  //                 int* firstneigh, int numneigh_full, int* firstneigh_full,
+  //                 int fnoffset, double** f, double** vatom);
+  void meam_force(Config& cc);
+
   // debug
   void testSpline();
   friend class pfLMPdrv;
   friend class pfOptimizer;
 };
 
+// [0, 10] -> [a, b]  y = a + (b-a) × (1 – cos(π × x / 10)) / 2
+inline arma::mat pfHome::decodev(const arma::mat& vv) {
+  arma::mat rs(nvars, 1);
+  for (int i = 0; i < nvars; i++)
+    rs[i] = lob[i] + deb[i] * 0.5 * (1. - cos(PI * 0.1 * vv[i]));
+  return rs;
+}
+
+// [a, b] -> [0, 10]
+inline arma::mat pfHome::encodev(const arma::mat& vv) {
+  arma::mat rs(nvars, 1);
+  for (int i = 0; i < nvars; i++)
+    rs[i] = 10 * acos(1. - 2. / deb[i] * (vv[i] - lob[i])) * INVPI;
+  return rs;
+}
+
+inline arma::mat pfHome::encodev(const vector<double>& vv) {
+  arma::mat rs(nvars, 1);
+  for (int i = 0; i < nvars; i++)
+    rs[i] = 10 * acos(1. - 2. / deb[i] * (vv[i] - lob[i])) * INVPI;
+  return rs;
+}
+
 class pfUtil {
  public:
   void split(const string& s, const char* delim, vector<string>& v);
   friend class pfHome;
 };
+
+/* cutoff function (16) */
+inline double pfHome::fcut(const double xi) {
+  double a;
+  if (xi >= 1.0)
+    return 1.0;
+  else if (xi <= 0.0)
+    return 0.0;
+  else {
+    a = 1.0 - xi;
+    a *= a;
+    a *= a;
+    a = 1.0 - a;
+    return a * a;
+  }
+}
+
+/* cutoff function and its derivative (16) */
+inline double pfHome::dfcut(const double xi, double& dfc) {
+  double a, a3, a4, a1m4;
+  if (xi >= 1.0) {
+    dfc = 0.0;
+    return 1.0;
+  } else if (xi <= 0.0) {
+    dfc = 0.0;
+    return 0.0;
+  } else {
+    a = 1.0 - xi;
+    a3 = a * a * a;
+    a4 = a * a3;
+    a1m4 = 1.0 - a4;
+
+    dfc = 8 * a1m4 * a3;
+    return a1m4 * a1m4;
+  }
+}
+
+//-----------------------------------------------------------------------------
+// Derivative of Cikj w.r.t. rij
+//     Inputs: rij,rij2,rik2,rjk2
+//
+inline double pfHome::dCfunc(const double rij2, const double rik2,
+                             const double rjk2) {
+  double rij4, a, asq, b, denom;
+
+  rij4 = rij2 * rij2;
+  a = rik2 - rjk2;
+  b = rik2 + rjk2;
+  asq = a * a;
+  denom = rij4 - asq;
+  denom = denom * denom;
+  return -4 * (-2 * rij2 * asq + rij4 * b + asq * b) / denom;
+}
+
+//-----------------------------------------------------------------------------
+// Derivative of Cikj w.r.t. rik and rjk
+//     Inputs: rij,rij2,rik2,rjk2
+//
+inline void pfHome::dCfunc2(const double rij2, const double rik2,
+                            const double rjk2, double& dCikj1, double& dCikj2) {
+  double rij4, rik4, rjk4, a, denom;
+
+  rij4 = rij2 * rij2;
+  rik4 = rik2 * rik2;
+  rjk4 = rjk2 * rjk2;
+  a = rik2 - rjk2;
+  denom = rij4 - a * a;
+  denom = denom * denom;
+  dCikj1 = 4 * rij2 *
+           (rij4 + rik4 + 2 * rik2 * rjk2 - 3 * rjk4 - 2 * rij2 * a) / denom;
+  dCikj2 = 4 * rij2 *
+           (rij4 - 3 * rik4 + 2 * rik2 * rjk2 + rjk4 + 2 * rij2 * a) / denom;
+}
+
+static inline bool iszero(const double f) { return fabs(f) < 1e-20; }
+
+template <typename TYPE>
+static inline void setall2d(vector<vector<TYPE>>& vv, const TYPE val) {
+  for (auto& v1 : vv)
+    for (auto& v2 : v1) v2 = val;
+}
+
+template <typename TYPE>
+static inline void setall3d(vector<vector<vector<TYPE>>> vv, const TYPE val) {
+  for (auto& v1 : vv)
+    for (auto& v2 : v1)
+      for (auto& v3 : v2) v3 = val;
+}
 
 #endif  // pfHome_H_

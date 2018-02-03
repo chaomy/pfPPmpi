@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 17:31:26
+ * @Last Modified time: 2018-01-24 13:18:39
  */
 
 #include "pfHome.h"
@@ -91,6 +91,7 @@ void pfHome::readPot() {
       ini.push_back(ff.yy[j]);
       lob.push_back(lol[i]);
       hib.push_back(hil[i]);
+      deb.push_back(hil[i] - lol[i]);
       nvars++;
     }
     endps.push_back(nvars);

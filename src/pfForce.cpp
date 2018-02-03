@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 16:26:09
+ * @Last Modified time: 2018-02-01 00:18:36
  */
 
 #include "pfHome.h"
@@ -30,7 +30,7 @@ void pfHome::run(int argc, char *argv[]) {
   if (!sparams["opt"].compare("lmp"))
     lmpdrv->calPhy();
   else if (!sparams["opt"].compare("make") || !sparams["opt"].compare("err"))
-    calErr();  // buildD03("d03", 7.400, 0.005);
+    setupMEAMC();  // calErr(1);  // buildD03("d03", 7.400, 0.005);
   else if (!sparams["opt"].compare("anneal"))
     simAnnealEAM();
   else if (!sparams["opt"].compare("evo"))
@@ -55,6 +55,12 @@ void pfHome::run(int argc, char *argv[]) {
   }
 }
 
+void pfHome::setupMEAMC() {
+  meam_setup_global();
+  meam_setup_done();
+  forceMEAMC();
+}
+
 void pfHome::calErr() {  // make potential
   arma::mat mm(nvars, 1, arma::fill::randu);
   for (int i = 0; i < nvars; i++) mm[i] = ini[i];
@@ -65,6 +71,13 @@ void pfHome::calErr() {  // make potential
     (this->*calobj[sparams["ptype"]])(mm, EXT);
     (this->*write[sparams["ptype"]])();
   }
+  // check the encoding
+  // arma::mat v1 = encodev(mm);
+  // arma::mat v2 = decodev(v1);
+  // if (cmm.rank() == PFROOT)
+  //   for (int i = 0; i < nvars; i++)
+  //     cout << "i = " << i << " " << v1[i] << " " << v2[i] << " "
+  //          << mm[i] - v2[i] << endl;
 }
 
 void pfHome::nloptGlobal() {

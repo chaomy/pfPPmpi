@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-16 13:35:16
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-16 15:04:09
+ * @Last Modified time: 2018-01-29 23:08:18
  */
 
 #include "pfHome.h"
@@ -26,7 +26,6 @@ Config pfHome::buildD03(const double& la) {
   cc.bvx[X] = la, cc.bvx[Y] = 0.0, cc.bvx[Z] = 0.0;
   cc.bvy[X] = 0.0, cc.bvy[Y] = la, cc.bvy[Z] = 0.0;
   cc.bvz[X] = 0.0, cc.bvz[Y] = 0.0, cc.bvz[Z] = la;
-
   int cn = 0;
   vector<vector<double>> bs({{0.0, 0.0, 0.0},
                              {0.0, 0.5, 0.5},
@@ -44,6 +43,7 @@ Config pfHome::buildD03(const double& la) {
                              {0.0, 0.5, 0.0},
                              {0.0, 0.0, 0.5},
                              {0.5, 0.5, 0.5}});
+
   cc.natomsv = vector<int>({12, 4});
   cc.nelemsv = vector<string>({"Mg", "Nd"});
   for (int ix : {0}) {

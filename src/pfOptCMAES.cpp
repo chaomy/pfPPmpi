@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 17:08:57
+ * @Last Modified time: 2018-01-24 12:38:36
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -27,8 +27,7 @@ double pfHome::testFunc(arma::mat& vc) {
 }
 
 void pfHome::cntcmaes() {
-  arma::mat iterate(nvars, 1, arma::fill::randu);
-  for (int i = 0; i < nvars; i++) iterate[i] = ini[i];
+  arma::mat iterate = encodev(ini);  // [0, 10]
   (this->*calobj[sparams["ptype"]])(iterate, 1);
   if (cmm.rank() == PFROOT) {
     double cr = cmaes(iterate);
@@ -40,25 +39,12 @@ void pfHome::cntcmaes() {
 }
 
 void pfHome::loopcmaes() {
-  vector<double> hbd, lbd;
-  if (sparams["ptype"] == "MEAM") {
-    hbd = vector<double>({1.0, 1.0, 0.0, 1.0, 1.0});
-    lbd = vector<double>({-0.5, -0.5, -10.0, -0.5, -0.5});
-  } else {
-    hbd = vector<double>({2.0, 2.0, -5.0});
-    lbd = vector<double>({-1.0, -1.0, -15.0});
-  }
-
   arma::mat iterate(nvars, 1, arma::fill::randu);
   double cr = 1e30, op = 1e30;
   for (int i = 0; i < 1; i++) {
-    int cn = 0;
-    for (int k = 0; k < nfuncs; k++) {
-      int np = (k == PHI || k == RHO || k == MEAMF) ? funcs[k].npts - 1
-                                                    : funcs[k].npts;
-      for (int j = 0; j < np; j++)
-        iterate[cn++] = lbd[k] + randUniform() * (hbd[k] - lbd[k]);
-    }
+    for (int k = 0; k < nvars; k++)  // random
+      iterate[k] = lob[k] + randUniform() * (hib[k] - lob[k]);
+
     (this->*calobj[sparams["ptype"]])(iterate, 1);
     if (cmm.rank() == PFROOT) {
       op = (cr = cmaes(iterate)) < op ? cr : op;
@@ -93,10 +79,8 @@ double pfHome::cmaes(arma::mat& iterate) {
   // Step size control parameters.
   arma::vec sigma(3);
 
-  double upperBound, lowerBound;
-  lowerBound = -(upperBound = dparams["cmabnd"]);
-
-  sigma(0) = 0.3 * (upperBound - lowerBound);
+  double upperBound = 10., lowerBound = -10.;
+  sigma(0) = 0.1 * (upperBound - lowerBound);
 
   const double cs = (muEffective + 2) / (iterate.n_elem + muEffective + 5);
   const double ds =
@@ -130,7 +114,8 @@ double pfHome::cmaes(arma::mat& iterate) {
   arma::mat step = arma::zeros(iterate.n_rows, iterate.n_cols);
 
   // Calculate the first objective function.
-  double currentobj = (this->*calobj[sparams["ptype"]])(mps.slice(0), 1);
+  double currentobj =
+      (this->*calobj[sparams["ptype"]])(decodev(mps.slice(0)), 1);
   double overallobj = currentobj;
   double lastobj = 1e30;
 
@@ -166,7 +151,8 @@ double pfHome::cmaes(arma::mat& iterate) {
             arma::randn(iterate.n_rows, iterate.n_cols) * covLower;
       }
       pps.slice(idx(j)) = mps.slice(idx0) + sigma(idx0) * pStep.slice(idx(j));
-      pobj(idx(j)) = (this->*calobj[sparams["ptype"]])(pps.slice(idx(j)), 1);
+      pobj(idx(j)) =
+          (this->*calobj[sparams["ptype"]])(decodev(pps.slice(idx(j))), 1);
     }
 
     // Sort population.
@@ -177,7 +163,7 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     mps.slice(idx1) = mps.slice(idx0) + sigma(idx0) * step;
 
-    currentobj = (this->*calobj[sparams["ptype"]])(mps.slice(idx1), 1);
+    currentobj = (this->*calobj[sparams["ptype"]])(decodev(mps.slice(idx1)), 1);
 
     // Update best parameters.
     if (currentobj < overallobj) {
@@ -255,11 +241,11 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     // Output current objective function.
     cout << "CMA-ES: iteration " << i << ", objective " << overallobj << " "
-         << error["frc"] << " " << error["punish"] << " cs " << sigma(idx1)
-         << " " << ominrho << " " << omaxrho << " " << funcs[EMF].xx.front()
-         << " " << funcs[EMF].xx.back() << " "
+         << error["frc"] << " " << error["punish"] << " " << error["shift"]
+         << " cs " << sigma(idx1) << " " << ominrho << " " << omaxrho << " "
+         << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
          << (lastobj - overallobj) / lastobj << " " << configs[locstt].fitengy
-         << endl;
+         << " " << configs[locstt].engy << endl;
 
     if (std::isnan(overallobj) || std::isinf(overallobj)) {
       cout << "CMA-ES: converged to " << overallobj << "; "
@@ -274,9 +260,10 @@ double pfHome::cmaes(arma::mat& iterate) {
       return overallobj;
     }
 
-    if (i % iparams["resfreq"] == 1 && rescaleEMF()) {
+    if (i % iparams["resfreq"] == 1 && rescaleEMF(mps.slice(idx1))) {
       cout << "before rescale " << currentobj << endl;
-      currentobj = (this->*calobj[sparams["ptype"]])(mps.slice(idx1), 1);
+      currentobj =
+          (this->*calobj[sparams["ptype"]])(decodev(mps.slice(idx1)), 1);
       cout << "after rescale " << currentobj << endl;
       overallobj = currentobj;
     }

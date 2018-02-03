@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 17:31:50
+ * @Last Modified time: 2018-02-02 17:17:31
  */
 
 #include "pfHome.h"
@@ -19,6 +19,9 @@ void pfHome::bcdata() {
   /* funcstions */
   broadcast(cmm, nfuncs, PFROOT);
   broadcast(cmm, ini, PFROOT);
+  broadcast(cmm, lob, PFROOT);
+  broadcast(cmm, hib, PFROOT);
+  broadcast(cmm, deb, PFROOT);
   broadcast(cmm, startps, PFROOT);
   broadcast(cmm, endps, PFROOT);
 
@@ -43,6 +46,9 @@ void pfHome::bcdata() {
   rocut = funcs[PHI].xx.back();
   rhcut = funcs[RHO].xx.back();
 
+  // cutforce = rocut;
+  // cutforcesq = rocut * rocut;
+
   if (!sparams["ptype"].compare("MEAM")) {  // boundary
     funcs[MEAMF].s.set_boundary(tk::spline::second_deriv, 0.0,
                                 tk::spline::first_deriv, 0.0, true);
@@ -60,5 +66,3 @@ void pfHome::bcdata() {
   broadcast(cmm, nconfs, PFROOT);
   broadcast(cmm, configs, PFROOT);
 }
-
-// void pfHome::bfunc() {}
