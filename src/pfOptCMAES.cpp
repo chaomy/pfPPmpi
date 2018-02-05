@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 23:31:16
+ * @Last Modified time: 2018-02-05 02:38:16
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -21,6 +21,7 @@ using arma::randu;
 using arma::vec;
 using std::cout;
 using std::endl;
+using std::ofstream;
 using std::to_string;
 
 double pfHome::testFunc(arma::mat& vc) {
@@ -39,7 +40,7 @@ void pfHome::cntcmaes() {
 
 void pfHome::loopcmaes() {
   double cr = 1e30, op = 1e30;
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < 5; i++) {
     arma::mat iterate(nvars, 1, arma::fill::randu);
     for (int k = 0; k < nvars; k++)
       iterate[k] = lob[k] + randUniform() * deb[k];
@@ -47,16 +48,24 @@ void pfHome::loopcmaes() {
     if (cmm.rank() == PFROOT) {
       op = (cr = cmaes(iterate)) < op ? cr : op;
       (this->*write[sparams["ptype"]])();
-      std::rename("meam.tmp", ("meam.tmp." + to_string(i)).c_str());
-      std::rename("meam.param", ("meam.param." + to_string(i)).c_str());
+
+      std::ostringstream ss;
+      ss << std::setw(4) << std::setfill('0') << i;
+      std::rename("meam.tmp", ("meam.tmp." + ss.str()).c_str());
+      std::rename("meam.param", ("meam.param." + ss.str()).c_str());
+      std::rename("err.txt", ("err." + ss.str()).c_str());
+      std::rename("par.txt", ("par." + ss.str()).c_str());
+
       (this->*calobj[sparams["ptype"]])(iterate, EXT);
     }
   }
 }
 
 double pfHome::cmaes(arma::mat& iterate) {
-  int maxIt = 500;
-  double tolerance = 1e-9;
+  int maxIt = 5000;
+  double tolerance = 1e-10;
+  ofstream of1("err.txt", std::ofstream::out);
+  ofstream of2("par.txt", std::ofstream::out);
 
   // Population size.
   int lambda = (4 + std::round(3 * std::log(iterate.n_elem))) * 10;
@@ -262,20 +271,22 @@ double pfHome::cmaes(arma::mat& iterate) {
     // for meamc
     cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
          << error["frc"] << " " << error["phy"] << " cs " << sigma(idx1) << " "
-         << (lastobj - overallobj) / lastobj << " " << configs[locstt].fitengy
-         << " " << configs[locstt].engy << " " << rc_meam << endl;
+         << (lastobj - overallobj) / lastobj << " " << rc_meam << endl;
 
-    cout << std::setprecision(3) << alpha_meam[0][0] << " " << beta0_meam[0]
-         << " " << beta1_meam[0] << " " << beta2_meam[0] << " " << beta3_meam[0]
-         << " " << re_meam[0][0] * 2. / sqrt(3.) << " " << Ec_meam[0][0] << " "
-         << A_meam[0] << " "
-         << " " << t0_meam[0] << " " << t1_meam[0] << " " << t2_meam[0] << " "
-         << t3_meam[0] << endl;
+    if (i == 1 || error["phy"] < 30.0) {
+      of1 << i << " " << std::setprecision(4) << error["phy"] << " "
+          << lmpdrv->error["lat"] << " " << lmpdrv->exprs["c11"] << " "
+          << lmpdrv->exprs["c12"] << " " << lmpdrv->exprs["c44"] << " "
+          << lmpdrv->exprs["suf110"] << " " << exprs["suf100"] << " "
+          << lmpdrv->exprs["suf111"] << " " << exprs["bcc2fcc"] << " "
+          << lmpdrv->exprs["bcc2hcp"] << endl;
 
-    for (string ee : {"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
-                      "bcc2fcc", "bcc2hcp"})
-      cout << ee << std::setprecision(4) << " " << lmpdrv->exprs[ee] << " "
-           << lmpdrv->targs[ee] << " " << lmpdrv->error[ee] << endl;
+      of2 << i << " " << std::setprecision(4) << alpha_meam[0][0] << " "
+          << beta0_meam[0] << " " << beta1_meam[0] << " " << beta2_meam[0]
+          << " " << beta3_meam[0] << " " << re_meam[0][0] * 2. / sqrt(3.) << " "
+          << Ec_meam[0][0] << " " << A_meam[0] << " " << t0_meam[0] << " "
+          << t1_meam[0] << " " << t2_meam[0] << " " << t3_meam[0] << endl;
+    }
 
     if (std::isnan(overallobj) || std::isinf(overallobj)) {
       cout << "CMA-ES: converged to " << overallobj << "; "
@@ -284,7 +295,7 @@ double pfHome::cmaes(arma::mat& iterate) {
       return overallobj;
     }
 
-    if (std::abs(lastobj - overallobj) < tolerance && i > 50) {
+    if (std::abs(lastobj - overallobj) < tolerance && i > 100) {
       cout << "CMA-ES: minimized within tolerance " << tolerance << "; "
            << "terminating optimization." << std::endl;
       return overallobj;
@@ -300,5 +311,7 @@ double pfHome::cmaes(arma::mat& iterate) {
     lastobj = overallobj;
   }
 
+  of1.close();
+  of2.close();
   return overallobj;
 }

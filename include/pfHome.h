@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <boost/format.hpp>
 #include <boost/function.hpp>
 #include <chrono>
 #include <cstdlib>
