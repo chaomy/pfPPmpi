@@ -77,6 +77,12 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfPhySur.cpp \
 			   ./pfPhyD03.cpp \
 			   ./pfMPI.cpp  \
+			   ./pfAnaMEAM.cpp \
+			   ./pfAnaMEAMden.cpp \
+			   ./pfAnaMEAMsetup.cpp \
+			   ./pfAnaMEAMfuncs.cpp \
+			   ./pfAnaMEAMforce.cpp \
+			   ./pfMathSpecial.cpp \
 			   ./pfMain.cpp
 
 			   # ./pfForceMEAMtb.cpp  \
