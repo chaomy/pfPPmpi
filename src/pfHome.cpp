@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 21:12:36
+ * @Last Modified time: 2018-02-05 02:53:31
  */
 
 #include "pfHome.h"
@@ -86,7 +86,8 @@ pfHome::pfHome(int argc, char* argv[])
     sparams["tmpfile"] = string("dummy.tmp");
     sparams["parfile"] = string("dummy.param");
     sparams["cnffile"] = string("dummy.config");
-    sparams["potfile"] = string("dummy.pot");
+    // sparams["potfile"] = string("dummy.pot");
+    sparams["potfile"] = string("meam.lib");
     sparams["lmppot"] = string("dummy.lmp");
     sparams["meamlib"] = string("meam.tmp");
     sparams["meampar"] = string("meam.param");

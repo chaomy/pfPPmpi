@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 01:54:10
+ * @Last Modified time: 2018-02-05 02:53:35
  */
 
 #include "pfHome.h"
@@ -17,7 +17,7 @@ using std::vector;
 void pfHome::readMEAMC() {
   ifstream fid;
   pfUtil pfu;
-  fid.open("meam.lib");
+  fid.open(sparams["potfile"].c_str());
   if (!fid.is_open()) cerr << "error opening " + sparams["potfile"] << endl;
   string buff;
   vector<string> segs(1, " ");

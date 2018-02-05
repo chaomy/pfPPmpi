@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 02:38:16
+ * @Last Modified time: 2018-02-05 02:51:56
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -182,6 +182,10 @@ double pfHome::cmaes(arma::mat& iterate) {
       lmpdrv->calLatticeHCP();
       lmpdrv->calElastic();
       lmpdrv->calSurface();
+      // do some clean
+      remove("no");
+      remove("log.lammps");
+      remove("restart.equil");
       lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
       lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
       vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100",
