@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 02:53:35
+ * @Last Modified time: 2018-02-05 13:32:56
  */
 
 #include "pfHome.h"
@@ -73,10 +73,13 @@ void pfHome::readMEAMC() {
     segs.clear();
     getline(fid, buff);
     pfu.split(buff, " ", segs);
-    //  t0 = 1, t1, t2, t3
+    //   t1, t2, t3  (t0 = 1)
     for (int i : {1, 2, 3}) ini.push_back(stof(segs[i]));
     t0.push_back(stof(segs[0]));
-    ini.push_back(rc_meam);  // add rc_meam to variables
+    // rc
+    ini.push_back(rc_meam);
+    // Cmin_meam
+    ini.push_back(Cmin_meam[0][0][0]);
     rozero.push_back(stof(segs[4]));
     ibar.push_back(stoi(segs[5]));
   }

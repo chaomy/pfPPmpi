@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 02:51:56
+ * @Last Modified time: 2018-02-05 13:48:00
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -277,20 +277,22 @@ double pfHome::cmaes(arma::mat& iterate) {
          << error["frc"] << " " << error["phy"] << " cs " << sigma(idx1) << " "
          << (lastobj - overallobj) / lastobj << " " << rc_meam << endl;
 
-    if (i == 1 || error["phy"] < 30.0) {
-      of1 << i << " " << std::setprecision(4) << error["phy"] << " "
-          << lmpdrv->error["lat"] << " " << lmpdrv->exprs["c11"] << " "
-          << lmpdrv->exprs["c12"] << " " << lmpdrv->exprs["c44"] << " "
-          << lmpdrv->exprs["suf110"] << " " << exprs["suf100"] << " "
-          << lmpdrv->exprs["suf111"] << " " << exprs["bcc2fcc"] << " "
-          << lmpdrv->exprs["bcc2hcp"] << endl;
+    // || error["phy"] < 30.0
+    // if (i == 1) {
+    of1 << i << " " << std::setprecision(4) << error["phy"] << " "
+        << lmpdrv->exprs["lat"] << " " << lmpdrv->exprs["c11"] << " "
+        << lmpdrv->exprs["c12"] << " " << lmpdrv->exprs["c44"] << " "
+        << lmpdrv->exprs["suf110"] << " " << lmpdrv->exprs["suf100"] << " "
+        << lmpdrv->exprs["suf111"] << " " << lmpdrv->exprs["bcc2fcc"] << " "
+        << lmpdrv->exprs["bcc2hcp"] << endl;
 
-      of2 << i << " " << std::setprecision(4) << alpha_meam[0][0] << " "
-          << beta0_meam[0] << " " << beta1_meam[0] << " " << beta2_meam[0]
-          << " " << beta3_meam[0] << " " << re_meam[0][0] * 2. / sqrt(3.) << " "
-          << Ec_meam[0][0] << " " << A_meam[0] << " " << t0_meam[0] << " "
-          << t1_meam[0] << " " << t2_meam[0] << " " << t3_meam[0] << endl;
-    }
+    of2 << i << " " << std::setprecision(4) << alpha_meam[0][0] << " "
+        << beta0_meam[0] << " " << beta1_meam[0] << " " << beta2_meam[0] << " "
+        << beta3_meam[0] << " " << re_meam[0][0] * 2. / sqrt(3.) << " "
+        << Ec_meam[0][0] << " " << A_meam[0] << " " << t0_meam[0] << " "
+        << t1_meam[0] << " " << t2_meam[0] << " " << t3_meam[0] << " "
+        << rc_meam << " " << Cmin_meam[0][0][0] << endl;
+    // }
 
     if (std::isnan(overallobj) || std::isinf(overallobj)) {
       cout << "CMA-ES: converged to " << overallobj << "; "
