@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-29 23:45:39
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-02 23:26:28
+ * @Last Modified time: 2018-02-04 01:09:04
  */
 
 #include "pfHome.h"
@@ -280,7 +280,6 @@ void pfHome::meam_dens_final(Config& cc) {
   double B, denom, rho_bkgd;
 
   //     Complete the calculation of density
-  cc.fitengy = 0.0;
   for (int ii = 0; ii < cc.natoms; ii++) {
     pfAtom& atm = cc.atoms[ii];
     int i = atm.id;

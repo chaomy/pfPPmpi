@@ -30,14 +30,13 @@ using std::vector;
 namespace mpi = boost::mpi;
 typedef enum { FCC, BCC, HCP, DAM, DIA, B1, C11, L12, B2 } lattice_t;
 
-class pfLMPdrv;
 class pfOptimizer;
-
 class pfHome {
- private:
+ public:
   mpi::environment env;
   mpi::communicator cmm;
 
+ private:
   int ftn;  // number of atoms used for fitting
   int tln;  // total number of atoms
   int chid;
@@ -66,6 +65,17 @@ class pfHome {
   unordered_map<string, double> dparams;
   unordered_map<string, int> iparams;
   unordered_map<string, string> sparams;
+  unordered_map<string, vector<double>> meamparms;
+  vector<string> elems;     //  element name
+  vector<lattice_t> lattp;  //  FCC, BCC, HCP, DAM, DIA, B1, C11, L12, B2
+  vector<int> cnn1;         //  num near neighbors
+  vector<double> t0;        //  1
+  vector<int> ielement;     //  1
+  vector<int> ibar;         //  3
+  vector<double> rozero;
+  vector<string> latticemp;
+  vector<double> atwt;
+  vector<double> alat;
 
   /* tests */
   Config ubcc;  // primitive bcc
@@ -89,6 +99,7 @@ class pfHome {
 
   vector<int> startps;
   vector<int> endps;
+  class pfLMPdrv;
   pfLMPdrv* lmpdrv;
   pfOptimizer* optdrv;
   Melem mele;
@@ -117,7 +128,7 @@ class pfHome {
   void initParam();
   void initTargs();
 
-  void setupMEAMC();  // setup meam params
+  // void setupMEAMC();  // setup meam params
   void wrapAtomPos(Config& cc);
   void initBox(Config& cc);
   void initNeighs();
@@ -164,7 +175,8 @@ class pfHome {
   double forceEAM(const arma::mat& vv, int tg);
   double forceMEAM(const arma::mat& vv);
   double forceMEAM(const arma::mat& vv, int tg);
-  double forceMEAMC();
+  double forceMEAMC(const arma::mat& vv, int tg);
+  void forceMEAMC(Config& cc);
   void forceMEAM(Config& cc);
   void forceEAM(Config& cc);
   void stressMEAM(Config& cc);
@@ -173,9 +185,13 @@ class pfHome {
   arma::mat encodev(const arma::mat& vv);
   arma::mat encodev(const vector<double>& vv);
   arma::mat decodev(const arma::mat& vv);
+  vector<double> decodestdv(const vector<double>& vv);
+  vector<double> encodestdv(const vector<double>& vv);
   void simAnneal();
-  void simAnnealEAM();
+  void simAnnealSpline();
   void randomize(vector<double>& vv, const int n, const vector<double>& v);
+  void randomizeSpline(vector<double>& vv, const int n,
+                       const vector<double>& v);
   int rescaleEMF(vector<double>& vv);
   int rescaleEMF(arma::mat& vv);
   int rescaleRHO(vector<double>& vv);
@@ -206,6 +222,7 @@ class pfHome {
   // inputs
   void readConfig();
   void readPot();
+  void readMEAMC();
   void readParam();
   void readLmpMEAM();
 
@@ -217,6 +234,7 @@ class pfHome {
   void writeLMPS(const vector<double>& vv);
   void writeMEAM();
   void writePOSCAR(const Config& cc, string fnm = "POSCAR.vasp");
+  void writeMEAMC();
 
   // utils
   void outMkdir(string mdir);
@@ -308,17 +326,8 @@ class pfHome {
 
  protected:
   void meam_checkindex(int, int, int, int*, int*);
-  // void getscreen(int i, double* scrfcn, double* dscrfcn, double* fcpair,
-  //                double** x, int numneigh, int* firstneigh, int
-  //                numneigh_full, int* firstneigh_full, int ntype, int* type,
-  //                int* fmap);
-  // void getscreen(pfAtom& aa);
   void getscreen(Config& cc);
-  // void calc_rho1(int i, int ntype, int* type, int* fmap, double** x,
-  //                int numneigh, int* firstneigh, double* scrfcn, double*
-  //                fcpair);
   void calc_rho1(Config& cc);
-
   void alloyparams();
   void compute_pair_meam();
   void compute_pair_meam(int debug);
@@ -332,38 +341,22 @@ class pfHome {
                    double*, double*, double*, double*);
   void interpolate_meam(int);
   double compute_phi(double, int, int);
-  // void meam_setup_global(int nelt, lattice_t* lat, double* z, int* ielement,
-  //                        double* atwt, double* alpha, double* b0, double* b1,
-  //                        double* b2, double* b3, double* alat, double* esub,
-  //                        double* asub, double* t0, double* t1, double* t2,
-  //                        double* t3, double* rozero, int* ibar);
-  void meam_setup_global();
 
+  void meam_setup_global();
+  void meam_setup_globalfixed();
+  void meam_setup_global(const vector<double>& vv);
+  void meam_setup_global(const arma::mat& vv);
   void meam_setup_param(int which, double value, int nindex,
                         int* index /*index(3)*/, int* errorflag);
 
-  // void meam_setup_done(double* cutmax);
   void meam_setup_done();
-  // void meam_dens_setup(int atom_nmax, int nall, int n_neigh);
   void meam_dens_setup(Config& cc);
-  // void meam_dens_init(int i, int ntype, int* type, int* fmap, double** x,
-  //                     int numneigh, int* firstneigh, int numneigh_full,
-  //                     int* firstneigh_full, int fnoffset);
   void meam_dens_init(Config& cc);
-  // void meam_dens_final(int nlocal, int eflag_either, int eflag_global,
-  //                      int eflag_atom, double* eng_vdwl, double* eatom,
-  //                      int ntype, int* type, int* fmap, int& errorflag);
   void meam_dens_final(Config& cc);
-  // void meam_force(int i, int eflag_either, int eflag_global, int eflag_atom,
-  //                 int vflag_atom, double* eng_vdwl, double* eatom, int ntype,
-  //                 int* type, int* fmap, double** x, int numneigh,
-  //                 int* firstneigh, int numneigh_full, int* firstneigh_full,
-  //                 int fnoffset, double** f, double** vatom);
   void meam_force(Config& cc);
 
   // debug
   void testSpline();
-  friend class pfLMPdrv;
   friend class pfOptimizer;
 };
 
@@ -385,6 +378,22 @@ inline arma::mat pfHome::encodev(const arma::mat& vv) {
 
 inline arma::mat pfHome::encodev(const vector<double>& vv) {
   arma::mat rs(nvars, 1);
+  for (int i = 0; i < nvars; i++)
+    rs[i] = 10 * acos(1. - 2. / deb[i] * (vv[i] - lob[i])) * INVPI;
+  return rs;
+}
+
+// [0, 10] -> [a, b]  y = a + (b-a) × (1 – cos(π × x / 10)) / 2
+inline vector<double> pfHome::decodestdv(const vector<double>& vv) {
+  vector<double> rs(vv.size());
+  for (int i = 0; i < nvars; i++)
+    rs[i] = lob[i] + deb[i] * 0.5 * (1. - cos(PI * 0.1 * vv[i]));
+  return rs;
+}
+
+// [a, b] -> [0, 10]
+inline vector<double> pfHome::encodestdv(const vector<double>& vv) {
+  vector<double> rs(vv.size());
   for (int i = 0; i < nvars; i++)
     rs[i] = 10 * acos(1. - 2. / deb[i] * (vv[i] - lob[i])) * INVPI;
   return rs;

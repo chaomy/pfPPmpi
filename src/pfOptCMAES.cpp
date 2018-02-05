@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-24 12:38:36
+ * @Last Modified time: 2018-02-04 18:14:52
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -12,6 +12,7 @@
  */
 
 #include "pfHome.h"
+#include "pfLmpDrv.h"
 
 using arma::accu;
 using arma::linspace;
@@ -30,35 +31,31 @@ void pfHome::cntcmaes() {
   arma::mat iterate = encodev(ini);  // [0, 10]
   (this->*calobj[sparams["ptype"]])(iterate, 1);
   if (cmm.rank() == PFROOT) {
-    double cr = cmaes(iterate);
-    writePot();
-    sparams["lmpfile"] = "dummy." + sparams["ptype"];
-    (this->*write[sparams["ptype"]])();
+    cmaes(iterate);
     (this->*calobj[sparams["ptype"]])(iterate, EXT);
+    (this->*write[sparams["ptype"]])();
   }
 }
 
 void pfHome::loopcmaes() {
-  arma::mat iterate(nvars, 1, arma::fill::randu);
   double cr = 1e30, op = 1e30;
   for (int i = 0; i < 1; i++) {
-    for (int k = 0; k < nvars; k++)  // random
-      iterate[k] = lob[k] + randUniform() * (hib[k] - lob[k]);
-
+    arma::mat iterate(nvars, 1, arma::fill::randu);
+    for (int k = 0; k < nvars; k++) iterate[k] = lob[k] + iterate[k] * deb[k];
     (this->*calobj[sparams["ptype"]])(iterate, 1);
     if (cmm.rank() == PFROOT) {
       op = (cr = cmaes(iterate)) < op ? cr : op;
-      writePot("dummy.tmp." + to_string(i) + "_" + to_string(cr));
-      sparams["lmpfile"] = "dummy." + sparams["ptype"] + "." + to_string(i);
-      (this->*write[sparams["ptype"]])();
+      string dst(sparams["meamlib"] + "." + to_string(i));
+      std::rename("meam.tmp", dst.c_str());
+      std::rename("meam.param", ("meam.param." + to_string(i)).c_str());
       (this->*calobj[sparams["ptype"]])(iterate, EXT);
     }
   }
 }
 
 double pfHome::cmaes(arma::mat& iterate) {
-  int maxIt = 50000;
-  double tolerance = 1e-18;
+  int maxIt = 10;
+  double tolerance = 1e-8;
 
   // Population size.
   int lambda = (4 + std::round(3 * std::log(iterate.n_elem))) * 10;
@@ -91,8 +88,7 @@ double pfHome::cmaes(arma::mat& iterate) {
       std::sqrt(iterate.n_elem) * (1.0 - 1.0 / (4.0 * iterate.n_elem) +
                                    1.0 / (21 * std::pow(iterate.n_elem, 2)));
 
-  // Covariance update parameters.
-  // Cumulation for distribution.
+  // Covariance update parameters Cumulation for distribution.
   const double cc = (4 + muEffective / iterate.n_elem) /
                     (4 + iterate.n_elem + 2 * muEffective / iterate.n_elem);
   const double h = (1.4 + 2.0 / (iterate.n_elem + 1.0)) * enn;
@@ -165,13 +161,23 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     currentobj = (this->*calobj[sparams["ptype"]])(decodev(mps.slice(idx1)), 1);
 
-    // Update best parameters.
-    if (currentobj < overallobj) {
+    if (currentobj < overallobj) {  // Update best parameters.
       overallobj = currentobj;
       iterate = mps.slice(idx1);
-      // output
-      writePot("dummy.tmp");
+
+      // cal physics
       (this->*write[sparams["ptype"]])();
+      // vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100",
+      //                    "suf111", "bcc2fcc", "bcc2hcp"});
+      lmpdrv->calLatticeBCC();
+      // lmpdrv->calLatticeFCC();
+      // lmpdrv->calLatticeHCP();
+      // lmpdrv->calElastic();
+      // lmpdrv->calSurface();
+      // lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] -
+      // lmpdrv->exprs["ebcc"]; lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"]
+      // - lmpdrv->exprs["ebcc"]; for (string ee : aa) error["phy"] += 500 *
+      // relerr(exprs[ee], targs[ee]);
     }
 
     // Update Step Size.
@@ -240,12 +246,25 @@ double pfHome::cmaes(arma::mat& iterate) {
     }
 
     // Output current objective function.
-    cout << "CMA-ES: iteration " << i << ", objective " << overallobj << " "
-         << error["frc"] << " " << error["punish"] << " " << error["shift"]
-         << " cs " << sigma(idx1) << " " << ominrho << " " << omaxrho << " "
-         << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
+    // for spline
+    // cout << "CMA-ES: iteration " << i << ", objective " << overallobj << " "
+    //      << error["frc"] << " " << error["punish"] << " " << error["shift"]
+    //      << " cs " << sigma(idx1) << " " << ominrho << " " << omaxrho << " "
+    //      << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
+    //      << (lastobj - overallobj) / lastobj << " " <<
+    //      configs[locstt].fitengy
+    //      << " " << configs[locstt].engy << endl;
+
+    // for meamc
+    cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
+         << error["frc"] << " cs " << sigma(idx1) << " "
          << (lastobj - overallobj) / lastobj << " " << configs[locstt].fitengy
-         << " " << configs[locstt].engy << endl;
+         << " " << configs[locstt].engy << " " << rc_meam << endl;
+
+    for (string ee : {"lat"})
+      cout << ee << " " << lmpdrv->exprs[ee] << " " << lmpdrv->targs[ee]
+           << endl;
+    // "bcc2fcc", "bcc2hcp", "c11", "c12", "c44", "suf110"})
 
     if (std::isnan(overallobj) || std::isinf(overallobj)) {
       cout << "CMA-ES: converged to " << overallobj << "; "
@@ -254,19 +273,19 @@ double pfHome::cmaes(arma::mat& iterate) {
       return overallobj;
     }
 
-    if (std::abs(lastobj - overallobj) < tolerance && i > 5000) {
+    if (std::abs(lastobj - overallobj) < tolerance && i > 50) {
       cout << "CMA-ES: minimized within tolerance " << tolerance << "; "
            << "terminating optimization." << std::endl;
       return overallobj;
     }
 
-    if (i % iparams["resfreq"] == 1 && rescaleEMF(mps.slice(idx1))) {
-      cout << "before rescale " << currentobj << endl;
-      currentobj =
-          (this->*calobj[sparams["ptype"]])(decodev(mps.slice(idx1)), 1);
-      cout << "after rescale " << currentobj << endl;
-      overallobj = currentobj;
-    }
+    // if (i % iparams["resfreq"] == 1 && rescaleEMF(mps.slice(idx1))) {
+    //   cout << "before rescale " << currentobj << endl;
+    //   currentobj =
+    //       (this->*calobj[sparams["ptype"]])(decodev(mps.slice(idx1)), 1);
+    //   cout << "after rescale " << currentobj << endl;
+    //   overallobj = currentobj;
+    // }
     lastobj = overallobj;
   }
 

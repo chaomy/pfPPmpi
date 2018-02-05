@@ -2,12 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-11-23 09:40:32
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-11-23 11:56:37
+ * @Last Modified time: 2018-02-04 16:04:46
  */
 
 #include "pfLmpDrv.h"
 
-void pfLMPdrv::calVac() {
+void pfHome::pfLMPdrv::calVac() {
   char lmpcmds[100][MAXLEN];
   int i = 0;
 

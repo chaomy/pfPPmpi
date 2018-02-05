@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-24 13:26:53
+ * @Last Modified time: 2018-02-03 17:28:26
  */
 
 #include "pfHome.h"
@@ -35,7 +35,7 @@ double pfHome::forceEAM(const arma::mat& vv, int tg) {
 
     error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
-    double efrc = 0.0, epsf = 0.0;
+    double efrc = 0.0;
 
     int ls[] = {PHI, RHO};
     for (int it : ls) {
@@ -140,7 +140,7 @@ void pfHome::forceEAM(Config& cnf) {
   }  // ii
 
   for (pfAtom& atm : cnf.atoms) { /* atoms pairs densities */
-    double e0 = funcs[EMF].s(0.0);
+    // double e0 = funcs[EMF].s(0.0);
     for (Neigh& ngb : atm.neighs) {
       funcs[PHI].s.deriv(ngb.slots[PHI], ngb.shifts[PHI], ngb.phi, ngb.phig);
       cnf.phiengy += ngb.phi;

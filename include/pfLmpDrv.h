@@ -15,7 +15,7 @@ using namespace LAMMPS_NS;
 using std::unordered_map;
 using std::vector;
 
-class pfLMPdrv {
+class pfHome::pfLMPdrv {
  private:
   // commonly used
   char ETOTAL[CLEN] = "etotal";
@@ -39,12 +39,6 @@ class pfLMPdrv {
   LAMMPS* lmp = NULL;
   pfHome* pfhm = NULL;
 
-  unordered_map<string, string> sttag;
-  unordered_map<string, double> targs;
-  unordered_map<string, double> exprs;
-  unordered_map<string, double> weigh;
-  unordered_map<string, int> label;
-
   // itensile
   vector<vector<double>> bsm;
   unordered_map<string, vector<double>> iegyv;
@@ -55,6 +49,11 @@ class pfLMPdrv {
   unordered_map<string, vector<double>> lmpv;
 
  public:
+  unordered_map<string, string> sttag;
+  unordered_map<string, double> targs;
+  unordered_map<string, double> exprs;
+  unordered_map<string, double> weigh;
+  unordered_map<string, int> label;
   unordered_map<string, double> error;
   pfLMPdrv(int argc, char* argv[]);
   pfLMPdrv(int argc, char* argv[], pfHome* pt);

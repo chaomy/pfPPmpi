@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-02 14:35:01
+ * @Last Modified time: 2018-02-04 18:22:57
  */
 
 #include "pfHome.h"
@@ -48,7 +48,7 @@ pfHome::pfHome(int argc, char* argv[])
       Cmax_meam(MXEL, vector<vector<double>>(MXEL, vector<double>(MXEL, 2.8))),
       ebound_meam(MXEL,
                   vector<double>(MXEL, pow(2.8, 2) / (4.0 * (2.8 - 1.0)))),
-      rc_meam(6.0),
+      rc_meam(4.8),
       delr_meam(0.1),
       gsmooth_factor(99.0),
       augt1(0),
@@ -59,12 +59,19 @@ pfHome::pfHome(int argc, char* argv[])
       erose_form(2) {
   calfrc["MEAM"] = &pfHome::forceMEAM;
   calfrc["EAM"] = &pfHome::forceEAM;
+  calfrc["MEAMC"] = &pfHome::forceMEAMC;
+
   calobj["MEAM"] = &pfHome::forceMEAM;
   calobj["EAM"] = &pfHome::forceEAM;
+  calobj["MEAMC"] = &pfHome::forceMEAMC;
 
   write["MEAM"] = &pfHome::writeMEAM;
   write["EAM"] = &pfHome::writeLMPS;
   write["TMP"] = &pfHome::writePot;
+  write["MEAMC"] = &pfHome::writeMEAMC;
+
+  latticemp = vector<string>(
+      {"fcc", "bcc", "hcp", "dim", "dia", "b1", "c11", "l12", "b2"});
 
   if (cmm.rank() == PFROOT) {
     ftn = tln = 0;
@@ -81,6 +88,8 @@ pfHome::pfHome(int argc, char* argv[])
     sparams["cnffile"] = string("dummy.config");
     sparams["potfile"] = string("dummy.pot");
     sparams["lmppot"] = string("dummy.lmp");
+    sparams["meamlib"] = string("meam.tmp");
+    sparams["meampar"] = string("meam.param");
 
     lorho = 0.4, hirho = 1.0;
     gradRight[EMF] = 1, gradRight[MEAMG] = 1;
@@ -93,9 +102,12 @@ pfHome::pfHome(int argc, char* argv[])
   if (!sparams["ptype"].compare("MEAM")) {
     initNeighsFull();
     initAngles();
+  } else if (!sparams["ptype"].compare("MEAMC")) {
+    initNeighsFull();
   } else
     initNeighs();
-  // forceDis();
+
+  lmpdrv = new pfLMPdrv(argc, argv, this);
 
   int del = nconfs / cmm.size();
   locstt = del * cmm.rank();
@@ -104,7 +116,6 @@ pfHome::pfHome(int argc, char* argv[])
   (cmm.barrier)();  //  important!
   // temporarily close these functionalities
   // optdrv = new pfOptimizer(this);
-  // lmpdrv = new pfLMPdrv(argc, argv, this);
 };
 
 pfHome::~pfHome() {
@@ -115,12 +126,15 @@ pfHome::~pfHome() {
   configs.clear();
   startps.clear();
   if (lmpdrv) delete lmpdrv;
-  if (optdrv) delete optdrv;
+  // if (optdrv) delete optdrv;
 }
 
 void pfHome::pfInit() {
   initParam();
   initTargs();
   readConfig();
-  readPot();
+  if (!sparams["ptype"].compare("MEAMC"))
+    readMEAMC();
+  else
+    readPot();
 }

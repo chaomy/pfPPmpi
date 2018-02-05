@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-20 16:53:38
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-23 19:26:41
+ * @Last Modified time: 2018-02-04 09:46:52
  */
 
 #include "pfHome.h"
@@ -13,8 +13,9 @@ using std::endl;
 using std::ifstream;
 using std::vector;
 
-void pfHome::readConfig() { /* read atomic force file */
-  configs.clear();          // clear
+void pfHome::readConfig() {    /* read atomic force file */
+  double eb = -3.09477080931;  // Energy per atom shift -3.09477080931
+  configs.clear();             // clear
 
   ifstream fid;
   pfUtil pfu;
@@ -48,6 +49,7 @@ void pfHome::readConfig() { /* read atomic force file */
       sscanf(buff.c_str(), "%s %lf", tmp, &config.weigh);
     } else if (!segs[0].compare("#E")) {
       sscanf(buff.c_str(), "%s %lf", tmp, &config.engy);
+      config.engy -= eb;
     } else if (!segs[0].compare("#F")) {
       for (int i = 0; i < config.natoms; i++) {
         getline(fid, buff);

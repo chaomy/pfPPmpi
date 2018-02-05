@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-23 20:10:54
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-16 20:03:21
+ * @Last Modified time: 2018-02-04 10:27:20
  */
 
 #include "pfHome.h"
@@ -26,8 +26,8 @@ using std::endl;
 using std::string;
 using std::vector;
 
-void pfHome::randomize(vector<double>& vv, const int n,
-                       const vector<double>& v) {
+void pfHome::randomizeSpline(vector<double>& vv, const int n,
+                             const vector<double>& v) {
   const double width = fabs(randNormal());
   const double height = randNormal() * v[n];  // lower limit for step
 
@@ -52,17 +52,28 @@ void pfHome::randomize(vector<double>& vv, const int n,
   }    //  else
 }
 
-void pfHome::simAnnealEAM() {
-  int loopcnt = 0;
-  int loopagain = 1;
-  double T = dparams["temp"];
-  double err = forceEAM(ini);
-  double tmper = err, opter = err;
+void pfHome::randomize(vector<double>& vv, const int n,
+                       const vector<double>& v) {
+  const double width = fabs(randNormal());
+  const double height = randNormal() * v[n];  // lower limit for step
+  double w2 = 4.0 * width;                    // original verison 4.0 * width
+  for (int i = 0; i <= w2; i++) {
+    int j = n + i;
+    if (j < vv.size()) vv[j] += GAUSS(double(i) / width) * height;
+    j = n - i;
+    if (j >= 0) vv[j] += GAUSS(double(i) / width) * height;
+  }
+}
 
+void pfHome::simAnneal() {
+  int loopcnt = 0, loopagain = 1;
+  double T = dparams["temp"];
+  double err = (this->*calobj[sparams["ptype"]])(ini, 1);
+  double correntobj = err, overallobj = err;
   vector<double> v(nvars, dparams["istep"]);
   vector<int> naccs(nvars, 0);
-  vector<double> tmpvv = ini;
-  vector<double> optvv = ini;
+  vector<double> tmpvv = encodestdv(ini);
+  vector<double> optvv = encodestdv(ini);
   vector<double> errold(NEPS, err);
 
   while (loopcnt < iparams["kmax"] && loopagain) {
@@ -71,20 +82,20 @@ void pfHome::simAnnealEAM() {
         for (int h = 0; h < nvars; h++) {
           tmpvv = ini;
           randomize(tmpvv, h, v);
-          tmper = forceEAM(tmpvv);
+          correntobj = (this->*calobj[sparams["ptype"]])(decodestdv(tmpvv), 1);
 
-          if (tmper <= err) {
+          if (correntobj <= err) {
             ini = tmpvv;
-            err = tmper;
+            err = correntobj;
             naccs[h]++;
-            if (tmper < opter) {
+            if (correntobj < overallobj) {
               optvv = tmpvv;
-              opter = tmper;
-              writePot(optvv);
+              overallobj = correntobj;
+              (this->*write[sparams["ptype"]])();
             }
-          } else if (randUniform() < (exp((err - tmper) / T))) {
+          } else if (randUniform() < (exp((err - correntobj) / T))) {
             ini = tmpvv;
-            err = tmper;
+            err = correntobj;
             naccs[h]++;
           }
         }  // h
@@ -98,29 +109,15 @@ void pfHome::simAnnealEAM() {
         naccs[n] = 0;
       }
 
-      printf("%3d\t%f\t%3d\t%f\t%f\t%f\n", loopcnt, T, m + 1, error["frc"],
-             error["punish"], opter);
+      printf("%3d\t%f\t%3d\t%f\t\t%f\n", loopcnt, T, m + 1, error["frc"],
+             overallobj);
       fflush(stdout);
 
-      if (iparams["resfreq"] > 0 && (m + 1) % iparams["resfreq"] == 0) {
-        updaterho(ini);
-        writeLMPS(optvv);
-        // if (rescaleRHO(ini) == 1) {
-        //   printf("before rescale = %f\n", err);
-        //   err = forceEAM(ini);
-        //   printf("min = %f ; max = %f ; ave = %f \n", ominrho, omaxrho,
-        //          oaverho);
-        //   printf("after rescale = %f\n", err);
-        // }
-        //   if (rescaleEMF(ini) == 1) {
-        //     printf("before rescale = %f\n", err);
-        //     err = forceMEAM(ini);
-        //     printf("min = %f ; max = %f ; ave = %f \n", ominrho, omaxrho,
-        //            oaverho);
-        //     printf("after rescale = %f\n", err);
-        //   }
-      } else if ((m + 1) % 20 == 0)
-        updaterho(ini);
+      // if (iparams["resfreq"] > 0 && (m + 1) % iparams["resfreq"] == 0) {
+      //   updaterho(ini);
+      //   writeLMPS(optvv);
+      // } else if ((m + 1) % 20 == 0)
+      //   updaterho(ini);
     }  // temp
 
     T *= TEMPVAR;
@@ -138,15 +135,16 @@ void pfHome::simAnnealEAM() {
       }
     }
 
-    if (!loopagain && ((err - opter) > (EPS * err * 0.01))) {
+    if (!loopagain && ((err - overallobj) > (EPS * err * 0.01))) {
       ini = optvv;
-      err = opter;
+      err = overallobj;
       loopagain = 1;
     }
   }  // while
 
   ini = optvv;
-  // recorderr.push_back(opter);
+  // for growing variables
+  // recorderr.push_back(overallobj);
   // recordStage(scnt++);
 
   v.clear();
@@ -156,12 +154,12 @@ void pfHome::simAnnealEAM() {
   errold.clear();
 }
 
-void pfHome::simAnneal() {
+void pfHome::simAnnealSpline() {
   int loopcnt = 0;
   int loopagain = 1;
   double T = dparams["temp"];
   double err = forceMEAM(ini);
-  double tmper = err, opter = err;
+  double correntobj = err, overallobj = err;
 
   vector<double> v(nvars, dparams["istep"]);
   vector<int> naccs(nvars, 0);
@@ -175,20 +173,20 @@ void pfHome::simAnneal() {
         for (int h = 0; h < nvars; h++) {
           tmpvv = ini;
           randomize(tmpvv, h, v);
-          tmper = forceMEAM(tmpvv);
+          correntobj = forceMEAM(tmpvv);
 
-          if (tmper <= err) {
+          if (correntobj <= err) {
             ini = tmpvv;
-            err = tmper;
+            err = correntobj;
             naccs[h]++;
-            if (tmper < opter) {
+            if (correntobj < overallobj) {
               optvv = tmpvv;
-              opter = tmper;
+              overallobj = correntobj;
               writePot(optvv);
             }
-          } else if (randUniform() < (exp((err - tmper) / T))) {
+          } else if (randUniform() < (exp((err - correntobj) / T))) {
             ini = tmpvv;
-            err = tmper;
+            err = correntobj;
             naccs[h]++;
           }
         }  // h
@@ -203,8 +201,8 @@ void pfHome::simAnneal() {
       }
 
       printf("%3d\t%f\t%3d\t%f\t%f\t%f\t%f\n", loopcnt, T, m + 1, error["frc"],
-             error["lat"], error["ela"], opter);
-      // error["pv"], opter);
+             error["lat"], error["ela"], overallobj);
+      // error["pv"], overallobj);
       printf("%f %f %f %f\n", exprs["lat"], exprs["c11"], exprs["c12"],
              exprs["c44"]);
       // -mpcf["pv"][5].strs[0],
@@ -244,15 +242,15 @@ void pfHome::simAnneal() {
       }
     }
 
-    if (!loopagain && ((err - opter) > (EPS * err * 0.01))) {
+    if (!loopagain && ((err - overallobj) > (EPS * err * 0.01))) {
       ini = optvv;
-      err = opter;
+      err = overallobj;
       loopagain = 1;
     }
   }  // while
 
   ini = optvv;
-  // recorderr.push_back(opter);
+  // recorderr.push_back(overallobj);
   // recordStage(scnt++);
 
   v.clear();

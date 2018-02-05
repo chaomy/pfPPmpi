@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-01 00:18:36
+ * @Last Modified time: 2018-02-04 18:17:39
  */
 
 #include "pfHome.h"
@@ -27,12 +27,12 @@ void pfHome::increAnneal() {
 }
 
 void pfHome::run(int argc, char *argv[]) {
-  if (!sparams["opt"].compare("lmp"))
-    lmpdrv->calPhy();
-  else if (!sparams["opt"].compare("make") || !sparams["opt"].compare("err"))
-    setupMEAMC();  // calErr(1);  // buildD03("d03", 7.400, 0.005);
+  if (!sparams["opt"].compare("lmp")) {
+    if (cmm.rank() == PFROOT) lmpdrv->calPhy();
+  } else if (!sparams["opt"].compare("make") || !sparams["opt"].compare("err"))
+    calErr();
   else if (!sparams["opt"].compare("anneal"))
-    simAnnealEAM();
+    simAnneal();
   else if (!sparams["opt"].compare("evo"))
     diffEvo();
   else if (!sparams["opt"].compare("cmaes"))
@@ -45,6 +45,8 @@ void pfHome::run(int argc, char *argv[]) {
     nloptGlobal();
   else if (!sparams["opt"].compare("shift"))
     doShift();
+  else if (!sparams["opt"].compare("buildD03"))
+    buildD03("d03", 7.400, 0.005);
   else if (!sparams["opt"].compare("anlz")) {
     calErr();
     readLmpMEAM();
@@ -53,12 +55,6 @@ void pfHome::run(int argc, char *argv[]) {
     calPV();
     calSurf();
   }
-}
-
-void pfHome::setupMEAMC() {
-  meam_setup_global();
-  meam_setup_done();
-  forceMEAMC();
 }
 
 void pfHome::calErr() {  // make potential

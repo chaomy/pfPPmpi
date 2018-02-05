@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-24 13:18:39
+ * @Last Modified time: 2018-02-04 15:44:35
  */
 
 #include "pfHome.h"
@@ -14,8 +14,78 @@ using std::ifstream;
 using std::string;
 using std::vector;
 
-// read dummy.pot
-void pfHome::readPot() {
+void pfHome::readMEAMC() {
+  ifstream fid;
+  pfUtil pfu;
+  fid.open("meam.lib");
+  if (!fid.is_open()) cerr << "error opening " + sparams["potfile"] << endl;
+  string buff;
+  vector<string> segs(1, " ");
+  vector<string> tg;
+
+  for (int i = 0; i < 3; i++) {
+    getline(fid, buff);
+    segs.clear();
+    pfu.split(buff, " ", segs);
+    for (int j = 1; j < segs.size(); j++) tg.push_back(segs[j]);
+  }
+
+  ini.clear();
+  elems.clear();
+  cnn1.clear();
+  for (auto& ee : meamparms) ee.second.clear();
+  while (getline(fid, buff)) {
+    int cn = 0;
+    segs.clear();
+    pfu.split(buff, " ", segs);
+    cout << "buff is " << buff << " " << segs.size() << endl;
+    elems.push_back(segs[cn++]);
+    if (!segs[cn].compare("fcc"))
+      lattp.push_back(FCC);
+    else if (!segs[cn].compare("bcc"))
+      lattp.push_back(BCC);
+    else if (!segs[cn].compare("hcp"))
+      lattp.push_back(HCP);
+    else if (!segs[cn].compare("dam"))
+      lattp.push_back(DAM);
+    else if (!segs[cn].compare("dia"))
+      lattp.push_back(DIA);
+    else if (!segs[cn].compare("b1"))
+      lattp.push_back(B1);
+    else if (!segs[cn].compare("c11"))
+      lattp.push_back(C11);
+    else if (!segs[cn].compare("L12"))
+      lattp.push_back(L12);
+    else if (!segs[cn].compare("B2"))
+      lattp.push_back(B2);
+    cn++;
+
+    cnn1.push_back(stoi(segs[cn++]));
+    ielement.push_back(stoi(segs[cn++]));
+    atwt.push_back(stof(segs[cn++]));
+
+    segs.clear();
+    getline(fid, buff);
+    pfu.split(buff, " ", segs);
+    // alpha b0 b1 b2 b3 alat esub asub
+    for (int i : {0, 1, 2, 3, 4, 6, 7}) ini.push_back(stof(segs[i]));
+
+    alat.push_back(stof(segs[5]));
+    segs.clear();
+    getline(fid, buff);
+    pfu.split(buff, " ", segs);
+    // t1 t2 t3
+    for (int i : {1, 2, 3}) ini.push_back(stof(segs[i]));
+
+    ini.push_back(rc_meam);  // add rc_meam to variables
+    t0.push_back(1.);
+    rozero.push_back(stof(segs[4]));
+    ibar.push_back(stoi(segs[5]));
+  }
+  fid.close();
+}
+
+void pfHome::readPot() {  // read dummy.pot
   funcs.clear();
   ini.clear();
 
@@ -36,8 +106,6 @@ void pfHome::readPot() {
     pfu.split(buff, " ", segs);
     if (!segs[0].compare("#F"))
       sscanf(buff.c_str(), "%s %s %d", tmp, tmp, &nfuncs);
-    else if (!segs[0].compare("#T"))
-      sparams["ptype"] = segs[1];
     else if (!segs[0].compare("#G"))
       for (unsigned int i = 1; i < segs.size(); i++)
         bnds.push_back(stoi(segs[i]));

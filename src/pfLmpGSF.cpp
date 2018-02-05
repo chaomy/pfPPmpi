@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:40:55
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-12-16 21:20:57
+ * @Last Modified time: 2018-02-04 17:23:05
  */
 
 #include "pfLmpDrv.h"
@@ -12,7 +12,7 @@
  * *****************************************************************/
 using std::vector;
 
-void pfLMPdrv::calGSF() {
+void pfHome::pfLMPdrv::calGSF() {
   char cmds[100][MAXLEN];
 
   const vector<double>& dft110 = pfhm->mele.gsf[sttag["elem"] + "111z110"];
@@ -69,10 +69,16 @@ void pfLMPdrv::calGSF() {
     sprintf(cmds[i++], "group    gtop  region   top");
 
     // --------------------- FORCE FIELDS ---------------------
-    sprintf(cmds[i++], "pair_style  %s", sttag["pairstyle"].c_str());
-    sprintf(cmds[i++], "pair_coeff  *  *  %s %s", sttag["lmpfile"].c_str(),
-            sttag["elem"].c_str());
-    sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+    sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+    if (!pfhm->sparams["ptype"].compare("MEAMC"))
+      sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+              pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+              pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+    else
+      sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+              sttag["elem"].c_str());
+
+    // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
     sprintf(cmds[i++], "neighbor 1.0 bin");
     sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 
@@ -142,10 +148,15 @@ void pfLMPdrv::calGSF() {
     sprintf(cmds[i++], "group  gtop  region   top");
 
     // --------------------- FORCE FIELDS ---------------------
-    sprintf(cmds[i++], "pair_style  %s", sttag["pairstyle"].c_str());
-    sprintf(cmds[i++], "pair_coeff  *  *  %s %s", sttag["lmpfile"].c_str(),
-            sttag["elem"].c_str());
-    sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+    sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+    if (!pfhm->sparams["ptype"].compare("MEAMC"))
+      sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+              pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+              pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+    else
+      sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+              sttag["elem"].c_str());
+    // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
     sprintf(cmds[i++], "neighbor 1.0 bin");
     sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 
@@ -177,8 +188,9 @@ void pfLMPdrv::calGSF() {
   for (int j = 0; j < npts; j++) {
     if (dft110[j] != 0.0) ez110[j] = fabs(gz110[j] - dft110[j]) / dft110[j];
     if (dft211[j] != 0.0) ez211[j] = fabs(gz211[j] - dft211[j]) / dft110[j];
-
-    printf("%.4f %.4f %.8f\n", gz110[j], dft110[j], ez110[j]);
-    printf("%.4f %.4f %.8f\n", gz211[j], dft211[j], ez211[j]);
   }
+  for (int j = 0; j < npts; j++)
+    printf("%.4f %.4f %.8f\n", gz110[j], dft110[j], ez110[j]);
+  for (int j = 0; j < npts; j++)
+    printf("%.4f %.4f %.8f\n", gz211[j], dft211[j], ez211[j]);
 }

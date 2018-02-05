@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-24 13:18:37
+ * @Last Modified time: 2018-02-04 15:41:08
  */
 
 #include "pfHome.h"
@@ -17,8 +17,8 @@ using std::unordered_map;
 void pfHome::initParam() {
   sparams["spline"] = string("nat");
   sparams["elem"] = string("Nb");
-  sparams["ptype"] = string("MEAM");
-  sparams["pairstyle"] = string("meam/spline");
+  sparams["ptype"] = string("MEAMC");
+  sparams["pairstyle"] = string("meam/c");
   sparams["alg"] = string("LN_SBPLX");
   sparams["opt"] = string("nlopt");
 

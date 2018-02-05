@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-01 23:44:14
+ * @Last Modified time: 2018-02-04 00:21:46
  */
 
 #include "pfHome.h"
@@ -141,9 +141,11 @@ void pfHome::initNeighsFull(Config &tmpc) {
               tmpn.dist2r[Y] = dij[Y] * invr;
               tmpn.dist2r[Z] = dij[Z] * invr;
 
-              setNeighslotStd(tmpn, funcs[PHI], r);
-              setNeighslotStd(tmpn, funcs[RHO], r);
-              setNeighslotStd(tmpn, funcs[MEAMF], r);
+              if (sparams["ptype"] != "MEAMC") {
+                setNeighslotStd(tmpn, funcs[PHI], r);
+                setNeighslotStd(tmpn, funcs[RHO], r);
+                setNeighslotStd(tmpn, funcs[MEAMF], r);
+              }
 
               atmii.neighsFull.push_back(tmpn);
 
@@ -164,7 +166,6 @@ void pfHome::initNeighsFull(Config &tmpc) {
     }          // jj
     atmii.nneighsFull = atmii.neighsFull.size();
   }  // ii
-  cout << "ricut = " << ricut << endl;
 }
 
 void pfHome::setNeighslotStd(Neigh &refn, Func func, double r) {

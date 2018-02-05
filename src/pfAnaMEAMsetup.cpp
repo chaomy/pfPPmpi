@@ -2,48 +2,54 @@
  * @Author: chaomy
  * @Date:   2018-01-30 13:42:16
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-02 19:25:09
+ * @Last Modified time: 2018-02-04 15:52:56
  */
 
 #include "pfHome.h"
 
-void pfHome::meam_setup_global() {
-  vector<lattice_t> lat({HCP});
-  vector<int> z({12});
-  vector<int> ielement({1});
-  vector<double> alpha({5.5663414489});
-  vector<double> b0({2.3});
-  vector<double> b1({1.0});
-  vector<double> b2({3.0});
-  vector<double> b3({1.0});
-  vector<double> esub({1.55});
-  vector<double> asub({0.52});
-  vector<double> t0({1.0});
-  vector<double> t1({9.0});
-  vector<double> t2({-2.0});
-  vector<double> t3({-9.5});
-  vector<double> rozero({1.0});
-  vector<int> ibar({3});
-  vector<double> alat({3.2});
-
+void pfHome::meam_setup_global(const arma::mat& vv) {
+  int cn = 0;
   for (int i = 0; i < nelt; i++) {
-    lattce_meam[i][i] = lat[i];
-    Z_meam[i] = z[i];
-    ielt_meam[i] = ielement[i];
-    alpha_meam[i][i] = alpha[i];
+    alpha_meam[i][i] = vv[cn++];
+    beta0_meam[i] = vv[cn++];
+    beta1_meam[i] = vv[cn++];
+    beta2_meam[i] = vv[cn++];
+    beta3_meam[i] = vv[cn++];
+    Ec_meam[i][i] = vv[cn++];
+    A_meam[i] = vv[cn++];
+    t1_meam[i] = vv[cn++];
+    t2_meam[i] = vv[cn++];
+    t3_meam[i] = vv[cn++];
+    rc_meam = vv[cn++];
+  }
+}
 
-    beta0_meam[i] = b0[i];
-    beta1_meam[i] = b1[i];
-    beta2_meam[i] = b2[i];
-    beta3_meam[i] = b3[i];
-    Ec_meam[i][i] = esub[i];
-    A_meam[i] = asub[i];
-    t0_meam[i] = t0[i];
-    t1_meam[i] = t1[i];
-    t2_meam[i] = t2[i];
-    t3_meam[i] = t3[i];
-    rho0_meam[i] = rozero[i];
-    ibar_meam[i] = ibar[i];
+void pfHome::meam_setup_global(const vector<double>& vv) {
+  int cn = 0;
+  for (int i = 0; i < nelt; i++) {
+    alpha_meam[i][i] = vv[cn++];
+    beta0_meam[i] = vv[cn++];
+    beta1_meam[i] = vv[cn++];
+    beta2_meam[i] = vv[cn++];
+    beta3_meam[i] = vv[cn++];
+    Ec_meam[i][i] = vv[cn++];
+    A_meam[i] = vv[cn++];
+    t1_meam[i] = vv[cn++];
+    t2_meam[i] = vv[cn++];
+    t3_meam[i] = vv[cn++];
+    rc_meam = vv[cn++];
+  }
+}
+
+void pfHome::meam_setup_globalfixed() {  //  those are fixed
+  lattp = vector<lattice_t>({BCC});
+  for (int i = 0; i < nelt; i++) {
+    cout << "t0 = " << (t0_meam[i] = t0[i]) << endl;
+    cout << "rho0 = " << (rho0_meam[i] = rozero[i]) << endl;
+    cout << "ibar = " << (ibar_meam[i] = ibar[i]) << endl;
+    cout << "lat = " << (lattce_meam[i][i] = lattp[i]) << endl;
+    cout << "z = " << (Z_meam[i] = cnn1[i]) << endl;
+    cout << "ielt = " << (ielt_meam[i] = 1) << endl;
 
     if (lattce_meam[i][i] == FCC)
       re_meam[i][i] = alat[i] / sqrt(2.0);
@@ -55,6 +61,55 @@ void pfHome::meam_setup_global() {
       re_meam[i][i] = alat[i];
     else if (lattce_meam[i][i] == DIA)
       re_meam[i][i] = alat[i] * sqrt(3.0) / 4.0;
+
+    cout << "alat = " << alat[i] << endl;
+    cout << "re = " << re_meam[i][i] << endl;
+  }
+
+  // setup boundaries alpha  b0  b1   b2   b3   Ec   A t1 t2 t3 rc_meam
+  lob = vector<double>({3, 0.1, 0.1, 0.1, 0.1, 0.5, 0.1, -5, -5, -5, 4.7});
+  hib = vector<double>({6, 5.0, 5.0, 5.0, 5.0, 10, 2.0, 5., 5., 5., 6.25});
+  for (int i = 0; i < lob.size(); i++) deb.push_back(hib[i] - lob[i]);
+}
+
+void pfHome::meam_setup_global() {  // for benchmark, and reference
+  elems = vector<string>({"Mg"});
+  lattp = vector<lattice_t>({HCP});
+  cnn1 = vector<int>({12});
+  meamparms["atwt"] = vector<double>({24.320});
+  meamparms["alpha"] = vector<double>({5.5663414489});
+  meamparms["b0"] = vector<double>({2.3});
+  meamparms["b1"] = vector<double>({1.0});
+  meamparms["b2"] = vector<double>({3.0});
+  meamparms["b3"] = vector<double>({1.0});
+  meamparms["alat"] = vector<double>({3.2});
+  meamparms["esub"] = vector<double>({1.55});
+  meamparms["asub"] = vector<double>({0.52});
+  meamparms["t0"] = vector<double>({1.0});
+  meamparms["t1"] = vector<double>({9.0});
+  meamparms["t2"] = vector<double>({-2.0});
+  meamparms["t3"] = vector<double>({-9.5});
+  meamparms["rozero"] = vector<double>({1.0});
+  ielement = vector<int>({1});
+  ibar = vector<int>({3});
+
+  for (int i = 0; i < nelt; i++) {
+    lattce_meam[i][i] = lattp[i];
+    Z_meam[i] = cnn1[i];
+    ielt_meam[i] = ielement[i];
+    alpha_meam[i][i] = meamparms["alpha"][i];
+    beta0_meam[i] = meamparms["b0"][i];
+    beta1_meam[i] = meamparms["b1"][i];
+    beta2_meam[i] = meamparms["b2"][i];
+    beta3_meam[i] = meamparms["b3"][i];
+    Ec_meam[i][i] = meamparms["esub"][i];
+    A_meam[i] = meamparms["asub"][i];
+    t0_meam[i] = meamparms["t0"][i];
+    t1_meam[i] = meamparms["t1"][i];
+    t2_meam[i] = meamparms["t2"][i];
+    t3_meam[i] = meamparms["t3"][i];
+    rho0_meam[i] = meamparms["rozero"][i];
+    ibar_meam[i] = ibar[i];
   }
 }
 

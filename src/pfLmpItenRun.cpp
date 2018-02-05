@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:44:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-11-23 06:38:46
+ * @Last Modified time: 2018-02-04 16:04:21
  */
 
 #include "pfLmpDrv.h"
@@ -10,7 +10,7 @@
 using std::string;
 using std::vector;
 
-void pfLMPdrv::calItenRun(const string& tag, double& engy, vector<double>& stsv) {
+void pfHome::pfLMPdrv::calItenRun(const string& tag, double& engy, vector<double>& stsv) {
   char lmpcmds[100][MAXLEN];
   int i = 0;
 

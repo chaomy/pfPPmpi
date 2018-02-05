@@ -2,12 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:28:37
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-11-25 11:39:02
+ * @Last Modified time: 2018-02-04 17:40:18
  */
 
 #include "pfLmpDrv.h"
 
-void pfLMPdrv::calLatticeFCC() {
+void pfHome::pfLMPdrv::calLatticeFCC() {
   char cmds[100][MAXLEN];
   int i = 0;
   //  --------------------- INITIALIZAITION ---------------------
@@ -28,10 +28,16 @@ void pfLMPdrv::calLatticeFCC() {
   sprintf(cmds[i++], "create_atoms 1 region whole");
 
   // --------------------- FORCE FIELDS ---------------------
-  sprintf(cmds[i++], "pair_style  %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff  *  *  %s %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
-  sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
+  // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+
   sprintf(cmds[i++], "neighbor 1.0 bin");
   sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 
@@ -52,6 +58,5 @@ void pfLMPdrv::calLatticeFCC() {
   exprs["afcc"] = lammps_get_thermo(lmp, LX);
   exprs["efcc"] =
       lammps_get_thermo(lmp, ETOTAL) / double(lammps_get_thermo(lmp, NATOM));
-
   lammps_command(lmp, CLEAR);
 }

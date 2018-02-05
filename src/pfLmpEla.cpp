@@ -2,12 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-11-14 14:19:02
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-12-06 10:20:24
+ * @Last Modified time: 2018-02-04 17:39:51
  */
 
 #include "pfLmpDrv.h"
 
-void pfLMPdrv::calElastic() {
+void pfHome::pfLMPdrv::calElastic() {
   char cmds[1000][MAXLEN];
 
   double *ptc11 = (double *)NULL, *ptc12 = (double *)NULL,
@@ -41,9 +41,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff  * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor  1.0  nsq");
   sprintf(cmds[i++],
@@ -124,9 +129,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor   1.0  nsq");
   sprintf(cmds[i++],
@@ -184,9 +194,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor  1.0  nsq");
   sprintf(cmds[i++],
@@ -262,9 +277,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor   1.0  nsq");
   sprintf(cmds[i++],
@@ -322,9 +342,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor  1.0  nsq");
   sprintf(cmds[i++],
@@ -400,9 +425,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor   1.0  nsq");
   sprintf(cmds[i++],
@@ -458,9 +488,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor  1.0  nsq");
   sprintf(cmds[i++],
@@ -534,9 +569,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor   1.0  nsq");
   sprintf(cmds[i++],
@@ -592,9 +632,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor  1.0  nsq");
   sprintf(cmds[i++],
@@ -668,9 +713,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor   1.0  nsq");
   sprintf(cmds[i++],
@@ -726,9 +776,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor  1.0  nsq");
   sprintf(cmds[i++],
@@ -802,9 +857,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor   1.0  nsq");
   sprintf(cmds[i++],
@@ -860,9 +920,14 @@ void pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "read_restart restart.equil");
 
   /****** potential ******/
-  sprintf(cmds[i++], "pair_style   %s", sttag["pairstyle"].c_str());
-  sprintf(cmds[i++], "pair_coeff   * *  ./%s  %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
+  sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
+  if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
+            pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
+            pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+  else
+    sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
+            sttag["elem"].c_str());
   /****** neighbor ******/
   sprintf(cmds[i++], "neighbor  1.0  nsq");
   sprintf(cmds[i++],

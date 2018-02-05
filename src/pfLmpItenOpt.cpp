@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:44:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-12-16 21:21:31
+ * @Last Modified time: 2018-02-04 16:07:08
  */
 
 #include "pfLmpDrv.h"
@@ -42,7 +42,7 @@ inline vector<vector<double>> mat33mlt(const vector<vector<double>>& a,
   return c;
 }
 
-void pfLMPdrv::calIten() {
+void pfHome::pfLMPdrv::calIten() {
   vector<string> ms({"tpath", "opath"});
   int npts = 10;
   for (string tag : ms) {
@@ -58,7 +58,7 @@ void pfLMPdrv::calIten() {
   }
 }
 
-void pfLMPdrv::calItenOptLin(const double& dlt, const string& tag) {
+void pfHome::pfLMPdrv::calItenOptLin(const double& dlt, const string& tag) {
   vector<vector<double>> pbis(3, vector<double>(3, 0));
   vector<vector<double>> strm(3, vector<double>(3, 0));
   vector<double> coeff(3, 1.);
