@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-30 13:42:16
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 15:52:56
+ * @Last Modified time: 2018-02-04 22:22:52
  */
 
 #include "pfHome.h"
@@ -17,6 +17,7 @@ void pfHome::meam_setup_global(const arma::mat& vv) {
     beta3_meam[i] = vv[cn++];
     Ec_meam[i][i] = vv[cn++];
     A_meam[i] = vv[cn++];
+    t0_meam[i] = vv[cn++];
     t1_meam[i] = vv[cn++];
     t2_meam[i] = vv[cn++];
     t3_meam[i] = vv[cn++];
@@ -34,6 +35,7 @@ void pfHome::meam_setup_global(const vector<double>& vv) {
     beta3_meam[i] = vv[cn++];
     Ec_meam[i][i] = vv[cn++];
     A_meam[i] = vv[cn++];
+    t0_meam[i] = vv[cn++];
     t1_meam[i] = vv[cn++];
     t2_meam[i] = vv[cn++];
     t3_meam[i] = vv[cn++];
@@ -44,7 +46,6 @@ void pfHome::meam_setup_global(const vector<double>& vv) {
 void pfHome::meam_setup_globalfixed() {  //  those are fixed
   lattp = vector<lattice_t>({BCC});
   for (int i = 0; i < nelt; i++) {
-    cout << "t0 = " << (t0_meam[i] = t0[i]) << endl;
     cout << "rho0 = " << (rho0_meam[i] = rozero[i]) << endl;
     cout << "ibar = " << (ibar_meam[i] = ibar[i]) << endl;
     cout << "lat = " << (lattce_meam[i][i] = lattp[i]) << endl;
@@ -66,9 +67,10 @@ void pfHome::meam_setup_globalfixed() {  //  those are fixed
     cout << "re = " << re_meam[i][i] << endl;
   }
 
-  // setup boundaries alpha  b0  b1   b2   b3   Ec   A t1 t2 t3 rc_meam
-  lob = vector<double>({3, 0.1, 0.1, 0.1, 0.1, 0.5, 0.1, -5, -5, -5, 4.7});
-  hib = vector<double>({6, 5.0, 5.0, 5.0, 5.0, 10, 2.0, 5., 5., 5., 6.25});
+  // setup boundaries alpha  b0  b1   b2   b3   Ec   A t0 t1 t2 t3 rc_meam
+  lob =
+      vector<double>({3, -5.0, -5.0, -5.0, -5.0, 1.0, 0.0, 0, -5, -5, -5, 4.7});
+  hib = vector<double>({6, 5.0, 5.0, 5.0, 5.0, 10, 2.0, 5, 5., 5., 5., 6.25});
   for (int i = 0; i < lob.size(); i++) deb.push_back(hib[i] - lob[i]);
 }
 

@@ -35,6 +35,7 @@ class pfHome {
  public:
   mpi::environment env;
   mpi::communicator cmm;
+  mpi::communicator cmmlm;
 
  private:
   int ftn;  // number of atoms used for fitting

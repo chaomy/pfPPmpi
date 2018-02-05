@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-13 15:58:23
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 18:20:50
+ * @Last Modified time: 2018-02-04 21:09:50
  */
 
 #include "pfLmpDrv.h"
@@ -127,6 +127,6 @@ void pfHome::pfLMPdrv::paraInit(int argc, char* argv[]) {
   lmparg[2] = (char*)"no";
 
   // lmp = new LAMMPS(3, lmparg, MPI_COMM_WORLD);
-  lmp = new LAMMPS(3, lmparg, pfhm->cmm);
+  lmp = new LAMMPS(3, lmparg, pfhm->cmmlm);
   delete[] lmparg;
 }

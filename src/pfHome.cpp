@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 18:22:57
+ * @Last Modified time: 2018-02-04 21:12:36
  */
 
 #include "pfHome.h"
@@ -107,8 +107,8 @@ pfHome::pfHome(int argc, char* argv[])
   } else
     initNeighs();
 
+  cmmlm = cmm.split(cmm.rank() == PFROOT);  // split group lm to run lammps
   lmpdrv = new pfLMPdrv(argc, argv, this);
-
   int del = nconfs / cmm.size();
   locstt = del * cmm.rank();
   locend = del * (cmm.rank() + 1);

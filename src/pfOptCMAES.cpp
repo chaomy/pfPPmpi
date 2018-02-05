@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 18:14:52
+ * @Last Modified time: 2018-02-04 22:24:57
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -41,12 +41,13 @@ void pfHome::loopcmaes() {
   double cr = 1e30, op = 1e30;
   for (int i = 0; i < 1; i++) {
     arma::mat iterate(nvars, 1, arma::fill::randu);
-    for (int k = 0; k < nvars; k++) iterate[k] = lob[k] + iterate[k] * deb[k];
+    for (int k = 0; k < nvars; k++)
+      iterate[k] = lob[k] + randUniform() * deb[k];
     (this->*calobj[sparams["ptype"]])(iterate, 1);
     if (cmm.rank() == PFROOT) {
       op = (cr = cmaes(iterate)) < op ? cr : op;
-      string dst(sparams["meamlib"] + "." + to_string(i));
-      std::rename("meam.tmp", dst.c_str());
+      (this->*write[sparams["ptype"]])();
+      std::rename("meam.tmp", ("meam.tmp." + to_string(i)).c_str());
       std::rename("meam.param", ("meam.param." + to_string(i)).c_str());
       (this->*calobj[sparams["ptype"]])(iterate, EXT);
     }
@@ -54,8 +55,8 @@ void pfHome::loopcmaes() {
 }
 
 double pfHome::cmaes(arma::mat& iterate) {
-  int maxIt = 10;
-  double tolerance = 1e-8;
+  int maxIt = 500;
+  double tolerance = 1e-9;
 
   // Population size.
   int lambda = (4 + std::round(3 * std::log(iterate.n_elem))) * 10;
@@ -165,19 +166,19 @@ double pfHome::cmaes(arma::mat& iterate) {
       overallobj = currentobj;
       iterate = mps.slice(idx1);
 
-      // cal physics
+      error["phy"] = 0.0;
       (this->*write[sparams["ptype"]])();
-      // vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100",
-      //                    "suf111", "bcc2fcc", "bcc2hcp"});
       lmpdrv->calLatticeBCC();
-      // lmpdrv->calLatticeFCC();
-      // lmpdrv->calLatticeHCP();
-      // lmpdrv->calElastic();
-      // lmpdrv->calSurface();
-      // lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] -
-      // lmpdrv->exprs["ebcc"]; lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"]
-      // - lmpdrv->exprs["ebcc"]; for (string ee : aa) error["phy"] += 500 *
-      // relerr(exprs[ee], targs[ee]);
+      lmpdrv->calLatticeFCC();
+      lmpdrv->calLatticeHCP();
+      lmpdrv->calElastic();
+      lmpdrv->calSurface();
+      lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
+      lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
+      vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100",
+                         "suf111", "bcc2fcc", "bcc2hcp"});
+      for (string ee : aa)
+        error["phy"] += 10 * square11((exprs[ee] - targs[ee]) / targs[ee]);
     }
 
     // Update Step Size.
@@ -257,14 +258,20 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     // for meamc
     cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
-         << error["frc"] << " cs " << sigma(idx1) << " "
+         << error["frc"] << " " << error["phy"] << " cs " << sigma(idx1) << " "
          << (lastobj - overallobj) / lastobj << " " << configs[locstt].fitengy
          << " " << configs[locstt].engy << " " << rc_meam << endl;
 
-    for (string ee : {"lat"})
-      cout << ee << " " << lmpdrv->exprs[ee] << " " << lmpdrv->targs[ee]
-           << endl;
-    // "bcc2fcc", "bcc2hcp", "c11", "c12", "c44", "suf110"})
+    cout << std::setprecision(2) << alpha_meam[0][0] << " " << beta0_meam[0]
+         << " " << beta1_meam[0] << " " << beta2_meam[0] << " " << beta3_meam[0]
+         << " " << alat[0] << " " << Ec_meam[0][0] << " " << A_meam[0] << " "
+         << " " << t0_meam[0] << " " << t1_meam[0] << " " << t2_meam[0] << " "
+         << t3_meam[0] << endl;
+
+    for (string ee : {"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
+                      "bcc2fcc", "bcc2hcp"})
+      cout << ee << std::setprecision(3) << " " << lmpdrv->exprs[ee] << " "
+           << lmpdrv->targs[ee] << endl;
 
     if (std::isnan(overallobj) || std::isinf(overallobj)) {
       cout << "CMA-ES: converged to " << overallobj << "; "
