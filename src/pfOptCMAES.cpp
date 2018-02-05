@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 22:24:57
+ * @Last Modified time: 2018-02-04 23:31:16
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -178,7 +178,10 @@ double pfHome::cmaes(arma::mat& iterate) {
       vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100",
                          "suf111", "bcc2fcc", "bcc2hcp"});
       for (string ee : aa)
-        error["phy"] += 10 * square11((exprs[ee] - targs[ee]) / targs[ee]);
+        error["phy"] +=
+            (lmpdrv->error[ee] =
+                 10. * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
+                                lmpdrv->targs[ee]));
     }
 
     // Update Step Size.
@@ -262,16 +265,17 @@ double pfHome::cmaes(arma::mat& iterate) {
          << (lastobj - overallobj) / lastobj << " " << configs[locstt].fitengy
          << " " << configs[locstt].engy << " " << rc_meam << endl;
 
-    cout << std::setprecision(2) << alpha_meam[0][0] << " " << beta0_meam[0]
+    cout << std::setprecision(3) << alpha_meam[0][0] << " " << beta0_meam[0]
          << " " << beta1_meam[0] << " " << beta2_meam[0] << " " << beta3_meam[0]
-         << " " << alat[0] << " " << Ec_meam[0][0] << " " << A_meam[0] << " "
+         << " " << re_meam[0][0] * 2. / sqrt(3.) << " " << Ec_meam[0][0] << " "
+         << A_meam[0] << " "
          << " " << t0_meam[0] << " " << t1_meam[0] << " " << t2_meam[0] << " "
          << t3_meam[0] << endl;
 
     for (string ee : {"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
                       "bcc2fcc", "bcc2hcp"})
-      cout << ee << std::setprecision(3) << " " << lmpdrv->exprs[ee] << " "
-           << lmpdrv->targs[ee] << endl;
+      cout << ee << std::setprecision(4) << " " << lmpdrv->exprs[ee] << " "
+           << lmpdrv->targs[ee] << " " << lmpdrv->error[ee] << endl;
 
     if (std::isnan(overallobj) || std::isinf(overallobj)) {
       cout << "CMA-ES: converged to " << overallobj << "; "

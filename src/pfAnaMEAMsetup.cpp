@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-30 13:42:16
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 22:22:52
+ * @Last Modified time: 2018-02-05 01:35:29
  */
 
 #include "pfHome.h"
@@ -17,7 +17,6 @@ void pfHome::meam_setup_global(const arma::mat& vv) {
     beta3_meam[i] = vv[cn++];
     Ec_meam[i][i] = vv[cn++];
     A_meam[i] = vv[cn++];
-    t0_meam[i] = vv[cn++];
     t1_meam[i] = vv[cn++];
     t2_meam[i] = vv[cn++];
     t3_meam[i] = vv[cn++];
@@ -35,7 +34,6 @@ void pfHome::meam_setup_global(const vector<double>& vv) {
     beta3_meam[i] = vv[cn++];
     Ec_meam[i][i] = vv[cn++];
     A_meam[i] = vv[cn++];
-    t0_meam[i] = vv[cn++];
     t1_meam[i] = vv[cn++];
     t2_meam[i] = vv[cn++];
     t3_meam[i] = vv[cn++];
@@ -51,7 +49,8 @@ void pfHome::meam_setup_globalfixed() {  //  those are fixed
     cout << "lat = " << (lattce_meam[i][i] = lattp[i]) << endl;
     cout << "z = " << (Z_meam[i] = cnn1[i]) << endl;
     cout << "ielt = " << (ielt_meam[i] = 1) << endl;
-
+    cout << "alat = " << alat[i] << endl;
+    cout << "t0 = " << (t0_meam[i] = t0[i]) << endl;
     if (lattce_meam[i][i] == FCC)
       re_meam[i][i] = alat[i] / sqrt(2.0);
     else if (lattce_meam[i][i] == BCC)
@@ -62,15 +61,12 @@ void pfHome::meam_setup_globalfixed() {  //  those are fixed
       re_meam[i][i] = alat[i];
     else if (lattce_meam[i][i] == DIA)
       re_meam[i][i] = alat[i] * sqrt(3.0) / 4.0;
-
-    cout << "alat = " << alat[i] << endl;
     cout << "re = " << re_meam[i][i] << endl;
   }
 
-  // setup boundaries alpha  b0  b1   b2   b3   Ec   A t0 t1 t2 t3 rc_meam
-  lob =
-      vector<double>({3, -5.0, -5.0, -5.0, -5.0, 1.0, 0.0, 0, -5, -5, -5, 4.7});
-  hib = vector<double>({6, 5.0, 5.0, 5.0, 5.0, 10, 2.0, 5, 5., 5., 5., 6.25});
+  // alpha  b0  b1   b2   b3  Ec  A  t0=1 t1  t2  t3  rc_meam
+  lob = vector<double>({3, -5., -5., -5., -5., 1.0, 0, -5, -5, -5, 4.7});
+  hib = vector<double>({6, 5., 5., 5., 5., 10., 2.0, 7., 7., 7., 6.30});
   for (int i = 0; i < lob.size(); i++) deb.push_back(hib[i] - lob[i]);
 }
 
@@ -510,8 +506,8 @@ void pfHome::compute_pair_meam() {
           //     need to
           //     compute the contributions from second nearest neighbors, like
           //     a-a
-          //     pairs, but need to include NN2 contributions to those pairs as
-          //     well.
+          //     pairs, but need to include NN2 contributions to those pairs
+          //     as well.
           if (lattce_meam[a][b] == B1 || lattce_meam[a][b] == B2 ||
               lattce_meam[a][b] == L12) {
             rarat = r * arat;
@@ -557,7 +553,8 @@ void pfHome::compute_pair_meam() {
               //     the correct screening between 2nd-neighbor pairs.  1-1
               //     second-neighbor pairs are screened by 2 type 1 atoms and
               //     two type
-              //     2 atoms.  2-2 second-neighbor pairs are screened by 4 type
+              //     2 atoms.  2-2 second-neighbor pairs are screened by 4
+              //     type
               //     1
               //     atoms.
               C = 1.0;
@@ -758,8 +755,8 @@ void pfHome::get_densref(double r, int a, int b, double* rho01, double* rho11,
     rhoa02nn = rho0_meam[b] * MathSpecial::fm_exp(-beta0_meam[b] * a2);
 
     if (lat == L12) {
-      //     As usual, L12 thinks it's special; we need to be careful computing
-      //     the screening functions
+      //     As usual, L12 thinks it's special; we need to be careful
+      //     computing the screening functions
       C = 1.0;
       get_sijk(C, a, a, a, &s111);
       get_sijk(C, a, a, b, &s112);
