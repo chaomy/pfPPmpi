@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 13:48:00
+ * @Last Modified time: 2018-02-05 15:40:46
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -29,12 +29,11 @@ double pfHome::testFunc(arma::mat& vc) {
 }
 
 void pfHome::cntcmaes() {
-  arma::mat iterate = encodev(ini);  // [0, 10]
-  (this->*calobj[sparams["ptype"]])(iterate, 1);
+  arma::mat iterate = encodev(ini);  // to [0, 10]
+  (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
   if (cmm.rank() == PFROOT) {
     cmaes(iterate);
-    (this->*calobj[sparams["ptype"]])(iterate, EXT);
-    (this->*write[sparams["ptype"]])();
+    (this->*calobj[sparams["ptype"]])(decodev(iterate), EXT);
   }
 }
 
@@ -42,12 +41,11 @@ void pfHome::loopcmaes() {
   double cr = 1e30, op = 1e30;
   for (int i = 0; i < 5; i++) {
     arma::mat iterate(nvars, 1, arma::fill::randu);
-    for (int k = 0; k < nvars; k++)
-      iterate[k] = lob[k] + randUniform() * deb[k];
-    (this->*calobj[sparams["ptype"]])(iterate, 1);
+    iterate *= 10;
+    iterate.print("Iterate = ");
+    (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
     if (cmm.rank() == PFROOT) {
       op = (cr = cmaes(iterate)) < op ? cr : op;
-      (this->*write[sparams["ptype"]])();
 
       std::ostringstream ss;
       ss << std::setw(4) << std::setfill('0') << i;
@@ -56,7 +54,7 @@ void pfHome::loopcmaes() {
       std::rename("err.txt", ("err." + ss.str()).c_str());
       std::rename("par.txt", ("par." + ss.str()).c_str());
 
-      (this->*calobj[sparams["ptype"]])(iterate, EXT);
+      (this->*calobj[sparams["ptype"]])(decodev(iterate), EXT);
     }
   }
 }
@@ -182,6 +180,7 @@ double pfHome::cmaes(arma::mat& iterate) {
       lmpdrv->calLatticeHCP();
       lmpdrv->calElastic();
       lmpdrv->calSurface();
+
       // do some clean
       remove("no");
       remove("log.lammps");
@@ -288,10 +287,10 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     of2 << i << " " << std::setprecision(4) << alpha_meam[0][0] << " "
         << beta0_meam[0] << " " << beta1_meam[0] << " " << beta2_meam[0] << " "
-        << beta3_meam[0] << " " << re_meam[0][0] * 2. / sqrt(3.) << " "
-        << Ec_meam[0][0] << " " << A_meam[0] << " " << t0_meam[0] << " "
+        << beta3_meam[0] << " " << Ec_meam[0][0] << " " << A_meam[0] << " "
         << t1_meam[0] << " " << t2_meam[0] << " " << t3_meam[0] << " "
-        << rc_meam << " " << Cmin_meam[0][0][0] << endl;
+        << rc_meam << " " << Cmin_meam[0][0][0] << " "
+        << re_meam[0][0] * 2. / sqrt(3) << endl;
     // }
 
     if (std::isnan(overallobj) || std::isinf(overallobj)) {

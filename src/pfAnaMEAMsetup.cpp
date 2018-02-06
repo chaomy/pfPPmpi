@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-30 13:42:16
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 13:37:43
+ * @Last Modified time: 2018-02-06 15:50:25
  */
 
 #include "pfHome.h"
@@ -22,6 +22,7 @@ void pfHome::meam_setup_global(const arma::mat& vv) {
     t3_meam[i] = vv[cn++];
     rc_meam = vv[cn++];
     Cmin_meam[i][i][i] = vv[cn++];
+    // re_meam[i][i] = vv[cn++] * sqrt(3.0) / 2.0;  // only for bcc
   }
 }
 
@@ -40,6 +41,7 @@ void pfHome::meam_setup_global(const vector<double>& vv) {
     t3_meam[i] = vv[cn++];
     rc_meam = vv[cn++];
     Cmin_meam[i][i][i] = vv[cn++];
+    // re_meam[i][i] = vv[cn++] * sqrt(3.0) / 2.0;  // only for bcc
   }
 }
 
@@ -66,9 +68,9 @@ void pfHome::meam_setup_globalfixed() {  //  those are fixed
     cout << "re = " << re_meam[i][i] << endl;
   }
 
-  // alpha  b0  b1   b2   b3  Ec  A  t0=1 t1  t2  t3  rc Cmin
+  // alpha  b0  b1  b2  b3  Ec  A  (t0=1) t1  t2  t3  rc Cmin alat
   lob = vector<double>({3, -5., -5., -5., -5., 1.0, 0, -5, -5, -5, 4.7, 0.1});
-  hib = vector<double>({6, 5., 5., 5., 5., 10., 2.0, 7., 7., 7., 6.30, 2.0});
+  hib = vector<double>({6, 5.0, 5.0, 5.0, 5.0, 10., 2., 7., 7., 7., 6.3, 2.0});
   for (int i = 0; i < lob.size(); i++) deb.push_back(hib[i] - lob[i]);
 }
 

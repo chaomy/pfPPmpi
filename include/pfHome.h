@@ -225,6 +225,7 @@ class pfHome {
   void readConfig();
   void readPot();
   void readMEAMC();
+  void readMEAMCcnt();
   void readParam();
   void readLmpMEAM();
 

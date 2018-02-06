@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 13:32:56
+ * @Last Modified time: 2018-02-06 15:50:41
  */
 
 #include "pfHome.h"
@@ -13,6 +13,21 @@ using std::endl;
 using std::ifstream;
 using std::string;
 using std::vector;
+
+void pfHome::readMEAMCcnt() {
+  ifstream fid;
+  pfUtil pfu;
+  string buff;
+  vector<string> segs;
+  fid.open(sparams["meamcnt"].c_str());
+  if (!fid.is_open()) cerr << "error opening " + sparams["meamcnt"] << endl;
+  getline(fid, buff);
+  pfu.split(buff, " ", segs);
+  if (segs.size() != ini.size()) cerr << "varialbes do not match !" << endl;
+  for (int i = 0; i < segs.size(); i++)
+    cout << "i = " << i << " " << (ini[i] = stof(segs[i])) << endl;
+  fid.close();
+}
 
 void pfHome::readMEAMC() {
   ifstream fid;
@@ -34,6 +49,7 @@ void pfHome::readMEAMC() {
   elems.clear();
   cnn1.clear();
   for (auto& ee : meamparms) ee.second.clear();
+  int in = 0;
   while (getline(fid, buff)) {
     int cn = 0;
     segs.clear();
@@ -79,11 +95,15 @@ void pfHome::readMEAMC() {
     // rc
     ini.push_back(rc_meam);
     // Cmin_meam
-    ini.push_back(Cmin_meam[0][0][0]);
+    ini.push_back(Cmin_meam[in][in][in]);
+    // alat
+    // ini.push_back(alat.back());
     rozero.push_back(stof(segs[4]));
     ibar.push_back(stoi(segs[5]));
+    in++;
   }
   fid.close();
+  if (!sparams["opt"].compare("cnt")) readMEAMCcnt();
 }
 
 void pfHome::readPot() {  // read dummy.pot
