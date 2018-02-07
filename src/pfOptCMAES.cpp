@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 15:40:46
+ * @Last Modified time: 2018-02-07 02:32:15
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -29,7 +29,8 @@ double pfHome::testFunc(arma::mat& vc) {
 }
 
 void pfHome::cntcmaes() {
-  arma::mat iterate = encodev(ini);  // to [0, 10]
+  arma::mat iterate =
+      4.5 + arma::mat(nvars, 1, arma::fill::randu);  // to [0, 10]
   (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
   if (cmm.rank() == PFROOT) {
     cmaes(iterate);
@@ -42,7 +43,6 @@ void pfHome::loopcmaes() {
   for (int i = 0; i < 5; i++) {
     arma::mat iterate(nvars, 1, arma::fill::randu);
     iterate *= 10;
-    iterate.print("Iterate = ");
     (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
     if (cmm.rank() == PFROOT) {
       op = (cr = cmaes(iterate)) < op ? cr : op;
@@ -181,7 +181,7 @@ double pfHome::cmaes(arma::mat& iterate) {
       lmpdrv->calElastic();
       lmpdrv->calSurface();
 
-      // do some clean
+      // // do some clean
       remove("no");
       remove("log.lammps");
       remove("restart.equil");
@@ -265,8 +265,7 @@ double pfHome::cmaes(arma::mat& iterate) {
     // for spline
     // cout << "CMA-ES: iteration " << i << ", objective " << overallobj << " "
     //      << error["frc"] << " " << error["punish"] << " " << error["shift"]
-    //      << " cs " << sigma(idx1) << " " << ominrho << " " << omaxrho << " "
-    //      << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
+    //      << " cs " << sigma(idx1) << " " <<
     //      << (lastobj - overallobj) / lastobj << " " <<
     //      configs[locstt].fitengy
     //      << " " << configs[locstt].engy << endl;
@@ -274,7 +273,9 @@ double pfHome::cmaes(arma::mat& iterate) {
     // for meamc
     cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
          << error["frc"] << " " << error["phy"] << " cs " << sigma(idx1) << " "
-         << (lastobj - overallobj) / lastobj << " " << rc_meam << endl;
+         << (lastobj - overallobj) / lastobj << " " << ominrho << " " << omaxrho
+         << " " << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
+         << endl;
 
     // || error["phy"] < 30.0
     // if (i == 1) {
@@ -285,12 +286,13 @@ double pfHome::cmaes(arma::mat& iterate) {
         << lmpdrv->exprs["suf111"] << " " << lmpdrv->exprs["bcc2fcc"] << " "
         << lmpdrv->exprs["bcc2hcp"] << endl;
 
-    of2 << i << " " << std::setprecision(4) << alpha_meam[0][0] << " "
-        << beta0_meam[0] << " " << beta1_meam[0] << " " << beta2_meam[0] << " "
-        << beta3_meam[0] << " " << Ec_meam[0][0] << " " << A_meam[0] << " "
-        << t1_meam[0] << " " << t2_meam[0] << " " << t3_meam[0] << " "
-        << rc_meam << " " << Cmin_meam[0][0][0] << " "
-        << re_meam[0][0] * 2. / sqrt(3) << endl;
+    // of2 << i << " " << std::setprecision(4) << alpha_meam[0][0] << " "
+    //     << beta0_meam[0] << " " << beta1_meam[0] << " " << beta2_meam[0] << "
+    //     "
+    //     << beta3_meam[0] << " " << Ec_meam[0][0] << " " << A_meam[0] << " "
+    //     << t1_meam[0] << " " << t2_meam[0] << " " << t3_meam[0] << " "
+    //     << rc_meam << " " << Cmin_meam[0][0][0] << " "
+    //     << re_meam[0][0] * 2. / sqrt(3) << endl;
     // }
 
     if (std::isnan(overallobj) || std::isinf(overallobj)) {

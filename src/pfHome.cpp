@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 14:59:11
+ * @Last Modified time: 2018-02-07 02:16:42
  */
 
 #include "pfHome.h"
@@ -57,18 +57,22 @@ pfHome::pfHome(int argc, char* argv[])
       emb_lin_neg(0),
       bkgd_dyn(0),
       erose_form(2) {
-  calfrc["MEAM"] = &pfHome::forceMEAM;
   calfrc["EAM"] = &pfHome::forceEAM;
+  calfrc["MEAMS"] = &pfHome::forceMEAMS;
   calfrc["MEAMC"] = &pfHome::forceMEAMC;
 
-  calobj["MEAM"] = &pfHome::forceMEAM;
   calobj["EAM"] = &pfHome::forceEAM;
+  calobj["MEAMS"] = &pfHome::forceMEAMS;
   calobj["MEAMC"] = &pfHome::forceMEAMC;
 
-  write["MEAM"] = &pfHome::writeMEAM;
   write["EAM"] = &pfHome::writeLMPS;
   write["TMP"] = &pfHome::writePot;
+  write["MEAMS"] = &pfHome::writeMEAMS;
   write["MEAMC"] = &pfHome::writeMEAMC;
+
+  read["EAMS"] = &pfHome::readPot;
+  read["MEAMS"] = &pfHome::readMEAMS;
+  read["MEAMC"] = &pfHome::readMEAMC;
 
   latticemp = vector<string>(
       {"fcc", "bcc", "hcp", "dim", "dia", "b1", "c11", "l12", "b2"});
@@ -101,7 +105,7 @@ pfHome::pfHome(int argc, char* argv[])
 
   (cmm.barrier)();  //  important!
   bcdata();
-  if (!sparams["ptype"].compare("MEAM")) {
+  if (!sparams["ptype"].compare("MEAMS")) {
     initNeighsFull();
     initAngles();
   } else if (!sparams["ptype"].compare("MEAMC")) {
@@ -135,8 +139,5 @@ void pfHome::pfInit() {
   initParam();
   initTargs();
   readConfig();
-  if (!sparams["ptype"].compare("MEAMC"))
-    readMEAMC();
-  else
-    readPot();
+  (this->*read[sparams["ptype"]])();
 }

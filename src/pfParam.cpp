@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 15:41:08
+ * @Last Modified time: 2018-02-07 02:36:26
  */
 
 #include "pfHome.h"
@@ -18,12 +18,13 @@ void pfHome::initParam() {
   sparams["spline"] = string("nat");
   sparams["elem"] = string("Nb");
   sparams["ptype"] = string("MEAMC");
-  sparams["pairstyle"] = string("meam/c");
+  sparams["pairstyle"] = string("meam/spline");
   sparams["alg"] = string("LN_SBPLX");
   sparams["opt"] = string("nlopt");
 
   dparams["temp"] = 0.01;
-  dparams["istep"] = 0.1;
+  dparams["istep"] = 0.3;
+  dparams["ivari"] = 0.3;
   dparams["pratio"] = 0.5;
   dparams["eweight"] = 1.0;
   dparams["pweight"] = 30;
@@ -37,6 +38,7 @@ void pfHome::initParam() {
   iparams["lmpfreq"] = 15;
   iparams["kmax"] = 8;  // number of outer loop in simulated annealing
   readParam();
+  cout << "ptype = " << sparams["ptype"] << endl;
   sparams["lmpfile"] = string("dummy.lammps.") + sparams["ptype"];
 }
 

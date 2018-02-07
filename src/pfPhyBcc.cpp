@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-16 16:00:09
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-16 14:05:52
+ * @Last Modified time: 2018-02-06 20:17:08
  */
 
 #include "pfHome.h"
@@ -13,10 +13,7 @@ void pfHome::calLat(string kk) {
     if (!kk.compare("bcc")) buildbcc(kk, la, dl);
     for (int ii = 0; ii < mpvc[kk].size(); ii++) {
       Config& cc = mpcf[kk][ii];
-      if (!sparams["ptype"].compare("MEAM"))
-        forceMEAM(cc);
-      else if (!sparams["ptype"].compare("EAM"))
-        forceEAM(cc);
+      (this->*calfrc[sparams["ptype"]])(cc);
       if (cc.fitengy < me) {
         me = cc.fitengy;
         la = mpvc[kk][ii];
@@ -26,10 +23,7 @@ void pfHome::calLat(string kk) {
   if (!kk.compare("bcc")) ubcc = buildbccPrim(la);
   exprs["lat"] = la;
   error["lat"] = weigh["lat"] * square11(la - targs["lat"]);
-  if (!sparams["ptype"].compare("MEAM"))
-    forceMEAM(ubcc);
-  else if (!sparams["ptype"].compare("EAM"))
-    forceEAM(ubcc);
+  (this->*calfrc[sparams["ptype"]])(ubcc);
 }
 
 void pfHome::buildbcc(const string& kk, const double& gs, const double& dl) {

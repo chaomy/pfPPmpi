@@ -30,11 +30,12 @@ MAKETARGET 	=  pfmpi
 POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfForceEAM.cpp   \
 			   ./pfForceADP.cpp   \
-			   ./pfForceMEAM.cpp  \
+			   ./pfForceMEAMS.cpp  \
 			   ./pfStressMEAM.cpp \
 			   ./pfInputForce.cpp \
 			   ./pfInputPot.cpp   \
-			   ./pfInputLMP.cpp   \
+			   ./pfInputMEAMC.cpp \
+			   ./pfInputMEAMS.cpp \
 			   ./pfOptAnneal.cpp  \
 			   ./pfOptEvo.cpp \
 			   ./pfOptCMAES.cpp \

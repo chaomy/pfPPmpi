@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-23 20:10:54
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 13:49:33
+ * @Last Modified time: 2018-02-06 20:14:29
  */
 
 #include "pfHome.h"
@@ -158,7 +158,7 @@ void pfHome::simAnnealSpline() {
   int loopcnt = 0;
   int loopagain = 1;
   double T = dparams["temp"];
-  double err = forceMEAM(ini);
+  double err = forceMEAMS(ini);
   double correntobj = err, overallobj = err;
 
   vector<double> v(nvars, dparams["istep"]);
@@ -173,7 +173,7 @@ void pfHome::simAnnealSpline() {
         for (int h = 0; h < nvars; h++) {
           tmpvv = ini;
           randomize(tmpvv, h, v);
-          correntobj = forceMEAM(tmpvv);
+          correntobj = forceMEAMS(tmpvv);
 
           if (correntobj <= err) {
             ini = tmpvv;
@@ -213,7 +213,7 @@ void pfHome::simAnnealSpline() {
         updaterhoMEAM(ini);
         if (rescaleEMF(ini) == 1) {
           printf("before rescale = %f\n", err);
-          err = forceMEAM(ini);
+          err = forceMEAMS(ini);
           printf("min = %f ; max = %f ; ave = %f \n", ominrho, omaxrho,
                  oaverho);
           printf("after rescale = %f\n", err);

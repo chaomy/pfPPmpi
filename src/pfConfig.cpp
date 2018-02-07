@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 00:21:46
+ * @Last Modified time: 2018-02-07 01:53:09
  */
 
 #include "pfHome.h"
@@ -173,7 +173,6 @@ void pfHome::setNeighslotStd(Neigh &refn, Func func, double r) {
       std::lower_bound(func.xx.begin(), func.xx.end(), r);
   int idx = std::max(int(it - func.xx.begin()) - 1, 0);
   refn.shifts.push_back(r - func.xx[idx]);
-
   if (r < func.xx.front())
     refn.slots.push_back(-1);
   else if (r > func.xx.back())
@@ -187,7 +186,6 @@ void pfHome::setAngleslotStd(Angle &refang, Func func, double r) {
       std::lower_bound(func.xx.begin(), func.xx.end(), r);
   int idx = std::max(int(it - func.xx.begin()) - 1, 0);
   refang.shift = (r - func.xx[idx]);
-
   if (r < func.xx.front())
     refang.slot = -1;
   else if (r > func.xx.back())

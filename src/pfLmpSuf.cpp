@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:36:04
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 17:15:05
+ * @Last Modified time: 2018-02-06 22:44:36
  */
 
 #include "pfLmpDrv.h"
@@ -54,7 +54,7 @@ void pfHome::pfLMPdrv::calSurface() {
   else
     sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
             sttag["elem"].c_str());
-  // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+  sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
   sprintf(cmds[i++], "neighbor 1.0 bin");
   sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 
@@ -100,7 +100,7 @@ void pfHome::pfLMPdrv::calSurface() {
   else
     sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
             sttag["elem"].c_str());
-  // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+  sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
   sprintf(cmds[i++], "neighbor 1.0 bin");
   sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 
@@ -157,7 +157,7 @@ void pfHome::pfLMPdrv::calSurface() {
   else
     sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
             sttag["elem"].c_str());
-  // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+  sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
   sprintf(cmds[i++], "neighbor 1.0 bin");
   sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 
@@ -206,7 +206,7 @@ void pfHome::pfLMPdrv::calSurface() {
   else
     sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
             sttag["elem"].c_str());
-  // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+  sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
   sprintf(cmds[i++], "neighbor 1.0 bin");
   sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 
@@ -264,7 +264,7 @@ void pfHome::pfLMPdrv::calSurface() {
   else
     sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
             sttag["elem"].c_str());
-  // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+  sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
   sprintf(cmds[i++], "neighbor 1.0 bin");
   sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 
@@ -314,7 +314,7 @@ void pfHome::pfLMPdrv::calSurface() {
   else
     sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
             sttag["elem"].c_str());
-  // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+  sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
   sprintf(cmds[i++], "neighbor 1.0 bin");
   sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 

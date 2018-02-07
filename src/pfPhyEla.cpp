@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-17 11:13:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-12-19 15:58:19
+ * @Last Modified time: 2018-02-06 20:18:51
  */
 
 #include "pfHome.h"
@@ -22,9 +22,9 @@ void pfHome::calElas() {
     mpcf["c44"].push_back(addmono(ubcc, dl));
   }
 
-  for (auto& ee : mpcf["c11"]) forceMEAM(ee);
-  for (auto& ee : mpcf["c12"]) forceMEAM(ee);
-  for (auto& ee : mpcf["c44"]) forceMEAM(ee);
+  for (auto& ee : mpcf["c11"]) (this->*calfrc[sparams["ptype"]])(ee);
+  for (auto& ee : mpcf["c12"]) (this->*calfrc[sparams["ptype"]])(ee);
+  for (auto& ee : mpcf["c44"]) (this->*calfrc[sparams["ptype"]])(ee);
 
   vector<double> tm(3, 0);
   // double vol = 0.5 * exprs["lat"] * exprs["lat"] * exprs["lat"];

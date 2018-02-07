@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 21:05:07
+ * @Last Modified time: 2018-02-07 02:18:08
  */
 
 #include "pfHome.h"
@@ -33,10 +33,10 @@ void pfHome::bcdata() {
     broadcast(cmm, t0, PFROOT);
     nvars = ini.size();
     meam_setup_globalfixed();
-
   } else {  // use spline
     broadcast(cmm, nfuncs, PFROOT);
     broadcast(cmm, ini, PFROOT);
+    nvars = ini.size();
     broadcast(cmm, lob, PFROOT);
     broadcast(cmm, hib, PFROOT);
     broadcast(cmm, deb, PFROOT);
@@ -67,17 +67,33 @@ void pfHome::bcdata() {
     // cutforce = rocut;
     // cutforcesq = rocut * rocut;
 
-    if (!sparams["ptype"].compare("MEAM")) {  // boundary
-      funcs[MEAMF].s.set_boundary(tk::spline::second_deriv, 0.0,
-                                  tk::spline::first_deriv, 0.0, true);
-      funcs[MEAMG].s.set_boundary(tk::spline::second_deriv, 0.0,
-                                  tk::spline::second_deriv, 0.0, true);
+    if (!sparams["ptype"].compare("MEAMS")) {  // boundary
+      // funcs[MEAMF].s.set_boundary(tk::spline::second_deriv, 0.0,
+      //                             tk::spline::first_deriv, 0.0, true);
+      // funcs[MEAMG].s.set_boundary(tk::spline::second_deriv, 0.0,
+      //                             tk::spline::second_deriv, 0.0, true);
+      funcs[MEAMF].s.set_boundary(
+          tk::spline::first_deriv, funcs[MEAMF].g1.front(),
+          tk::spline::first_deriv, funcs[MEAMF].g1.back(), true);
+      funcs[MEAMG].s.set_boundary(
+          tk::spline::first_deriv, funcs[MEAMG].g1.front(),
+          tk::spline::first_deriv, funcs[MEAMG].g1.back(), true);
     }
-    funcs[PHI].s.set_boundary(tk::spline::second_deriv, 0.0,
-                              tk::spline::first_deriv, 0.0, true);
-    funcs[RHO].s.set_boundary(tk::spline::second_deriv, 0.0,
-                              tk::spline::first_deriv, 0.0, true);
-    funcs[EMF].s.set_boundary(tk::spline::second_deriv, 0.0,
-                              tk::spline::second_deriv, 0.0, true);
+    // funcs[PHI].s.set_boundary(tk::spline::second_deriv, 0.0,
+    //                           tk::spline::first_deriv, 0.0, true);
+    // funcs[RHO].s.set_boundary(tk::spline::second_deriv, 0.0,
+    //                           tk::spline::first_deriv, 0.0, true);
+    // funcs[EMF].s.set_boundary(tk::spline::second_deriv, 0.0,
+    //                           tk::spline::second_deriv, 0.0, true);
+
+    funcs[PHI].s.set_boundary(tk::spline::first_deriv, funcs[PHI].g1.front(),
+                              tk::spline::first_deriv, funcs[PHI].g1.back(),
+                              true);
+    funcs[RHO].s.set_boundary(tk::spline::first_deriv, funcs[RHO].g1.front(),
+                              tk::spline::first_deriv, funcs[RHO].g1.back(),
+                              true);
+    funcs[EMF].s.set_boundary(tk::spline::first_deriv, funcs[EMF].g1.front(),
+                              tk::spline::first_deriv, funcs[EMF].g1.back(),
+                              true);
   }
 }

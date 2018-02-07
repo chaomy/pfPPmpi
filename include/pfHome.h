@@ -94,6 +94,7 @@ class pfHome {
   unordered_map<string, void (pfHome::*)(Config&)> calfrc;
   unordered_map<string, double (pfHome::*)(const arma::mat& vv, int tg)> calobj;
   unordered_map<string, void (pfHome::*)()> write;
+  unordered_map<string, void (pfHome::*)()> read;
 
   vector<Config> configs;
   vector<Func> funcs;
@@ -132,6 +133,7 @@ class pfHome {
 
   // void setupMEAMC();  // setup meam params
   void wrapAtomPos(Config& cc);
+  void setSplineBoundary();
   void initBox(Config& cc);
   void initNeighs();
   void initNeighs(Config& cc);
@@ -172,14 +174,14 @@ class pfHome {
   double forceEAM(vector<Func>& ffs, int tag);
   double forceEAM(const vector<double>& vv);
   double forceADP(const vector<double>& vv, int tag);
-  double forceMEAM(const vector<double>& vv);
+  double forceMEAMS(const vector<double>& vv);
   double forceEAM(const arma::mat& vv);
   double forceEAM(const arma::mat& vv, int tg);
-  double forceMEAM(const arma::mat& vv);
-  double forceMEAM(const arma::mat& vv, int tg);
+  double forceMEAMS(const arma::mat& vv);
+  double forceMEAMS(const arma::mat& vv, int tg);
   double forceMEAMC(const arma::mat& vv, int tg);
   void forceMEAMC(Config& cc);
-  void forceMEAM(Config& cc);
+  void forceMEAMS(Config& cc);
   void forceEAM(Config& cc);
   void stressMEAM(Config& cc);
 
@@ -225,9 +227,9 @@ class pfHome {
   void readConfig();
   void readPot();
   void readMEAMC();
+  void readMEAMS();
   void readMEAMCcnt();
   void readParam();
-  void readLmpMEAM();
 
   // outputs
   void writePot();
@@ -235,8 +237,8 @@ class pfHome {
   void writePot(const string& s);
   void writeLMPS();
   void writeLMPS(const vector<double>& vv);
-  void writeMEAM();
   void writePOSCAR(const Config& cc, string fnm = "POSCAR.vasp");
+  void writeMEAMS();
   void writeMEAMC();
 
   // utils
