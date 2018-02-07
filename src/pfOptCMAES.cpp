@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-07 02:32:15
+ * @Last Modified time: 2018-02-07 14:52:25
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -63,7 +63,6 @@ double pfHome::cmaes(arma::mat& iterate) {
   int maxIt = 5000;
   double tolerance = 1e-10;
   ofstream of1("err.txt", std::ofstream::out);
-  ofstream of2("par.txt", std::ofstream::out);
 
   // Population size.
   int lambda = (4 + std::round(3 * std::log(iterate.n_elem))) * 10;
@@ -173,27 +172,8 @@ double pfHome::cmaes(arma::mat& iterate) {
       overallobj = currentobj;
       iterate = mps.slice(idx1);
 
-      error["phy"] = 0.0;
       (this->*write[sparams["ptype"]])();
-      lmpdrv->calLatticeBCC();
-      lmpdrv->calLatticeFCC();
-      lmpdrv->calLatticeHCP();
-      lmpdrv->calElastic();
-      lmpdrv->calSurface();
-
-      // // do some clean
-      remove("no");
-      remove("log.lammps");
-      remove("restart.equil");
-      lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
-      lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
-      vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100",
-                         "suf111", "bcc2fcc", "bcc2hcp"});
-      for (string ee : aa)
-        error["phy"] +=
-            (lmpdrv->error[ee] =
-                 10. * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
-                                lmpdrv->targs[ee]));
+      if (i % iparams["lmpfreq"] == 1) lmpCheck(i, of1);
     }
 
     // Update Step Size.
@@ -261,39 +241,12 @@ double pfHome::cmaes(arma::mat& iterate) {
       }
     }
 
-    // Output current objective function.
-    // for spline
-    // cout << "CMA-ES: iteration " << i << ", objective " << overallobj << " "
-    //      << error["frc"] << " " << error["punish"] << " " << error["shift"]
-    //      << " cs " << sigma(idx1) << " " <<
-    //      << (lastobj - overallobj) / lastobj << " " <<
-    //      configs[locstt].fitengy
-    //      << " " << configs[locstt].engy << endl;
-
     // for meamc
     cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
          << error["frc"] << " " << error["phy"] << " cs " << sigma(idx1) << " "
          << (lastobj - overallobj) / lastobj << " " << ominrho << " " << omaxrho
          << " " << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
          << endl;
-
-    // || error["phy"] < 30.0
-    // if (i == 1) {
-    of1 << i << " " << std::setprecision(4) << error["phy"] << " "
-        << lmpdrv->exprs["lat"] << " " << lmpdrv->exprs["c11"] << " "
-        << lmpdrv->exprs["c12"] << " " << lmpdrv->exprs["c44"] << " "
-        << lmpdrv->exprs["suf110"] << " " << lmpdrv->exprs["suf100"] << " "
-        << lmpdrv->exprs["suf111"] << " " << lmpdrv->exprs["bcc2fcc"] << " "
-        << lmpdrv->exprs["bcc2hcp"] << endl;
-
-    // of2 << i << " " << std::setprecision(4) << alpha_meam[0][0] << " "
-    //     << beta0_meam[0] << " " << beta1_meam[0] << " " << beta2_meam[0] << "
-    //     "
-    //     << beta3_meam[0] << " " << Ec_meam[0][0] << " " << A_meam[0] << " "
-    //     << t1_meam[0] << " " << t2_meam[0] << " " << t3_meam[0] << " "
-    //     << rc_meam << " " << Cmin_meam[0][0][0] << " "
-    //     << re_meam[0][0] * 2. / sqrt(3) << endl;
-    // }
 
     if (std::isnan(overallobj) || std::isinf(overallobj)) {
       cout << "CMA-ES: converged to " << overallobj << "; "
@@ -319,6 +272,44 @@ double pfHome::cmaes(arma::mat& iterate) {
   }
 
   of1.close();
-  of2.close();
   return overallobj;
 }
+
+void pfHome::lmpCheck(int i, ofstream& of1) {
+  error["phy"] = 0.0;
+  lmpdrv->calLatticeBCC();
+  lmpdrv->calLatticeFCC();
+  lmpdrv->calLatticeHCP();
+  lmpdrv->calElastic();
+  lmpdrv->calSurface();
+
+  remove("no");
+  remove("log.lammps");
+  remove("restart.equil");
+  lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
+  lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
+  vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
+                     "bcc2fcc", "bcc2hcp"});
+  for (string ee : aa)
+    error["phy"] +=
+        (lmpdrv->error[ee] =
+             10. * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
+                            lmpdrv->targs[ee]));
+
+  of1 << i << " " << std::setprecision(4) << error["phy"] << " "
+      << lmpdrv->exprs["lat"] << " " << lmpdrv->exprs["c11"] << " "
+      << lmpdrv->exprs["c12"] << " " << lmpdrv->exprs["c44"] << " "
+      << lmpdrv->exprs["suf110"] << " " << lmpdrv->exprs["suf100"] << " "
+      << lmpdrv->exprs["suf111"] << " " << lmpdrv->exprs["bcc2fcc"] << " "
+      << lmpdrv->exprs["bcc2hcp"] << endl;
+}
+
+// if (i == 1) {
+// of2 << i << " " << std::setprecision(4) << alpha_meam[0][0] << " "
+//     << beta0_meam[0] << " " << beta1_meam[0] << " " << beta2_meam[0] << "
+//     "
+//     << beta3_meam[0] << " " << Ec_meam[0][0] << " " << A_meam[0] << " "
+//     << t1_meam[0] << " " << t2_meam[0] << " " << t3_meam[0] << " "
+//     << rc_meam << " " << Cmin_meam[0][0][0] << " "
+//     << re_meam[0][0] * 2. / sqrt(3) << endl;
+// }

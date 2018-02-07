@@ -25,9 +25,11 @@
 #include "pfEle.h"
 #include "spline.h"
 
+using std::ofstream;
 using std::string;
 using std::unordered_map;
 using std::vector;
+
 namespace mpi = boost::mpi;
 typedef enum { FCC, BCC, HCP, DAM, DIA, B1, C11, L12, B2 } lattice_t;
 
@@ -261,6 +263,7 @@ class pfHome {
   void calPV();
   void calElas();
   void calSurf();
+  void lmpCheck(int i, ofstream& of1);
 
   // MPI utilitis
   void bcdata();
