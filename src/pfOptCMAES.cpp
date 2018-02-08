@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-08 11:02:17
+ * @Last Modified time: 2018-02-08 17:52:16
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -30,7 +30,8 @@ double pfHome::testFunc(arma::mat& vc) {
 
 void pfHome::cntcmaes() {
   arma::mat iterate =
-      4.90 + 0.2 * arma::mat(nvars, 1, arma::fill::randu);  // to [0, 10]
+      5.0 + dparams["istep"] *
+                (arma::mat(nvars, 1, arma::fill::randu) - 0.5);  // to [0, 10]
   (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
   if (cmm.rank() == PFROOT) {
     cmaes(iterate);
@@ -40,28 +41,27 @@ void pfHome::cntcmaes() {
 
 void pfHome::loopcmaes() {
   double cr = 1e30, op = 1e30;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < iparams["kmax"]; i++) {
     arma::mat iterate(nvars, 1, arma::fill::randu);
     iterate *= 10;
     (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
     if (cmm.rank() == PFROOT) {
       op = (cr = cmaes(iterate)) < op ? cr : op;
-
       std::ostringstream ss;
       ss << std::setw(4) << std::setfill('0') << i;
-      std::rename("meam.tmp", ("meam.tmp." + ss.str()).c_str());
-      std::rename("meam.param", ("meam.param." + ss.str()).c_str());
+      // std::rename("meam.tmp", ("meam.tmp." + ss.str()).c_str());
+      std::rename("meam.lib.best", ("meam.lib." + ss.str()).c_str());
       std::rename("err.txt", ("err." + ss.str()).c_str());
-      std::rename("par.txt", ("par." + ss.str()).c_str());
-
+      // std::rename("par.txt", ("par." + ss.str()).c_str());
       (this->*calobj[sparams["ptype"]])(decodev(iterate), EXT);
     }
   }
 }
 
 double pfHome::cmaes(arma::mat& iterate) {
-  int maxIt = 5000;
-  double tolerance = 1e-10;
+  int maxIt = iparams["maxstep"];
+  double tolerance = dparams["ftol"];
+  double sigmatol = dparams["xtol"];
   ofstream of1("err.txt", std::ofstream::out);
 
   // Population size.
@@ -83,8 +83,9 @@ double pfHome::cmaes(arma::mat& iterate) {
   // Step size control parameters.
   arma::vec sigma(3);
 
-  double upperBound = 10., lowerBound = -10.;
-  sigma(0) = 0.1 * (upperBound - lowerBound);
+  // double upperBound = 10., lowerBound = -10.;
+  // sigma(0) = 0.1 * (upperBound - lowerBound);
+  sigma(0) = 3. * dparams["istep"];
 
   const double cs = (muEffective + 2) / (iterate.n_elem + muEffective + 5);
   const double ds =
@@ -120,6 +121,7 @@ double pfHome::cmaes(arma::mat& iterate) {
   double currentobj =
       (this->*calobj[sparams["ptype"]])(decodev(mps.slice(0)), 1);
   double overallobj = currentobj;
+  double overallphy = 1e30;
   double lastobj = 1e30;
 
   // Population parameters.
@@ -173,7 +175,13 @@ double pfHome::cmaes(arma::mat& iterate) {
       iterate = mps.slice(idx1);
       iterate.t().print();
       (this->*write[sparams["ptype"]])();
-      if (i % iparams["lmpfreq"] == 1) lmpCheck(i, of1);
+      if (i % iparams["lmpfreq"] == 1) {
+        lmpCheck(i, of1);
+        if (error["phy"] < overallphy) {
+          overallphy = error["phy"];
+          std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
+        }
+      }
     }
 
     // Update Step Size.
@@ -255,7 +263,9 @@ double pfHome::cmaes(arma::mat& iterate) {
       return overallobj;
     }
 
-    if (std::abs(lastobj - overallobj) < tolerance && i > 100) {
+    if ((std::abs(lastobj - overallobj) < tolerance ||
+         sigma(idx1) < sigmatol) &&
+        i > 50) {
       cout << "CMA-ES: minimized within tolerance " << tolerance << "; "
            << "terminating optimization." << std::endl;
       return overallobj;

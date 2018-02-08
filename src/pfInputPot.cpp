@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-07 13:47:50
+ * @Last Modified time: 2018-02-08 17:18:13
  */
 
 #include "pfHome.h"
@@ -87,11 +87,12 @@ void pfHome::setSplineBoundary() {
   hib.clear();
   deb.clear();
   for (Func& ff : funcs) ff.step = ff.xx[1] - ff.xx[0];
-  for (int i = 0; i < nfuncs; i++) {
+
+  // for (int i = 0; i < nfuncs; i++) {
+  for (int i : optidx) {
     Func& ff = funcs[i];
     startps.push_back(nvars);
-    int nt = (i == PHI || i == RHO || i == MEAMF) ? ff.npts - 1 : ff.npts;
-    for (int j = 0; j < nt; j++) {
+    for (int j = 0; j < ff.npts; j++) {
       ini.push_back(ff.yy[j]);
       double vari =
           (fabs(ff.yy[j]) >= 1e-8) ? dparams["ivari"] * fabs(ff.yy[j]) : 0.001;
@@ -101,9 +102,5 @@ void pfHome::setSplineBoundary() {
       nvars++;
     }
     endps.push_back(nvars);
-  }                                        // i
-  if (!sparams["ptype"].compare("MEAMS"))  // boundary
-    funcs[MEAMF].yy.back() = 0.0;
-  funcs[PHI].yy.back() = 0.0;
-  funcs[RHO].yy.back() = 0.0;
+  }  // i
 }

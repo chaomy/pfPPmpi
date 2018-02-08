@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-17 14:00:51
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-07 21:59:10
+ * @Last Modified time: 2018-02-08 17:18:00
  */
 
 #include "pfHome.h"
@@ -27,7 +27,11 @@ void pfHome::readMEAMS() {
   getline(fid, buff);  // read head line
   pfu.split(buff, " ", segs);
 
-  for (int i = 1; i < segs.size(); i++) recordbd.push_back(stoi(segs[i]));
+  for (int i = 1; i < 11; i++) recordbd.push_back(stoi(segs[i]));
+  for (int i = 11; i <= 15; i++)
+    if (stoi(segs[i]) == 1) optidx.push_back(i - 11);
+
+  for (auto ee : optidx) cout << "to be optimized : " << ee << endl;
 
   int cnt = nfuncs = 5;
   vector<int>::iterator it = recordbd.begin();
@@ -59,6 +63,5 @@ void pfHome::readMEAMS() {
   //   for (int i = 0; i < ff.npts; i++)
   //     cout << ff.xx[i] << " " << ff.yy[i] << " " << ff.g2[i] << endl;
   // }
-
   setSplineBoundary();
 }

@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-08 00:15:02
+ * @Last Modified time: 2018-02-08 17:28:24
  */
 
 #include "pfHome.h"
@@ -16,27 +16,19 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     if (tg == EXT) break;
 
     int cnt = 0;
-    for (int i = 0; i < nfuncs; i++) { /* interpolates */
+    for (int i : optidx) {
       Func &ff = funcs[i];
-      double mxf = -1e10, mif = 1e10;
-      int nt = (i == PHI || i == RHO || i == MEAMF) ? ff.npts - 1 : ff.npts;
-      for (int j = 0; j < nt; j++) {
-        ff.yy[j] = vv[cnt++];
-        mxf = ff.yy[j] > mxf ? ff.yy[j] : mxf;
-        mif = ff.yy[j] < mif ? ff.yy[j] : mif;
-      }
-      ff.rng = mxf - mif;
+      for (int j = 0; j < ff.npts; j++) ff.yy[j] = vv[cnt++];
     }
 
     for (int i = 0; i < nfuncs; i++) {  // broadcast functions
       broadcast(cmm, funcs[i].xx, PFROOT);
       broadcast(cmm, funcs[i].yy, PFROOT);
-      broadcast(cmm, funcs[i].rng, PFROOT);
     }
 
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
-    double efrc = 0.0, epsh = 0.0;
+    double efrc = 0.0;  // epsh = 0.0;
     error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
 
@@ -71,7 +63,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"] * (1. + error["punish"]);
+  return error["frc"];
 }
 
 double pfHome::forceMEAMS(const arma::mat &vv) {
@@ -123,6 +115,7 @@ double pfHome::forceMEAMS(const vector<double> &vv) {
 
 void pfHome::forceMEAMS(Config &cnf) {
   cnf.phiengy = cnf.emfengy = 0.0;
+  cnf.rhomi = 1e10, cnf.rhomx = -1e10;
   for (pfAtom &atm : cnf.atoms) { /* loop over atoms to reset values */
     atm.crho = 0.0;
     for (int it : {X, Y, Z})

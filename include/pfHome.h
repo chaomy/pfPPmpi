@@ -117,6 +117,7 @@ class pfHome {
   vector<double> hib;
   vector<double> lob;
   vector<double> deb;  // hib - lob
+  vector<int> optidx;  // functions that to be optimized
   vector<int> gradRight;
 
  public:

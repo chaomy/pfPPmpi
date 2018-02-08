@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-08 13:39:33
+ * @Last Modified time: 2018-02-08 16:17:11
  */
 
 #include "pfHome.h"
@@ -36,6 +36,7 @@ void pfHome::bcdata() {
   } else {  // use spline
     broadcast(cmm, nfuncs, PFROOT);
     broadcast(cmm, ini, PFROOT);
+    broadcast(cmm, optidx, PFROOT);
     nvars = ini.size();
     broadcast(cmm, lob, PFROOT);
     broadcast(cmm, hib, PFROOT);

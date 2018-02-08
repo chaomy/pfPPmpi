@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-08 13:39:08
+ * @Last Modified time: 2018-02-08 17:52:07
  */
 
 #include "pfHome.h"
@@ -27,17 +27,17 @@ void pfHome::initParam() {
   dparams["ivari"] = 0.3;
   dparams["pratio"] = 0.5;
   dparams["eweight"] = 1.0;
-  dparams["pweight"] = 30;
+  dparams["pweight"] = 0.1;
   dparams["pshift"] = 10;
   dparams["xtol"] = 1e-4;
+  dparams["ftol"] = 1e-6;
   dparams["bwidth"] = 15.0;
-  dparams["cmabnd"] = 0.1;
   dparams["frceps"] = 0.1;
 
   iparams["maxstep"] = 10000;
   iparams["resfreq"] = 10;
   iparams["lmpfreq"] = 15;
-  iparams["kmax"] = 8;  // number of outer loop in simulated annealing
+  iparams["kmax"] = 1000;  // number of outer loop in simulated annealing
   readParam();
   cout << "ptype = " << sparams["ptype"] << endl;
   sparams["lmpfile"] = string("dummy.lammps.") + sparams["ptype"];
