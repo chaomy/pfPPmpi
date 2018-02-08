@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-07 14:52:25
+ * @Last Modified time: 2018-02-07 20:39:05
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -30,7 +30,7 @@ double pfHome::testFunc(arma::mat& vc) {
 
 void pfHome::cntcmaes() {
   arma::mat iterate =
-      4.5 + arma::mat(nvars, 1, arma::fill::randu);  // to [0, 10]
+      4.90 + 0.2 * arma::mat(nvars, 1, arma::fill::randu);  // to [0, 10]
   (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
   if (cmm.rank() == PFROOT) {
     cmaes(iterate);
@@ -171,7 +171,7 @@ double pfHome::cmaes(arma::mat& iterate) {
     if (currentobj < overallobj) {  // Update best parameters.
       overallobj = currentobj;
       iterate = mps.slice(idx1);
-
+      iterate.t().print();
       (this->*write[sparams["ptype"]])();
       if (i % iparams["lmpfreq"] == 1) lmpCheck(i, of1);
     }
