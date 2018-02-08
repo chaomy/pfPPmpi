@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-07 02:36:26
+ * @Last Modified time: 2018-02-08 13:39:08
  */
 
 #include "pfHome.h"
@@ -32,6 +32,7 @@ void pfHome::initParam() {
   dparams["xtol"] = 1e-4;
   dparams["bwidth"] = 15.0;
   dparams["cmabnd"] = 0.1;
+  dparams["frceps"] = 0.1;
 
   iparams["maxstep"] = 10000;
   iparams["resfreq"] = 10;

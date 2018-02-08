@@ -28,7 +28,6 @@ using std::vector;
 #define MAXLEN 1024
 #define PWEIGHT 100
 #define EWEIGH 500
-#define FRCEPS 0.1
 #define PI 3.14159265359
 #define INVPI 0.31830988618
 #define PFROOT 0

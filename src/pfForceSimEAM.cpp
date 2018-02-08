@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-12-18 20:57:07
+ * @Last Modified time: 2018-02-08 13:40:25
  */
 
 #include "pfHome.h"
@@ -121,7 +121,7 @@ double pfHome::forceEAM(vector<Func>& ffs, int tag) {
             atm.fitfrc[2] += tmp[2];
           }
         }  // nn
-        scaleVec(atm.fitfrc, 1. / (FRCEPS + atm.absfrc));
+        scaleVec(atm.fitfrc, 1. / (dparams["frceps"] + atm.absfrc));
         err += square11(atm.fitfrc[0]) * atm.fweigh[0];
         err += square11(atm.fitfrc[1]) * atm.fweigh[1];
         err += square11(atm.fitfrc[2]) * atm.fweigh[2];
