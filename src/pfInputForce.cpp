@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-20 16:53:38
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 09:46:52
+ * @Last Modified time: 2018-02-07 21:50:52
  */
 
 #include "pfHome.h"
@@ -27,7 +27,7 @@ void pfHome::readConfig() {    /* read atomic force file */
 
   int cnt = 0;
   string buff;
-  vector<string> segs(1, " ");
+  vector<string> segs;
   Config config;
 
   while (getline(fid, buff)) {

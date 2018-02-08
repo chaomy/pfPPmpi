@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-02-06 19:10:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-06 19:11:22
+ * @Last Modified time: 2018-02-07 21:51:10
  */
 
 #include "pfHome.h"
@@ -35,7 +35,7 @@ void pfHome::readMEAMC() {
   fid.open(sparams["potfile"].c_str());
   if (!fid.is_open()) cerr << "error opening " + sparams["potfile"] << endl;
   string buff;
-  vector<string> segs(1, " ");
+  vector<string> segs;
   vector<string> tg;
 
   for (int i = 0; i < 3; i++) {

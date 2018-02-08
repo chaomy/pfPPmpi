@@ -227,7 +227,7 @@ class Config {
 
 class Func {
  private:
-  int npts, bnd;
+  int npts, bnd, bl, br;
   double rng;      // range ymax - ymin
   double step;     // equidist; has't initilaized yet
   double invstep;  // equidist

@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-07 21:14:47
+ * @Last Modified time: 2018-02-07 22:10:05
  */
 
 #include "pfHome.h"
@@ -52,6 +52,8 @@ void pfHome::bcdata() {
 
     broadcast(cmm, nvars, PFROOT);
     for (int i = 0; i < nfuncs; i++) {
+      broadcast(cmm, funcs[i].bl, PFROOT);
+      broadcast(cmm, funcs[i].br, PFROOT);
       broadcast(cmm, funcs[i].npts, PFROOT);
       broadcast(cmm, funcs[i].xx, PFROOT);
       broadcast(cmm, funcs[i].yy, PFROOT);
@@ -66,10 +68,19 @@ void pfHome::bcdata() {
 
     // cutforce = rocut;
     // cutforcesq = rocut * rocut;
+    vector<tk::spline::bd_type> bdmp(
+        {tk::spline::first_deriv, tk::spline::second_deriv});
 
-    if (!sparams["ptype"].compare("MEAMS")) {  // boundary
-      funcs[MEAMF].s.set_boundary(tk::spline::second_deriv, 0.0,
-                                  tk::spline::first_deriv, 0.0, true);
+    for (Func& ff : funcs)
+      ff.s.set_boundary(bdmp[ff.bl - 1], ff.g1.front(), bdmp[ff.br - 1],
+                        ff.g1.back(), true);
+
+    if (1 == 2) {  // boundary
+      funcs[MEAMF].s.set_boundary(
+          bdmp[funcs[MEAMF].bl - 1], funcs[MEAMF].g1.front(),
+          bdmp[funcs[MEAMF].br - 1], funcs[MEAMF].g1.back(), true);
+      // funcs[MEAMF].s.set_boundary(tk::spline::second_deriv, 0.0,
+      //                             tk::spline::first_deriv, 0.0, true);
       // funcs[MEAMG].s.set_boundary(tk::spline::second_deriv, 0.0,
       //                             tk::spline::second_deriv, 0.0, true);
       // funcs[MEAMF].s.set_boundary(
@@ -78,6 +89,16 @@ void pfHome::bcdata() {
       funcs[MEAMG].s.set_boundary(
           tk::spline::first_deriv, funcs[MEAMG].g1.front(),
           tk::spline::first_deriv, funcs[MEAMG].g1.back(), true);
+
+      funcs[PHI].s.set_boundary(tk::spline::first_deriv, funcs[PHI].g1.front(),
+                                tk::spline::first_deriv, funcs[PHI].g1.back(),
+                                true);
+      funcs[RHO].s.set_boundary(tk::spline::first_deriv, funcs[RHO].g1.front(),
+                                tk::spline::first_deriv, funcs[RHO].g1.back(),
+                                true);
+      funcs[EMF].s.set_boundary(tk::spline::first_deriv, funcs[EMF].g1.front(),
+                                tk::spline::first_deriv, funcs[EMF].g1.back(),
+                                true);
     }
     // funcs[PHI].s.set_boundary(tk::spline::second_deriv, 0.0,
     //                           tk::spline::first_deriv, 0.0, true);
@@ -85,15 +106,5 @@ void pfHome::bcdata() {
     //                           tk::spline::first_deriv, 0.0, true);
     // funcs[EMF].s.set_boundary(tk::spline::second_deriv, 0.0,
     //                           tk::spline::second_deriv, 0.0, true);
-
-    funcs[PHI].s.set_boundary(tk::spline::first_deriv, funcs[PHI].g1.front(),
-                              tk::spline::first_deriv, funcs[PHI].g1.back(),
-                              true);
-    funcs[RHO].s.set_boundary(tk::spline::first_deriv, funcs[RHO].g1.front(),
-                              tk::spline::first_deriv, funcs[RHO].g1.back(),
-                              true);
-    funcs[EMF].s.set_boundary(tk::spline::first_deriv, funcs[EMF].g1.front(),
-                              tk::spline::first_deriv, funcs[EMF].g1.back(),
-                              true);
   }
 }
