@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-07 02:18:08
+ * @Last Modified time: 2018-02-07 21:14:47
  */
 
 #include "pfHome.h"
@@ -68,13 +68,13 @@ void pfHome::bcdata() {
     // cutforcesq = rocut * rocut;
 
     if (!sparams["ptype"].compare("MEAMS")) {  // boundary
-      // funcs[MEAMF].s.set_boundary(tk::spline::second_deriv, 0.0,
-      //                             tk::spline::first_deriv, 0.0, true);
+      funcs[MEAMF].s.set_boundary(tk::spline::second_deriv, 0.0,
+                                  tk::spline::first_deriv, 0.0, true);
       // funcs[MEAMG].s.set_boundary(tk::spline::second_deriv, 0.0,
       //                             tk::spline::second_deriv, 0.0, true);
-      funcs[MEAMF].s.set_boundary(
-          tk::spline::first_deriv, funcs[MEAMF].g1.front(),
-          tk::spline::first_deriv, funcs[MEAMF].g1.back(), true);
+      // funcs[MEAMF].s.set_boundary(
+      //     tk::spline::first_deriv, funcs[MEAMF].g1.front(),
+      //     tk::spline::first_deriv, funcs[MEAMF].g1.back(), true);
       funcs[MEAMG].s.set_boundary(
           tk::spline::first_deriv, funcs[MEAMG].g1.front(),
           tk::spline::first_deriv, funcs[MEAMG].g1.back(), true);
