@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-17 14:00:51
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-08 17:18:00
+ * @Last Modified time: 2018-02-11 17:14:19
  */
 
 #include "pfHome.h"
@@ -28,14 +28,14 @@ void pfHome::readMEAMS() {
   pfu.split(buff, " ", segs);
 
   for (int i = 1; i < 11; i++) recordbd.push_back(stoi(segs[i]));
-  for (int i = 11; i <= 15; i++)
-    if (stoi(segs[i]) == 1) optidx.push_back(i - 11);
-
-  for (auto ee : optidx) cout << "to be optimized : " << ee << endl;
+  for (int i = 11; i < segs.size(); i++) optidx.push_back(stoi(segs[i]));
+  for (int i : {0, 1, 2, 3, 4})
+    if (optidx[i] == 1) cout << "to be optimized : " << i << endl;
 
   int cnt = nfuncs = 5;
   vector<int>::iterator it = recordbd.begin();
   while (--cnt >= 0) {
+    segs.clear();
     Func tm;
     getline(fid, buff);
     tm.npts = stoi(buff);
@@ -46,6 +46,8 @@ void pfHome::readMEAMS() {
     getline(fid, buff);
     sscanf(buff.c_str(), "%lf %lf", &tm.g1.front(), &tm.g1.back());
     getline(fid, buff);
+    pfu.split(buff, " ", segs);
+    for (auto ee : segs) tm.rlxid.push_back(stoi(ee));
     for (int j = 0; j < tm.npts; j++) {
       getline(fid, buff);
       sscanf(buff.c_str(), "%lf %lf %lf", &tm.xx[j], &tm.yy[j], &tm.g2[j]);
@@ -63,5 +65,5 @@ void pfHome::readMEAMS() {
   //   for (int i = 0; i < ff.npts; i++)
   //     cout << ff.xx[i] << " " << ff.yy[i] << " " << ff.g2[i] << endl;
   // }
-  setSplineBoundary();
+  setSplineVariables();
 }

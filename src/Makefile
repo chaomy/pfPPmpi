@@ -27,6 +27,7 @@ MAKETARGET 	=  pot.exe
 
 # The source files
 POTFITSRC 	=  ./pfConfig.cpp     \
+			   ./pfPotSpline.cpp  \
 			   ./pfForceEAM.cpp   \
 			   ./pfForceADP.cpp   \
 			   ./pfForceMEAMS.cpp  \
@@ -83,6 +84,7 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfAnaMEAMfuncs.cpp \
 			   ./pfAnaMEAMforce.cpp \
 			   ./pfMathSpecial.cpp \
+			   ./pfGPsample.cpp    \
 			   ./pfMain.cpp
 
 # parallel

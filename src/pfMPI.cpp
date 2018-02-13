@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-08 16:17:11
+ * @Last Modified time: 2018-02-11 16:54:55
  */
 
 #include "pfHome.h"
@@ -60,6 +60,7 @@ void pfHome::bcdata() {
       broadcast(cmm, funcs[i].yy, PFROOT);
       broadcast(cmm, funcs[i].g1, PFROOT);
       broadcast(cmm, funcs[i].g2, PFROOT);
+      broadcast(cmm, funcs[i].rlxid, PFROOT);
     }
 
     // assign cutoffs

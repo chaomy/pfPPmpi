@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-08 17:28:24
+ * @Last Modified time: 2018-02-13 00:05:12
  */
 
 #include "pfHome.h"
@@ -16,9 +16,10 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     if (tg == EXT) break;
 
     int cnt = 0;
-    for (int i : optidx) {
+    for (int i : {0, 1, 2, 3, 4}) {
+      if (optidx[i] == 0) continue;
       Func &ff = funcs[i];
-      for (int j = 0; j < ff.npts; j++) ff.yy[j] = vv[cnt++];
+      for (int j : ff.rlxid) ff.yy[j] = vv[cnt++];
     }
 
     for (int i = 0; i < nfuncs; i++) {  // broadcast functions
@@ -28,20 +29,9 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
 
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
-    double efrc = 0.0;  // epsh = 0.0;
+    double efrc = 0.0, eengy = 0.0;  // epsh = 0.0;
     error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
-
-    // int ls[] = {PHI, RHO, MEAMF};
-    // for (int it : ls) {
-    //   double invrg = 1. / square11(funcs[it].rng);
-    //   double tm = 0.0;
-    //   for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
-    //     tm += (square11(funcs[it].s.m_b[i]) +
-    //            0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1]);
-    //   tm += square11(funcs[it].s.m_b.back());
-    //   epsh += tm * invrg;
-    // }
 
     for (int i = locstt; i < locend; i++) {
       Config &cnf = configs[i];
@@ -53,17 +43,41 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
           efrc += square11(atm.fitfrc[it] * atm.fweigh[it]);
         }
       }
-      efrc += square11(cnf.fitengy - cnf.engy);
+      eengy += square11(cnf.fitengy - cnf.engy);
       omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
       ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
     }
 
-    // epsh *= dparams["pweight"];
-    // reduce(cmm, epsh, error["punish"], std::plus<double>(), PFROOT);
+    reduce(cmm, dparams["eweight"] * eengy, error["engy"], std::plus<double>(),
+           PFROOT);
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"];
+
+  (this->*write[sparams["ptype"]])();
+  error["phy"] = 0.0;
+  lmpdrv->calLatticeBCC();
+  lmpdrv->calLatticeFCC();
+  lmpdrv->calLatticeHCP();
+  lmpdrv->calElastic();
+  lmpdrv->calSurface();
+  remove("no");
+  remove("log.lammps");
+  remove("restart.equil");
+  lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
+  lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
+  vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
+                     "bcc2fcc", "bcc2hcp"});
+  vector<double> ww({7000., 10., 10., 10., 10., 10., 10., 10., 10.});
+  for (int i = 0; i < aa.size(); i++) {
+    string ee(aa[i]);
+    error["phy"] +=
+        (lmpdrv->error[ee] =
+             ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
+                              lmpdrv->targs[ee]));
+  }
+  error["phy"] *= dparams["pweight"];
+  return error["frc"] + error["engy"] + error["phy"];
 }
 
 double pfHome::forceMEAMS(const arma::mat &vv) {
@@ -215,3 +229,14 @@ void pfHome::forceMEAMS(Config &cnf) {
     }    // nn
   cnf.fitengy = (cnf.phiengy / 2. + cnf.emfengy) / cnf.natoms;
 }
+
+// int ls[] = {PHI, RHO, MEAMF};
+// for (int it : ls) {
+//   double invrg = 1. / square11(funcs[it].rng);
+//   double tm = 0.0;
+//   for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
+//     tm += (square11(funcs[it].s.m_b[i]) +
+//            0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1]);
+//   tm += square11(funcs[it].s.m_b.back());
+//   epsh += tm * invrg;
+// }

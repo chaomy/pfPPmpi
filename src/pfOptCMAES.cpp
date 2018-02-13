@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-08 17:52:16
+ * @Last Modified time: 2018-02-13 00:06:54
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -49,7 +49,6 @@ void pfHome::loopcmaes() {
       op = (cr = cmaes(iterate)) < op ? cr : op;
       std::ostringstream ss;
       ss << std::setw(4) << std::setfill('0') << i;
-      // std::rename("meam.tmp", ("meam.tmp." + ss.str()).c_str());
       std::rename("meam.lib.best", ("meam.lib." + ss.str()).c_str());
       std::rename("err.txt", ("err." + ss.str()).c_str());
       // std::rename("par.txt", ("par." + ss.str()).c_str());
@@ -173,15 +172,24 @@ double pfHome::cmaes(arma::mat& iterate) {
     if (currentobj < overallobj) {  // Update best parameters.
       overallobj = currentobj;
       iterate = mps.slice(idx1);
-      iterate.t().print();
-      (this->*write[sparams["ptype"]])();
-      if (i % iparams["lmpfreq"] == 1) {
-        lmpCheck(i, of1);
-        if (error["phy"] < overallphy) {
-          overallphy = error["phy"];
-          std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
-        }
-      }
+      std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
+
+      // for case that only minimize force without phy constants
+      // (this->*write[sparams["ptype"]])();
+      // if (i % iparams["lmpfreq"] == 1) {
+      //   lmpCheck(i, of1);
+      //   if (error["phy"] < overallphy) {
+      //     overallphy = error["phy"];
+      //     std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
+      //   }
+      // }
+
+      of1 << i << " " << std::setprecision(4) << error["phy"] << " "
+          << lmpdrv->exprs["lat"] << " " << lmpdrv->exprs["c11"] << " "
+          << lmpdrv->exprs["c12"] << " " << lmpdrv->exprs["c44"] << " "
+          << lmpdrv->exprs["suf110"] << " " << lmpdrv->exprs["suf100"] << " "
+          << lmpdrv->exprs["suf111"] << " " << lmpdrv->exprs["bcc2fcc"] << " "
+          << lmpdrv->exprs["bcc2hcp"] << endl;
     }
 
     // Update Step Size.
@@ -251,10 +259,11 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     // for meamc
     cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
-         << error["frc"] << " " << error["phy"] << " cs " << sigma(idx1) << " "
-         << (lastobj - overallobj) / lastobj << " " << ominrho << " " << omaxrho
-         << " " << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
-         << endl;
+         << error["frc"] << " " << error["engy"] << " " << error["phy"]
+         << " cs " << sigma(idx1) << " " << (lastobj - overallobj) / lastobj
+         << " " << ominrho << " " << omaxrho << " " << funcs[EMF].xx.front()
+         << " " << funcs[EMF].xx.back() << " "
+         << " " << configs[0].fitengy << " " << configs[0].engy << endl;
 
     if (std::isnan(overallobj) || std::isinf(overallobj)) {
       cout << "CMA-ES: converged to " << overallobj << "; "
@@ -271,16 +280,14 @@ double pfHome::cmaes(arma::mat& iterate) {
       return overallobj;
     }
 
-    // if (i % iparams["resfreq"] == 1 && rescaleEMF(mps.slice(idx1))) {
-    //   cout << "before rescale " << currentobj << endl;
-    //   currentobj =
-    //       (this->*calobj[sparams["ptype"]])(decodev(mps.slice(idx1)), 1);
-    //   cout << "after rescale " << currentobj << endl;
-    //   overallobj = currentobj;
-    // }
+    if ((i % iparams["resfreq"] == 1) && checkBoundary(iterate)) {
+      cout << "update boundary" << endl;
+      updateBoundary(decodev(iterate));
+      mps.slice(idx1) =
+          5.0 + cs * (arma::mat(nvars, 1, arma::fill::randu) - 0.5);
+    }
     lastobj = overallobj;
   }
-
   of1.close();
   return overallobj;
 }
@@ -300,11 +307,19 @@ void pfHome::lmpCheck(int i, ofstream& of1) {
   lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
   vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
                      "bcc2fcc", "bcc2hcp"});
-  for (string ee : aa)
+
+  vector<double> ww({7000., 10., 10., 10., 10., 10., 10., 10., 10.});
+
+  cout << " error = ";
+  for (int i = 0; i < aa.size(); i++) {
+    string ee(aa[i]);
     error["phy"] +=
         (lmpdrv->error[ee] =
-             10. * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
-                            lmpdrv->targs[ee]));
+             ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
+                              lmpdrv->targs[ee]));
+    cout << ee << " " << std::setprecision(3) << lmpdrv->error[ee] << " ";
+  }
+  cout << endl;
 
   of1 << i << " " << std::setprecision(4) << error["phy"] << " "
       << lmpdrv->exprs["lat"] << " " << lmpdrv->exprs["c11"] << " "

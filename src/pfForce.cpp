@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-06 22:41:55
+ * @Last Modified time: 2018-02-12 22:03:10
  */
 
 #include "pfHome.h"
@@ -31,6 +31,8 @@ void pfHome::run(int argc, char *argv[]) {
     if (cmm.rank() == PFROOT) lmpdrv->calPhy();
   } else if (!sparams["opt"].compare("make") || !sparams["opt"].compare("err"))
     calErr();
+  else if (!sparams["opt"].compare("gp"))
+    GPsample();
   else if (!sparams["opt"].compare("anneal"))
     simAnneal();
   else if (!sparams["opt"].compare("evo"))
@@ -60,7 +62,6 @@ void pfHome::calErr() {  // make potential
   arma::mat mm(nvars, 1, arma::fill::randu);
   for (int i = 0; i < nvars; i++) mm[i] = ini[i];
   (this->*calobj[sparams["ptype"]])(mm, 1);
-
   if (cmm.rank() == PFROOT) {
     double err = (this->*calobj[sparams["ptype"]])(mm, 1);
     cout << "Err " << err << endl;

@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-14 14:24:20
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-12-26 23:19:05
+ * @Last Modified time: 2018-02-12 22:34:40
  */
 
 #include "pfHome.h"
@@ -35,7 +35,7 @@ void pfHome::initTargs() {
   targs["suf110"] = 2.10;
   targs["suf111"] = 2.40;
 
-  weigh["lat"] = 1e5;
+  weigh["lat"] = 1e2;
   weigh["c11"] = 10;
   weigh["c12"] = 10;
   weigh["c44"] = 10;

@@ -231,6 +231,7 @@ class Func {
   double step;     // equidist; has't initilaized yet
   double invstep;  // equidist
   vector<double> xx, yy, g1, g2;
+  vector<int> rlxid;
   tk::spline s;
   friend class pfHome;
 };

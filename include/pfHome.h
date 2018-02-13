@@ -136,7 +136,7 @@ class pfHome {
 
   // void setupMEAMC();  // setup meam params
   void wrapAtomPos(Config& cc);
-  void setSplineBoundary();
+  void setSplineVariables();
   void initBox(Config& cc);
   void initNeighs();
   void initNeighs(Config& cc);
@@ -192,6 +192,7 @@ class pfHome {
   arma::mat encodev(const arma::mat& vv);
   arma::mat encodev(const vector<double>& vv);
   arma::mat decodev(const arma::mat& vv);
+  vector<double> decodestdv(const arma::mat& vv);
   vector<double> decodestdv(const vector<double>& vv);
   vector<double> encodestdv(const vector<double>& vv);
   void simAnneal();
@@ -202,6 +203,8 @@ class pfHome {
   int rescaleEMF(vector<double>& vv);
   int rescaleEMF(arma::mat& vv);
   int rescaleRHO(vector<double>& vv);
+  bool checkBoundary(const arma::mat& vv);
+  void updateBoundary(const arma::mat& vv);
   void shiftRHO(vector<double>& vv);
   void shiftEMF(double shift);
   void nloptGlobal();
@@ -210,7 +213,10 @@ class pfHome {
   void initPop();
   void diffEvo();
 
-  // cmaes
+  // Gaussian Process
+  void GPsample();
+
+  // CMA-ES
   void loopcmaes();
   void cntcmaes();
   double cmaes(arma::mat& iterate);
@@ -221,8 +227,7 @@ class pfHome {
   double randUniform();
   double randUniform(const double min, const double max);
 
-  // increase nodes
-  void upgrade(int id);
+  void upgrade(int id);  // increase nodes
   void increAnneal();
   void recordStage(int cnt);
 
@@ -400,6 +405,14 @@ inline vector<double> pfHome::decodestdv(const vector<double>& vv) {
   return rs;
 }
 
+// [0, 10] -> [a, b]  y = a + (b-a) × (1 – cos(π × x / 10)) / 2
+inline vector<double> pfHome::decodestdv(const arma::mat& vv) {
+  vector<double> rs(vv.size());
+  for (int i = 0; i < nvars; i++)
+    rs[i] = lob[i] + deb[i] * 0.5 * (1. - cos(PI * 0.1 * vv[i]));
+  return rs;
+}
+
 // [a, b] -> [0, 10]
 inline vector<double> pfHome::encodestdv(const vector<double>& vv) {
   vector<double> rs(vv.size());
@@ -500,6 +513,22 @@ static inline void setall3d(vector<vector<vector<TYPE>>> vv, const TYPE val) {
   for (auto& v1 : vv)
     for (auto& v2 : v1)
       for (auto& v3 : v2) v3 = val;
+}
+
+inline bool pfHome::checkBoundary(const arma::mat& vv) {
+  for (int i = 0; i < ini.size(); i++)
+    if (vv[i] < 0.5 || vv[i] > 9.5) return true;
+  return false;
+}
+
+inline void pfHome::updateBoundary(const arma::mat& vv) {
+  for (int i = 0; i < ini.size(); i++) {
+    double vari =
+        (fabs(vv[i]) >= 1e-8) ? dparams["ivari"] * fabs(vv[i]) : 0.001;
+    lob[i] = vv[i] - vari;
+    hib[i] = vv[i] + vari;
+    deb[i] = 2 * vari;
+  }
 }
 
 #endif  // pfHome_H_
