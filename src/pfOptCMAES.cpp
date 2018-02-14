@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-13 23:44:25
+ * @Last Modified time: 2018-02-14 16:41:07
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -41,19 +41,25 @@ void pfHome::cntcmaes() {
 
 void pfHome::loopcmaes() {
   double cr = 1e30, op = 1e30;
+  // start from scratch
+  // arma::mat iterate(nvars, 1, arma::fill::randu);
+  // iterate *= 10;
+  arma::mat iterate =
+      5.0 + dparams["istep"] *
+                (arma::mat(nvars, 1, arma::fill::randu) - 0.5);  // to [0, 10]
+  (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
   for (int i = 0; i < iparams["kmax"]; i++) {
-    arma::mat iterate(nvars, 1, arma::fill::randu);
-    iterate *= 10;
-    (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
     if (cmm.rank() == PFROOT) {
       op = (cr = cmaes(iterate)) < op ? cr : op;
+      iterate = iterate + dparams["istep"] *
+                              (arma::mat(nvars, 1, arma::fill::randu) - 0.5);
       std::ostringstream ss;
       ss << std::setw(4) << std::setfill('0') << i;
       std::rename("meam.lib.best", ("meam.lib." + ss.str()).c_str());
       std::rename("err.txt", ("err." + ss.str()).c_str());
-      (this->*calobj[sparams["ptype"]])(decodev(iterate), EXT);
     }
   }
+  (this->*calobj[sparams["ptype"]])(decodev(iterate), EXT);
 }
 
 double pfHome::cmaes(arma::mat& iterate) {
@@ -64,6 +70,7 @@ double pfHome::cmaes(arma::mat& iterate) {
 
   // Population size.
   int lambda = (4 + std::round(3 * std::log(iterate.n_elem))) * 10;
+  arma::mat best(iterate);
 
   // Parent weights.
   const size_t mu = std::round(lambda / 2);
@@ -168,25 +175,25 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     currentobj = (this->*calobj[sparams["ptype"]])(decodev(mps.slice(idx1)), 1);
 
+    // for meams
+    cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
+         << error["frc"] << " " << error["engy"] << " cs " << sigma(idx1) << " "
+         << (lastobj - overallobj) / lastobj << " " << ominrho << " " << omaxrho
+         << " " << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
+         << " " << configs[0].fitengy << " " << configs[0].engy << endl;
+
     if (currentobj < overallobj) {  // Update best parameters.
       overallobj = currentobj;
       iterate = mps.slice(idx1);
 
-      // for meams
-      cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
-           << error["frc"] << " " << error["engy"] << " cs " << sigma(idx1)
-           << " " << (lastobj - overallobj) / lastobj << " " << ominrho << " "
-           << omaxrho << " " << funcs[EMF].xx.front() << " "
-           << funcs[EMF].xx.back() << " "
-           << " " << configs[0].fitengy << " " << configs[0].engy << endl;
-
       // for case that only minimize force without phyical constants
-      if (i % iparams["lmpfreq"] == 1) {
+      if (i % iparams["lmpfreq"] == 0) {
         (this->*write[sparams["ptype"]])();
         lmpCheck(i, of1);
         if (error["phy"] < overallphy) {
           overallphy = error["phy"];
           std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
+          best = iterate;
         }
       }
 
@@ -275,7 +282,7 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     if ((std::abs(lastobj - overallobj) < tolerance ||
          sigma(idx1) < sigmatol) &&
-        i > 50) {
+        i > 100) {
       cout << "CMA-ES: minimized within tolerance " << tolerance << "; "
            << "terminating optimization." << std::endl;
       return overallobj;
@@ -292,6 +299,8 @@ double pfHome::cmaes(arma::mat& iterate) {
     lastobj = overallobj;
   }
   of1.close();
+
+  iterate = best;  // give that has best phy constants to iterate
   return overallobj;
 }
 
@@ -311,7 +320,7 @@ void pfHome::lmpCheck(int i, ofstream& of1) {
   vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
                      "bcc2fcc", "bcc2hcp"});
 
-  vector<double> ww({50000., 10., 20., 80., 10., 10., 10., 100., 100.});
+  vector<double> ww({50000., 20., 40., 150., 10., 10., 10., 100., 100.});
   for (int i = 0; i < aa.size(); i++) {
     string ee(aa[i]);
     error["phy"] +=
