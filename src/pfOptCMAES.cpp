@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-13 00:06:54
+ * @Last Modified time: 2018-02-13 23:44:25
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -51,7 +51,6 @@ void pfHome::loopcmaes() {
       ss << std::setw(4) << std::setfill('0') << i;
       std::rename("meam.lib.best", ("meam.lib." + ss.str()).c_str());
       std::rename("err.txt", ("err." + ss.str()).c_str());
-      // std::rename("par.txt", ("par." + ss.str()).c_str());
       (this->*calobj[sparams["ptype"]])(decodev(iterate), EXT);
     }
   }
@@ -172,24 +171,34 @@ double pfHome::cmaes(arma::mat& iterate) {
     if (currentobj < overallobj) {  // Update best parameters.
       overallobj = currentobj;
       iterate = mps.slice(idx1);
-      std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
 
-      // for case that only minimize force without phy constants
-      // (this->*write[sparams["ptype"]])();
-      // if (i % iparams["lmpfreq"] == 1) {
-      //   lmpCheck(i, of1);
-      //   if (error["phy"] < overallphy) {
-      //     overallphy = error["phy"];
-      //     std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
-      //   }
-      // }
+      // for meams
+      cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
+           << error["frc"] << " " << error["engy"] << " cs " << sigma(idx1)
+           << " " << (lastobj - overallobj) / lastobj << " " << ominrho << " "
+           << omaxrho << " " << funcs[EMF].xx.front() << " "
+           << funcs[EMF].xx.back() << " "
+           << " " << configs[0].fitengy << " " << configs[0].engy << endl;
 
-      of1 << i << " " << std::setprecision(4) << error["phy"] << " "
-          << lmpdrv->exprs["lat"] << " " << lmpdrv->exprs["c11"] << " "
-          << lmpdrv->exprs["c12"] << " " << lmpdrv->exprs["c44"] << " "
-          << lmpdrv->exprs["suf110"] << " " << lmpdrv->exprs["suf100"] << " "
-          << lmpdrv->exprs["suf111"] << " " << lmpdrv->exprs["bcc2fcc"] << " "
-          << lmpdrv->exprs["bcc2hcp"] << endl;
+      // for case that only minimize force without phyical constants
+      if (i % iparams["lmpfreq"] == 1) {
+        (this->*write[sparams["ptype"]])();
+        lmpCheck(i, of1);
+        if (error["phy"] < overallphy) {
+          overallphy = error["phy"];
+          std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
+        }
+      }
+
+      // for case minimize force with physical params
+      // std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
+      // of1 << i << " " << std::setprecision(4) << error["phy"] << " "
+      //     << lmpdrv->exprs["lat"] << " " << lmpdrv->exprs["c11"] << " "
+      //     << lmpdrv->exprs["c12"] << " " << lmpdrv->exprs["c44"] << " "
+      //     << lmpdrv->exprs["suf110"] << " " << lmpdrv->exprs["suf100"] << " "
+      //     << lmpdrv->exprs["suf111"] << " " << lmpdrv->exprs["bcc2fcc"] << "
+      //     "
+      //     << lmpdrv->exprs["bcc2hcp"] << endl;
     }
 
     // Update Step Size.
@@ -257,14 +266,6 @@ double pfHome::cmaes(arma::mat& iterate) {
       }
     }
 
-    // for meamc
-    cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
-         << error["frc"] << " " << error["engy"] << " " << error["phy"]
-         << " cs " << sigma(idx1) << " " << (lastobj - overallobj) / lastobj
-         << " " << ominrho << " " << omaxrho << " " << funcs[EMF].xx.front()
-         << " " << funcs[EMF].xx.back() << " "
-         << " " << configs[0].fitengy << " " << configs[0].engy << endl;
-
     if (std::isnan(overallobj) || std::isinf(overallobj)) {
       cout << "CMA-ES: converged to " << overallobj << "; "
            << "terminating with failure.  Try a smaller step size?"
@@ -280,12 +281,14 @@ double pfHome::cmaes(arma::mat& iterate) {
       return overallobj;
     }
 
-    if ((i % iparams["resfreq"] == 1) && checkBoundary(iterate)) {
-      cout << "update boundary" << endl;
-      updateBoundary(decodev(iterate));
-      mps.slice(idx1) =
-          5.0 + cs * (arma::mat(nvars, 1, arma::fill::randu) - 0.5);
-    }
+    if (i % iparams["resfreq"] == 1) checkupdateBoundary(iterate);
+    // if ((i % iparams["resfreq"] == 1) && checkBoundary(iterate)) {
+    // cout << "update boundary" << endl;
+    // updateBoundary(decodev(iterate));
+    // mps.slice(idx1) =
+    //     5.0 + cs * (arma::mat(nvars, 1, arma::fill::randu) - 0.5);
+    // }
+
     lastobj = overallobj;
   }
   of1.close();
@@ -308,18 +311,14 @@ void pfHome::lmpCheck(int i, ofstream& of1) {
   vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
                      "bcc2fcc", "bcc2hcp"});
 
-  vector<double> ww({7000., 10., 10., 10., 10., 10., 10., 10., 10.});
-
-  cout << " error = ";
+  vector<double> ww({50000., 10., 20., 80., 10., 10., 10., 100., 100.});
   for (int i = 0; i < aa.size(); i++) {
     string ee(aa[i]);
     error["phy"] +=
         (lmpdrv->error[ee] =
              ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
                               lmpdrv->targs[ee]));
-    cout << ee << " " << std::setprecision(3) << lmpdrv->error[ee] << " ";
   }
-  cout << endl;
 
   of1 << i << " " << std::setprecision(4) << error["phy"] << " "
       << lmpdrv->exprs["lat"] << " " << lmpdrv->exprs["c11"] << " "

@@ -189,6 +189,8 @@ class pfHome {
   void stressMEAM(Config& cc);
 
   // optimization
+  double encode(const double& val, const int& idx);
+  double decode(const double& val, const int& idx);
   arma::mat encodev(const arma::mat& vv);
   arma::mat encodev(const vector<double>& vv);
   arma::mat decodev(const arma::mat& vv);
@@ -204,6 +206,7 @@ class pfHome {
   int rescaleEMF(arma::mat& vv);
   int rescaleRHO(vector<double>& vv);
   bool checkBoundary(const arma::mat& vv);
+  void checkupdateBoundary(arma::mat& vv);
   void updateBoundary(const arma::mat& vv);
   void shiftRHO(vector<double>& vv);
   void shiftEMF(double shift);
@@ -382,12 +385,21 @@ inline arma::mat pfHome::decodev(const arma::mat& vv) {
   return rs;
 }
 
+// [0, 10] -> [a, b]  y = a + (b-a) × (1 – cos(π × x / 10)) / 2
+inline double pfHome::decode(const double& val, const int& i) {
+  return lob[i] + deb[i] * 0.5 * (1. - cos(PI * 0.1 * val));
+}
+
 // [a, b] -> [0, 10]
 inline arma::mat pfHome::encodev(const arma::mat& vv) {
   arma::mat rs(nvars, 1);
   for (int i = 0; i < nvars; i++)
     rs[i] = 10 * acos(1. - 2. / deb[i] * (vv[i] - lob[i])) * INVPI;
   return rs;
+}
+
+inline double pfHome::encode(const double& val, const int& i) {
+  return 10 * acos(1. - 2. / deb[i] * (val - lob[i])) * INVPI;
 }
 
 inline arma::mat pfHome::encodev(const vector<double>& vv) {
@@ -516,13 +528,28 @@ static inline void setall3d(vector<vector<vector<TYPE>>> vv, const TYPE val) {
 }
 
 inline bool pfHome::checkBoundary(const arma::mat& vv) {
-  for (int i = 0; i < ini.size(); i++)
-    if (vv[i] < 0.5 || vv[i] > 9.5) return true;
+  for (int i = 0; i < nvars; i++)
+    if (vv[i] < 0.1 || vv[i] > 9.9) return true;
   return false;
 }
 
+inline void pfHome::checkupdateBoundary(arma::mat& vv) {
+  for (int i = 0; i < nvars; i++) {
+    if (vv[i] < 0.1 || vv[i] > 9.9) {
+      double val = decode(vv[i], i);
+      double vari = (fabs(val) >= 1e-8) ? dparams["ivari"] * fabs(val) : 0.001;
+      cout << i << "before update boundary" << lob[i] << " " << hib[i] << endl;
+      lob[i] = val - vari;
+      hib[i] = val + vari;
+      deb[i] = 2 * vari;
+      cout << i << "after update boundary" << lob[i] << " " << hib[i] << endl;
+      vv[i] = 5.0;
+    }
+  }
+}
+
 inline void pfHome::updateBoundary(const arma::mat& vv) {
-  for (int i = 0; i < ini.size(); i++) {
+  for (int i = 0; i < nvars; i++) {
     double vari =
         (fabs(vv[i]) >= 1e-8) ? dparams["ivari"] * fabs(vv[i]) : 0.001;
     lob[i] = vv[i] - vari;

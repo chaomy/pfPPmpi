@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-14 14:24:20
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-12 22:34:40
+ * @Last Modified time: 2018-02-13 14:49:59
  */
 
 #include "pfHome.h"
@@ -11,8 +11,9 @@ void pfHome::initTargs() {
   error["tol"] = 0.0;
 
   // lattice
-  targs["lat"] = 3.308;
-  targs["abcc"] = 3.308;
+  // targs["lat"] = 3.308;
+  targs["lat"] = 3.313;
+  targs["abcc"] = 3.313;
   targs["afcc"] = 4.220;
   targs["ahcp"] = 2.90;
   targs["chcp"] = 5.27;
