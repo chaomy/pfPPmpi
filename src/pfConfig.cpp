@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-07 01:53:09
+ * @Last Modified time: 2018-02-15 17:00:52
  */
 
 #include "pfHome.h"
@@ -46,6 +46,7 @@ void pfHome::initBox(Config &tmpc) {
 }
 
 void pfHome::initAngles(Config &tmpc) {
+  double mx = -1e30, mi = 1e30;
   for (int ii = 0; ii < tmpc.natoms; ii++) {
     pfAtom &atmii = tmpc.atoms[ii];
     atmii.angMat.clear();

@@ -269,6 +269,7 @@ class pfHome {
   Config buildD03(const double& lat);
 
   void calLat(string key);
+  void calLat(string key, int n);
   void calPV();
   void calElas();
   void calSurf();

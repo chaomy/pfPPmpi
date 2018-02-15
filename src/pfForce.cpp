@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-12 22:03:10
+ * @Last Modified time: 2018-02-15 13:02:19
  */
 
 #include "pfHome.h"
@@ -51,10 +51,10 @@ void pfHome::run(int argc, char *argv[]) {
     buildD03("d03", 7.400, 0.005);
   else if (!sparams["opt"].compare("anlz")) {
     calErr();
-    calLat("bcc");
-    calElas();
-    calPV();
-    calSurf();
+    calLat("bcc", 20);
+    // calElas();
+    // calPV();
+    // calSurf();
   }
 }
 
