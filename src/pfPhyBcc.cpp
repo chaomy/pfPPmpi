@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-16 16:00:09
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-15 15:50:19
+ * @Last Modified time: 2018-02-15 21:57:50
  */
 
 #include "pfHome.h"
@@ -13,7 +13,6 @@ void pfHome::calLat(string kk, int npts) {
   double dl = del / npts;
   double lo = la - del;
   ofstream ostr("lattice.txt", std::ofstream::out);
-
   for (int i = 0; i < 2 * npts + 1; i++) {
     double latt = lo + i * dl;
     Config cc(buildbccPrim(latt));
@@ -22,7 +21,6 @@ void pfHome::calLat(string kk, int npts) {
          << 0.5 * cc.phiengy / cc.natoms << " " << cc.emfengy / cc.natoms
          << endl;
   }
-
   ostr.close();
 }
 

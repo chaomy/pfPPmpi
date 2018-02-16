@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-12 23:24:37
+ * @Last Modified time: 2018-02-15 22:04:49
  */
 
 #include "pfHome.h"
@@ -84,8 +84,8 @@ pfHome::pfHome(int argc, char* argv[])
     dparams["mass"] = 92.906400;
     sparams["tmpdir"] = string("dirtmp");
     sparams["lmpdir"] = string("dirlmp");
-    outMkdir(sparams["tmpdir"]);
-    outMkdir(sparams["lmpdir"]);
+    // outMkdir(sparams["tmpdir"]);
+    // outMkdir(sparams["lmpdir"]);
 
     sparams["tmpfile"] = string("dummy.tmp");
     sparams["parfile"] = string("dummy.param");
