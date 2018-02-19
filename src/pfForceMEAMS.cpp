@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-19 13:10:08
+ * @Last Modified time: 2018-02-19 13:14:14
  */
 
 #include "pfHome.h"
@@ -68,7 +68,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
   lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
 
   vector<string> aa({"lat", "bcc2fcc", "bcc2hcp"});
-  vector<double> ww({1e5, 3e3, 3e3});
+  vector<double> ww({1e5, 5e3, 5e3});
   // aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
   //                    "bcc2fcc", "bcc2hcp"});
   // vector<double> ww({7000., 10., 10., 10., 10., 10., 10., 10., 10.});
