@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-17 00:25:20
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-12-18 20:21:32
+ * @Last Modified time: 2018-02-16 11:35:55
  */
 
 #include "pfHome.h"
@@ -31,7 +31,7 @@ Config pfHome::addstrain(Config cc, const vector<vector<double>>& ss) {
   double n1[DIM];
   double n2[DIM];
   double n3[DIM];
-  
+
   for (int i : {0, 1, 2}) {  // supercell => strain * basis
     n1[i] = ss[i][X] * cc.bvx[X] + ss[i][Y] * cc.bvx[Y] + ss[i][Z] * cc.bvx[Z];
     n2[i] = ss[i][X] * cc.bvy[X] + ss[i][Y] * cc.bvy[Y] + ss[i][Z] * cc.bvy[Z];

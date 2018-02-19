@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-12 15:48:59
+ * @Last Modified time: 2018-02-18 15:33:52
  */
 
 #include "pfHome.h"
@@ -11,6 +11,70 @@ using std::cout;
 using std::endl;
 using std::to_string;
 using std::vector;
+
+void pfHome::resample() {
+  int npts = 12;
+  double rout = 6.25;
+  ricut -= 0.01;
+  double delt = (rout - ricut) / npts;
+  cout << "PHI" << endl;
+
+  for (int i = 0; i <= npts; i++) {
+    double xx = delt * i + ricut;
+    double phinew, phinewdriv;
+    funcs[PHI].s.deriv(xx, phinew, phinewdriv);
+    cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
+         << endl;
+  }
+
+  npts = 10;
+  rout = 5.50;
+  delt = (rout - ricut) / npts;
+  cout << "RHO" << endl;
+  for (int i = 0; i <= npts; i++) {
+    double xx = delt * i + ricut;
+    double phinew, phinewdriv;
+    funcs[RHO].s.deriv(xx, phinew, phinewdriv);
+    cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
+         << endl;
+  }
+
+  npts = 10;
+  rout = 5.50;
+  delt = (rout - ricut) / npts;
+  cout << "MEAMF" << endl;
+  for (int i = 0; i <= npts; i++) {
+    double xx = delt * i + ricut;
+    double phinew, phinewdriv;
+    funcs[MEAMF].s.deriv(xx, phinew, phinewdriv);
+    cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
+         << endl;
+  }
+
+  npts = 3;
+  double rhmn = -40.0;
+  double rhmx = -10.0;
+  double dl = (rhmx - rhmn) / (npts - 1);
+
+  cout << "RHO" << endl;
+  for (int i = 0; i <= npts; i++) {
+    double xx = dl * i + rhmn;
+    double phinew, phinewdriv;
+    funcs[EMF].s.deriv(xx, phinew, phinewdriv);
+    cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
+         << endl;
+  }
+
+  dl = ((rhmx = 1. + 1e-12) - (rhmn = -1.0 - 1e-12)) / ((npts = 6) - 1);
+  cout << "MEAMG" << endl;
+  for (int i = 0; i < npts; i++) {
+    double xx = dl * i + rhmn;
+    double phinew, phinewdriv;
+    funcs[MEAMG].s.deriv(xx, phinew, phinewdriv);
+    cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
+         << endl;
+  }
+}
 
 void pfHome::loopBwth() {
   for (int i = 1; i < 20; i++) {

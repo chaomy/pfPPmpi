@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-15 12:07:48
+ * @Last Modified time: 2018-02-19 12:59:33
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -177,9 +177,10 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     // for meams
     cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
-         << error["frc"] << " " << error["engy"] << " cs " << sigma(idx1) << " "
-         << (lastobj - overallobj) / lastobj << " " << ominrho << " " << omaxrho
-         << " " << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
+         << error["frc"] << " " << error["engy"] << " " << error["phy"]
+         << " cs " << sigma(idx1) << " " << (lastobj - overallobj) / lastobj
+         << " " << ominrho << " " << omaxrho << " " << funcs[EMF].xx.front()
+         << " " << funcs[EMF].xx.back() << " "
          << " " << configs[0].fitengy << " " << configs[0].engy << endl;
 
     if (currentobj < overallobj) {  // Update best parameters.

@@ -2,20 +2,22 @@
  * @Author: chaomy
  * @Date:   2017-12-16 16:00:09
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-15 21:57:50
+ * @Last Modified time: 2018-02-18 12:21:13
  */
 
 #include "pfHome.h"
 
 void pfHome::calLat(string kk, int npts) {
-  double la = 3.30, me = 1e3;
-  double del = 0.5;
+  double la = (kk == "bcc") ? 3.30 : 4.20;
+  double del = 0.8;
   double dl = del / npts;
   double lo = la - del;
-  ofstream ostr("lattice.txt", std::ofstream::out);
+
+  ofstream ostr((kk + ".txt"), std::ofstream::out);
   for (int i = 0; i < 2 * npts + 1; i++) {
     double latt = lo + i * dl;
-    Config cc(buildbccPrim(latt));
+    // Config cc(buildbccPrim(latt));
+    Config cc((this->*build[kk])(latt));
     (this->*calfrc[sparams["ptype"]])(cc);
     ostr << latt << " " << cc.atoms[0].crho << " " << cc.fitengy << " "
          << 0.5 * cc.phiengy / cc.natoms << " " << cc.emfengy / cc.natoms

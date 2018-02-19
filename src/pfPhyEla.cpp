@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-17 11:13:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-06 20:18:51
+ * @Last Modified time: 2018-02-18 13:01:27
  */
 
 #include "pfHome.h"
@@ -11,6 +11,25 @@
 #define C11B (1. / 3.)
 #define C12A (1. / 9.)
 #define C12B (1. / 6.)
+
+void pfHome::calElas(int npts) {
+  Config c1(buildbccPrim(exprs["lat"]));
+  double delta = 0.01;
+  double lo = -delta * npts;
+
+  ofstream ostr("c12.txt", std::ofstream::out);
+  for (int i = 0; i < 2 * npts + 1; i++) {
+    double dl = lo + delta * i;
+
+    Config cc = addotho(c1, dl);
+    (this->*calfrc[sparams["ptype"]])(cc);
+    ostr << dl << " " << cc.atoms[0].crho << " " << cc.fitengy << " "
+         << 0.5 * cc.phiengy / cc.natoms << " " << cc.emfengy / cc.natoms
+         << endl;
+  }
+
+  ostr.close();
+}
 
 void pfHome::calElas() {
   vector<double> dv({-3e-3, -9e-4, -3e-4, 3e-4, 9e-4, 3e-3});

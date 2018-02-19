@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-15 22:04:49
+ * @Last Modified time: 2018-02-18 12:20:42
  */
 
 #include "pfHome.h"
@@ -73,6 +73,9 @@ pfHome::pfHome(int argc, char* argv[])
   read["EAMS"] = &pfHome::readPot;
   read["MEAMS"] = &pfHome::readMEAMS;
   read["MEAMC"] = &pfHome::readMEAMC;
+
+  build["bcc"] = &pfHome::buildbccPrim;
+  build["fcc"] = &pfHome::buildfccPrim;
 
   latticemp = vector<string>(
       {"fcc", "bcc", "hcp", "dim", "dia", "b1", "c11", "l12", "b2"});

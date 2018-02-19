@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-15 17:00:52
+ * @Last Modified time: 2018-02-16 15:18:18
  */
 
 #include "pfHome.h"
@@ -22,6 +22,7 @@ void pfHome::initNeighsFull() {
     wrapAtomPos(tmpc);
     initNeighsFull(tmpc);
   }
+  if (cmm.rank() == PFROOT) cout << "rin cut = " << ricut << endl;
 }
 
 void pfHome::initBox(Config &tmpc) {

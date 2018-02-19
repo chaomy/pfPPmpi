@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-13 23:30:53
+ * @Last Modified time: 2018-02-19 13:05:56
  */
 
 #include "pfHome.h"
@@ -54,31 +54,33 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     if (cmm.rank() == PFROOT) break;
   }
 
-  // error["phy"] = 0.0;
-  // (this->*write[sparams["ptype"]])();
-  // lmpdrv->calLatticeBCC();
-  // lmpdrv->calLatticeFCC();
-  // lmpdrv->calLatticeHCP();
+  error["phy"] = 0.0;
+  (this->*write[sparams["ptype"]])();
+  lmpdrv->calLatticeBCC();
+  lmpdrv->calLatticeFCC();
+  lmpdrv->calLatticeHCP();
   // lmpdrv->calElastic();
   // lmpdrv->calSurface();
-  // remove("no");
-  // remove("log.lammps");
-  // remove("restart.equil");
-  // lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
-  // lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
-  // vector<string> aa({"lat"}); // , "bcc2fcc", "bcc2hcp"});
-  // vector<double> ww({50000}); // , 200., 200.});
+  remove("no");
+  remove("log.lammps");
+  remove("restart.equil");
+  lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
+  lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
+
+  vector<string> aa({"lat", "bcc2fcc", "bcc2hcp"});
+  vector<double> ww({1e5, 1e3, 1e3});
   // aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
   //                    "bcc2fcc", "bcc2hcp"});
   // vector<double> ww({7000., 10., 10., 10., 10., 10., 10., 10., 10.});
-  // for (int i = 0; i < aa.size(); i++) {
-  //   string ee(aa[i]);
-  //   error["phy"] +=
-  //       (lmpdrv->error[ee] =
-  //            ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
-  //                             lmpdrv->targs[ee]));
-  // }
-  return error["frc"] + error["engy"];  // + error["phy"];
+
+  for (int i = 0; i < aa.size(); i++) {
+    string ee(aa[i]);
+    error["phy"] +=
+        (lmpdrv->error[ee] =
+             ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
+                              lmpdrv->targs[ee]));
+  }
+  return error["frc"] + error["engy"] + error["phy"];
 }
 
 double pfHome::forceMEAMS(const arma::mat &vv) {

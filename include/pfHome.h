@@ -96,6 +96,7 @@ class pfHome {
   unordered_map<string, void (pfHome::*)(Config&)> calfrc;
   unordered_map<string, double (pfHome::*)(const arma::mat& vv, int tg)> calobj;
   unordered_map<string, void (pfHome::*)()> write;
+  unordered_map<string, Config (pfHome::*)(const double& lat)> build;
   unordered_map<string, void (pfHome::*)()> read;
 
   vector<Config> configs;
@@ -172,6 +173,7 @@ class pfHome {
   void calErr(int tm);  // for debugging
   void updaterho(vector<double>& vv);
   void updaterhoMEAM(vector<double>& vv);
+  void resample();
   double errFunct(const vector<double>& x);
   double errFunctGrad(const vector<double>& x, vector<double>& g);
   double forceEAM(vector<Func>& ffs, int tag);
@@ -272,6 +274,7 @@ class pfHome {
   void calLat(string key, int n);
   void calPV();
   void calElas();
+  void calElas(int npts);
   void calSurf();
   void lmpCheck(int i, ofstream& of1);
 
@@ -391,25 +394,6 @@ inline double pfHome::decode(const double& val, const int& i) {
   return lob[i] + deb[i] * 0.5 * (1. - cos(PI * 0.1 * val));
 }
 
-// [a, b] -> [0, 10]
-inline arma::mat pfHome::encodev(const arma::mat& vv) {
-  arma::mat rs(nvars, 1);
-  for (int i = 0; i < nvars; i++)
-    rs[i] = 10 * acos(1. - 2. / deb[i] * (vv[i] - lob[i])) * INVPI;
-  return rs;
-}
-
-inline double pfHome::encode(const double& val, const int& i) {
-  return 10 * acos(1. - 2. / deb[i] * (val - lob[i])) * INVPI;
-}
-
-inline arma::mat pfHome::encodev(const vector<double>& vv) {
-  arma::mat rs(nvars, 1);
-  for (int i = 0; i < nvars; i++)
-    rs[i] = 10 * acos(1. - 2. / deb[i] * (vv[i] - lob[i])) * INVPI;
-  return rs;
-}
-
 // [0, 10] -> [a, b]  y = a + (b-a) × (1 – cos(π × x / 10)) / 2
 inline vector<double> pfHome::decodestdv(const vector<double>& vv) {
   vector<double> rs(vv.size());
@@ -424,6 +408,25 @@ inline vector<double> pfHome::decodestdv(const arma::mat& vv) {
   for (int i = 0; i < nvars; i++)
     rs[i] = lob[i] + deb[i] * 0.5 * (1. - cos(PI * 0.1 * vv[i]));
   return rs;
+}
+
+// [a, b] -> [0, 10]
+inline arma::mat pfHome::encodev(const arma::mat& vv) {
+  arma::mat rs(nvars, 1);
+  for (int i = 0; i < nvars; i++)
+    rs[i] = 10 * acos(1. - 2. / deb[i] * (vv[i] - lob[i])) * INVPI;
+  return rs;
+}
+
+inline arma::mat pfHome::encodev(const vector<double>& vv) {
+  arma::mat rs(nvars, 1);
+  for (int i = 0; i < nvars; i++)
+    rs[i] = 10 * acos(1. - 2. / deb[i] * (vv[i] - lob[i])) * INVPI;
+  return rs;
+}
+
+inline double pfHome::encode(const double& val, const int& i) {
+  return 10 * acos(1. - 2. / deb[i] * (val - lob[i])) * INVPI;
 }
 
 // [a, b] -> [0, 10]

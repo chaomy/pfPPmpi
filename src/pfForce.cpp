@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-15 13:02:19
+ * @Last Modified time: 2018-02-18 12:59:45
  */
 
 #include "pfHome.h"
@@ -29,9 +29,11 @@ void pfHome::increAnneal() {
 void pfHome::run(int argc, char *argv[]) {
   if (!sparams["opt"].compare("lmp")) {
     if (cmm.rank() == PFROOT) lmpdrv->calPhy();
-  } else if (!sparams["opt"].compare("make") || !sparams["opt"].compare("err"))
+  } else if (!sparams["opt"].compare("make") ||
+             !sparams["opt"].compare("err")) {
     calErr();
-  else if (!sparams["opt"].compare("gp"))
+    resample();
+  } else if (!sparams["opt"].compare("gp"))
     GPsample();
   else if (!sparams["opt"].compare("anneal"))
     simAnneal();
@@ -52,7 +54,13 @@ void pfHome::run(int argc, char *argv[]) {
   else if (!sparams["opt"].compare("anlz")) {
     calErr();
     calLat("bcc", 20);
-    // calElas();
+    calLat("fcc", 20);
+    lmpdrv->calLatticeBCC();
+    exprs["lat"] = lmpdrv->exprs["lat"];
+    remove("no");
+    remove("log.lammps");
+    calElas(25);
+
     // calPV();
     // calSurf();
   }
