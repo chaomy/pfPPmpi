@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:28:37
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-06 22:47:21
+ * @Last Modified time: 2018-02-19 16:53:57
  */
 
 #include "pfLmpDrv.h"
@@ -15,10 +15,7 @@ void pfHome::pfLMPdrv::calLatticeBCC() {
   sprintf(cmds[i++], "clear");
   // sprintf(cmds[i++], "print logfile screen no");
   sprintf(cmds[i++], "units  metal");
-  sprintf(cmds[i++], "dimension  3");
-  sprintf(cmds[i++], "boundary p p p");
-  sprintf(cmds[i++], "atom_style atomic");
-  sprintf(cmds[i++], "variable  a equal  %.7f", targs["lat"]);
+  sprintf(cmds[i++], "variable a equal  %.7f", targs["lat"]);
 
   // --------------------- ATOM DEFINITION ---------------------
   sprintf(cmds[i++], "lattice   bcc  ${a}");
@@ -39,7 +36,7 @@ void pfHome::pfLMPdrv::calLatticeBCC() {
             sttag["elem"].c_str());
 
   sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
-  sprintf(cmds[i++], "neighbor 1.0 bin");
+  sprintf(cmds[i++], "neighbor      1.0 bin");
   sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 
   // ---------------------- THERMO  --------------------------
@@ -61,5 +58,5 @@ void pfHome::pfLMPdrv::calLatticeBCC() {
       lammps_get_thermo(lmp, ETOTAL) / double(lammps_get_thermo(lmp, NATOM));
 
   lammps_command(lmp, CLEAR);
-  error["lat"] = abs(exprs["abcc"] - targs["abcc"]) / targs["abcc"];
+  // error["lat"] = abs(exprs["abcc"] - targs["abcc"]) / targs["abcc"];
 }

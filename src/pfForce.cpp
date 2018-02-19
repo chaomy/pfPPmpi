@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-18 12:59:45
+ * @Last Modified time: 2018-02-19 17:29:01
  */
 
 #include "pfHome.h"
@@ -57,12 +57,21 @@ void pfHome::run(int argc, char *argv[]) {
     calLat("fcc", 20);
     lmpdrv->calLatticeBCC();
     exprs["lat"] = lmpdrv->exprs["lat"];
-    remove("no");
-    remove("log.lammps");
     calElas(25);
 
-    // calPV();
-    // calSurf();
+    lmpdrv->calLatticeFCC();
+    lmpdrv->calLatticeHCP();
+    lmpdrv->calSurfaceNorelax();
+
+    remove("no");
+    remove("log.lammps");
+    remove("restart.equil");
+    lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
+    lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
+
+    vector<string> aa(
+        {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
+    for (auto ee : aa) cout << ee << " " << lmpdrv->exprs[ee] << endl;
   }
 }
 

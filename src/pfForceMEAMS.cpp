@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-19 13:14:14
+ * @Last Modified time: 2018-02-19 17:34:23
  */
 
 #include "pfHome.h"
@@ -55,30 +55,34 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
   }
 
   error["phy"] = 0.0;
-  (this->*write[sparams["ptype"]])();
-  lmpdrv->calLatticeBCC();
-  lmpdrv->calLatticeFCC();
-  lmpdrv->calLatticeHCP();
-  // lmpdrv->calElastic();
-  // lmpdrv->calSurface();
-  remove("no");
-  remove("log.lammps");
-  remove("restart.equil");
-  lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
-  lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
+  if (iparams["runlmp"]) {
+    (this->*write[sparams["ptype"]])();
+    lmpdrv->calLatticeBCC();
+    lmpdrv->calLatticeFCC();
+    lmpdrv->calLatticeHCP();
+    lmpdrv->calSurfaceNorelax();
 
-  vector<string> aa({"lat", "bcc2fcc", "bcc2hcp"});
-  vector<double> ww({1e5, 5e3, 5e3});
-  // aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
-  //                    "bcc2fcc", "bcc2hcp"});
-  // vector<double> ww({7000., 10., 10., 10., 10., 10., 10., 10., 10.});
+    remove("no");
+    remove("log.lammps");
+    remove("restart.equil");
+    lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
+    lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
 
-  for (int i = 0; i < aa.size(); i++) {
-    string ee(aa[i]);
-    error["phy"] +=
-        (lmpdrv->error[ee] =
-             ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
-                              lmpdrv->targs[ee]));
+    vector<string> aa(
+        {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
+    vector<double> ww({1e5, 5e3, 5e3, 1e3, 1e3, 1e3});
+
+    // aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
+    //                    "bcc2fcc", "bcc2hcp"});
+    // vector<double> ww({7000., 10., 10., 10., 10., 10., 10., 10., 10.});
+
+    for (int i = 0; i < aa.size(); i++) {
+      string ee(aa[i]);
+      error["phy"] +=
+          (lmpdrv->error[ee] =
+               ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
+                                lmpdrv->targs[ee]));
+    }
   }
   return error["frc"] + error["engy"] + error["phy"];
 }

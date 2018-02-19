@@ -68,6 +68,7 @@ class pfHome::pfLMPdrv {
 
   void calElastic();
   void calSurface();
+  void calSurfaceNorelax();
   void calGSF();
   void calPV();
   void calVac();

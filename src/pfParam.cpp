@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-12 23:51:42
+ * @Last Modified time: 2018-02-19 17:34:09
  */
 
 #include "pfHome.h"
@@ -38,6 +38,7 @@ void pfHome::initParam() {
   iparams["resfreq"] = 10;
   iparams["lmpfreq"] = 15;
   iparams["kmax"] = 1000;  // number of outer loop in simulated annealing
+  iparams["runlmp"] = 0;
   readParam();
   cout << "ptype = " << sparams["ptype"] << endl;
   sparams["lmpfile"] = string("dummy.lammps.") + sparams["ptype"];
@@ -73,6 +74,8 @@ void pfHome::readParam() {
     else if (!segs[0].compare("resfreq"))
       iparams[segs[0]] = stoi(segs[1]);
     else if (!segs[0].compare("lmpfreq"))
+      iparams[segs[0]] = stoi(segs[1]);
+    else if (!segs[0].compare("runlmp"))
       iparams[segs[0]] = stoi(segs[1]);
     else if (!segs[0].compare("kmax"))
       iparams[segs[0]] = stoi(segs[1]);

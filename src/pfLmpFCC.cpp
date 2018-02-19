@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:28:37
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-06 22:43:32
+ * @Last Modified time: 2018-02-19 16:54:26
  */
 
 #include "pfLmpDrv.h"
@@ -14,9 +14,6 @@ void pfHome::pfLMPdrv::calLatticeFCC() {
   sprintf(cmds[i++], "clear");
   // sprintf(cmds[i++], "print logfile screen no");
   sprintf(cmds[i++], "units  metal");
-  sprintf(cmds[i++], "dimension  3");
-  sprintf(cmds[i++], "boundary p p p");
-  sprintf(cmds[i++], "atom_style atomic");
   sprintf(cmds[i++], "variable  a equal  %.7f", targs["afcc"]);
 
   // --------------------- ATOM DEFINITION ---------------------

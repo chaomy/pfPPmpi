@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-19 12:59:33
+ * @Last Modified time: 2018-02-19 17:23:25
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -175,19 +175,10 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     currentobj = (this->*calobj[sparams["ptype"]])(decodev(mps.slice(idx1)), 1);
 
-    // for meams
-    cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
-         << error["frc"] << " " << error["engy"] << " " << error["phy"]
-         << " cs " << sigma(idx1) << " " << (lastobj - overallobj) / lastobj
-         << " " << ominrho << " " << omaxrho << " " << funcs[EMF].xx.front()
-         << " " << funcs[EMF].xx.back() << " "
-         << " " << configs[0].fitengy << " " << configs[0].engy << endl;
-
     if (currentobj < overallobj) {  // Update best parameters.
       overallobj = currentobj;
       iterate = mps.slice(idx1);
 
-      // for case that only minimize force without phyical constants
       if (i % iparams["lmpfreq"] == 0) {
         (this->*write[sparams["ptype"]])();
         lmpCheck(i, of1);
@@ -197,17 +188,15 @@ double pfHome::cmaes(arma::mat& iterate) {
           best = iterate;
         }
       }
-
-      // for case minimize force with physical params
-      // std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
-      // of1 << i << " " << std::setprecision(4) << error["phy"] << " "
-      //     << lmpdrv->exprs["lat"] << " " << lmpdrv->exprs["c11"] << " "
-      //     << lmpdrv->exprs["c12"] << " " << lmpdrv->exprs["c44"] << " "
-      //     << lmpdrv->exprs["suf110"] << " " << lmpdrv->exprs["suf100"] << " "
-      //     << lmpdrv->exprs["suf111"] << " " << lmpdrv->exprs["bcc2fcc"] << "
-      //     "
-      //     << lmpdrv->exprs["bcc2hcp"] << endl;
     }
+
+    // for meams
+    cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
+         << error["frc"] << " " << error["engy"] << " " << error["phy"]
+         << " cs " << sigma(idx1) << " " << (lastobj - overallobj) / lastobj
+         << " " << ominrho << " " << omaxrho << " " << funcs[EMF].xx.front()
+         << " " << funcs[EMF].xx.back() << " "
+         << " " << configs[0].fitengy << " " << configs[0].engy << endl;
 
     // Update Step Size.
     if (iterate.n_rows > iterate.n_cols) {
