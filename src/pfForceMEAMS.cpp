@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-19 20:38:46
+ * @Last Modified time: 2018-02-19 21:07:49
  */
 
 #include "pfHome.h"
@@ -83,7 +83,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
 
     for (int i : lmpdrv->gsfpnts)
       error["phy"] +=
-          1000 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
+          400 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
   }
   return error["frc"] + error["engy"] + error["phy"];
 }
