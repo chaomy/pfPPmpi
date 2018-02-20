@@ -58,8 +58,9 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfLmpHCP.cpp \
 			   ./pfLmpEla.cpp \
 			   ./pfLmpSuf.cpp \
-			   ./pfLmpSufNorlx.cpp \
+			   ./pfLmpSufUrlx.cpp \
 			   ./pfLmpGSF.cpp \
+			   ./pfLmpGSFUrlx.cpp \
 			   ./pfLmpPV.cpp \
 			   ./pfLmpVac.cpp \
 			   ./pfLmpItenOpt.cpp \

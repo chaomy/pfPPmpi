@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-19 17:29:01
+ * @Last Modified time: 2018-02-19 20:33:58
  */
 
 #include "pfHome.h"
@@ -61,7 +61,8 @@ void pfHome::run(int argc, char *argv[]) {
 
     lmpdrv->calLatticeFCC();
     lmpdrv->calLatticeHCP();
-    lmpdrv->calSurfaceNorelax();
+    lmpdrv->calSurfaceUrlx();
+    lmpdrv->calGSFUrlx();
 
     remove("no");
     remove("log.lammps");
@@ -72,6 +73,13 @@ void pfHome::run(int argc, char *argv[]) {
     vector<string> aa(
         {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
     for (auto ee : aa) cout << ee << " " << lmpdrv->exprs[ee] << endl;
+
+    for (int j : lmpdrv->gsfpnts)
+      cout << std::setprecision(3) << lmpdrv->lgsf["111z110"][j] << " "
+           << lmpdrv->lgsf["111e110"][j] << endl;
+    for (int j : lmpdrv->gsfpnts)
+      cout << std::setprecision(3) << lmpdrv->lgsf["111z211"][j] << " "
+           << lmpdrv->lgsf["111e211"][j] << endl;
   }
 }
 

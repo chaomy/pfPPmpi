@@ -43,18 +43,17 @@ class pfHome::pfLMPdrv {
   vector<vector<double>> bsm;
   unordered_map<string, vector<double>> iegyv;
   unordered_map<string, vector<double>> isxxv;
-  // gsf
-  unordered_map<string, vector<double>> lgsf;
-  // pv
-  unordered_map<string, vector<double>> lmpv;
 
  public:
+  vector<int> gsfpnts;
   unordered_map<string, string> sttag;
   unordered_map<string, double> targs;
   unordered_map<string, double> exprs;
   unordered_map<string, double> weigh;
   unordered_map<string, int> label;
   unordered_map<string, double> error;
+  unordered_map<string, vector<double>> lgsf;  // gsf
+  unordered_map<string, vector<double>> lmpv;  // pv
   pfLMPdrv(int argc, char* argv[]);
   pfLMPdrv(int argc, char* argv[], pfHome* pt);
   ~pfLMPdrv();
@@ -68,8 +67,9 @@ class pfHome::pfLMPdrv {
 
   void calElastic();
   void calSurface();
-  void calSurfaceNorelax();
+  void calSurfaceUrlx();
   void calGSF();
+  void calGSFUrlx();
   void calPV();
   void calVac();
 

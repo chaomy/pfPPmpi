@@ -2,14 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:40:55
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 17:23:05
+ * @Last Modified time: 2018-02-19 19:41:41
  */
 
 #include "pfLmpDrv.h"
 
-/*******************************************************************
- * gsf curve  [111](110); [111](211); [111](123) serial version
- * *****************************************************************/
+/* gsf curve  [111](110); [111](211); [111](123) serial version */
 using std::vector;
 
 void pfHome::pfLMPdrv::calGSF() {

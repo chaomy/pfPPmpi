@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-19 17:34:23
+ * @Last Modified time: 2018-02-19 20:38:46
  */
 
 #include "pfHome.h"
@@ -60,7 +60,8 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     lmpdrv->calLatticeBCC();
     lmpdrv->calLatticeFCC();
     lmpdrv->calLatticeHCP();
-    lmpdrv->calSurfaceNorelax();
+    lmpdrv->calSurfaceUrlx();
+    lmpdrv->calGSFUrlx();
 
     remove("no");
     remove("log.lammps");
@@ -72,10 +73,6 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
         {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
     vector<double> ww({1e5, 5e3, 5e3, 1e3, 1e3, 1e3});
 
-    // aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
-    //                    "bcc2fcc", "bcc2hcp"});
-    // vector<double> ww({7000., 10., 10., 10., 10., 10., 10., 10., 10.});
-
     for (int i = 0; i < aa.size(); i++) {
       string ee(aa[i]);
       error["phy"] +=
@@ -83,6 +80,10 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
                ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
                                 lmpdrv->targs[ee]));
     }
+
+    for (int i : lmpdrv->gsfpnts)
+      error["phy"] +=
+          1000 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
   }
   return error["frc"] + error["engy"] + error["phy"];
 }

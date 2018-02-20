@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-13 15:58:23
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 13:43:27
+ * @Last Modified time: 2018-02-19 20:16:27
  */
 
 #include "pfLmpDrv.h"
@@ -11,10 +11,12 @@ using namespace LAMMPS_NS;
 using std::cout;
 using std::endl;
 
-pfHome::pfLMPdrv::pfLMPdrv(int argc, char* argv[]) : pfhm(NULL) {
+pfHome::pfLMPdrv::pfLMPdrv(int argc, char* argv[])
+    : pfhm(NULL), gsfpnts(vector<int>({0, 3, 4, 5, 6, 7})) {
   paraInit(argc, argv);
 }
-pfHome::pfLMPdrv::pfLMPdrv(int argc, char* argv[], pfHome* pt) : pfhm(pt) {
+pfHome::pfLMPdrv::pfLMPdrv(int argc, char* argv[], pfHome* pt)
+    : pfhm(pt), gsfpnts(vector<int>({0, 3, 4, 5, 6, 7})) {
   paraInit(argc, argv);
 }
 pfHome::pfLMPdrv::~pfLMPdrv() {
