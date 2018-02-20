@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:40:55
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-19 20:34:15
+ * @Last Modified time: 2018-02-20 00:51:11
  */
 
 #include "pfLmpDrv.h"
@@ -159,7 +159,9 @@ void pfHome::pfLMPdrv::calGSFUrlx() {
   }
 
   for (int j : gsfpnts) {
-    if (dft110[j] != 0.0) ez110[j] = fabs(gz110[j] - dft110[j]) / dft110[j];
-    if (dft211[j] != 0.0) ez211[j] = fabs(gz211[j] - dft211[j]) / dft110[j];
+    if (dft110[j] != 0.0)
+      ez110[j] = square11((gz110[j] - dft110[j]) / dft110[j]);
+    if (dft211[j] != 0.0)
+      ez211[j] = square11((gz211[j] - dft211[j]) / dft110[j]);
   }
 }

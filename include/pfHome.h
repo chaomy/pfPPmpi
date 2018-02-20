@@ -51,7 +51,7 @@ class pfHome {
   int nconfs;
   int locstt;
   int locend;
-  double fsm;
+  double fsm, phyweigh;
 
   double ricut;
   double rocut;

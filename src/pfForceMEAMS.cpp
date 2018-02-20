@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-19 21:07:49
+ * @Last Modified time: 2018-02-20 02:44:24
  */
 
 #include "pfHome.h"
@@ -71,7 +71,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
 
     vector<string> aa(
         {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
-    vector<double> ww({1e5, 5e3, 5e3, 1e3, 1e3, 1e3});
+    vector<double> ww({2e5, 5e3, 5e3, 1e3, 1e3, 1e3});
 
     for (int i = 0; i < aa.size(); i++) {
       string ee(aa[i]);
@@ -81,9 +81,12 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
                                 lmpdrv->targs[ee]));
     }
 
+    error["gsf"] = 0.0;
     for (int i : lmpdrv->gsfpnts)
-      error["phy"] +=
-          400 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
+      error["gsf"] +=
+          500 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
+    error["phy"] += error["gsf"];
+    error["phy"] *= phyweigh;
   }
   return error["frc"] + error["engy"] + error["phy"];
 }

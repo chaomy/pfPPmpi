@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-19 17:23:25
+ * @Last Modified time: 2018-02-20 02:46:44
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -40,30 +40,36 @@ void pfHome::cntcmaes() {
 }
 
 void pfHome::loopcmaes() {
-  double cr = 1e30, op = 1e30;
   // start from scratch
   // arma::mat iterate(nvars, 1, arma::fill::randu);
   // iterate *= 10;
+  double cr = 1e30, op = 1e30;
   arma::mat iterate =
       5.0 + dparams["istep"] *
                 (arma::mat(nvars, 1, arma::fill::randu) - 0.5);  // to [0, 10]
   (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
   for (int i = 0; i < iparams["kmax"]; i++) {
     if (cmm.rank() == PFROOT) {
-      op = (cr = cmaes(iterate)) < op ? cr : op;
+      phyweigh = dparams["pweight"];
+      if ((cr = cmaes(iterate)) < op) {
+        op = cr;
+        std::rename("meam.lib.best", "meam.lib.best.overall");
+        std::rename("err.txt", "err.overall");
+      } else {
+        std::ostringstream ss;
+        ss << std::setw(4) << std::setfill('0') << i;
+        std::rename("meam.lib.best", ("meam.lib." + ss.str()).c_str());
+        std::rename("err.txt", ("err." + ss.str()).c_str());
+      }
       iterate = iterate + dparams["istep"] *
                               (arma::mat(nvars, 1, arma::fill::randu) - 0.5);
-      std::ostringstream ss;
-      ss << std::setw(4) << std::setfill('0') << i;
-      std::rename("meam.lib.best", ("meam.lib." + ss.str()).c_str());
-      std::rename("err.txt", ("err." + ss.str()).c_str());
     }
   }
   (this->*calobj[sparams["ptype"]])(decodev(iterate), EXT);
 }
 
 double pfHome::cmaes(arma::mat& iterate) {
-  int maxIt = iparams["maxstep"];
+  int maxIt = iparams["maxstep"], lastid = 1;
   double tolerance = dparams["ftol"];
   double sigmatol = dparams["xtol"];
   ofstream of1("err.txt", std::ofstream::out);
@@ -188,18 +194,24 @@ double pfHome::cmaes(arma::mat& iterate) {
           best = iterate;
         }
       }
-    }
+
+      lastid = i;
+    } else if ((i - lastid) > 3)
+      phyweigh *= 0.98;
 
     // for meams
     cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
          << error["frc"] << " " << error["engy"] << " " << error["phy"]
-         << " cs " << sigma(idx1) << " " << (lastobj - overallobj) / lastobj
-         << " " << ominrho << " " << omaxrho << " " << funcs[EMF].xx.front()
-         << " " << funcs[EMF].xx.back() << " "
+         << " cs " << sigma(idx1) << " " << ominrho << " " << omaxrho << " "
+         << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
          << " " << configs[0].fitengy << " " << configs[0].engy << endl;
+    //
+    cout << lmpdrv->error["lat"] << " " << lmpdrv->error["bcc2fcc"] << " "
+         << lmpdrv->error["bcc2hcp"] << " " << lmpdrv->error["suf110"] << " "
+         << lmpdrv->error["suf100"] << " " << lmpdrv->error["suf111"] << " "
+         << error["gsf"] << endl;
 
-    // Update Step Size.
-    if (iterate.n_rows > iterate.n_cols) {
+    if (iterate.n_rows > iterate.n_cols) {  // Update Step Size.
       ps.slice(idx1) =
           (1 - cs) * ps.slice(idx0) +
           std::sqrt(cs * (2 - cs) * muEffective) * covLower.t() * step;
@@ -296,9 +308,7 @@ double pfHome::cmaes(arma::mat& iterate) {
 
 void pfHome::lmpCheck(int i, ofstream& of1) {
   error["phy"] = 0.0;
-  lmpdrv->calLatticeBCC();
-  lmpdrv->calLatticeFCC();
-  lmpdrv->calLatticeHCP();
+  // no need to cal BCC FCC HCP anymore
   lmpdrv->calElastic();
   lmpdrv->calSurface();
 
@@ -310,7 +320,7 @@ void pfHome::lmpCheck(int i, ofstream& of1) {
   vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
                      "bcc2fcc", "bcc2hcp"});
 
-  vector<double> ww({50000., 20., 40., 150., 10., 10., 10., 100., 100.});
+  vector<double> ww({1e5, 400, 800, 2000, 1e3, 1e3, 1e3, 5e3, 5e3});
   for (int i = 0; i < aa.size(); i++) {
     string ee(aa[i]);
     error["phy"] +=
@@ -319,14 +329,20 @@ void pfHome::lmpCheck(int i, ofstream& of1) {
                               lmpdrv->targs[ee]));
   }
 
+  for (int i : lmpdrv->gsfpnts)
+    error["phy"] +=
+        400 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
+
   of1 << i << " " << std::setprecision(4) << error["phy"] << " "
       << lmpdrv->exprs["lat"] << " " << lmpdrv->exprs["c11"] << " "
       << lmpdrv->exprs["c12"] << " " << lmpdrv->exprs["c44"] << " "
       << lmpdrv->exprs["suf110"] << " " << lmpdrv->exprs["suf100"] << " "
       << lmpdrv->exprs["suf111"] << " " << lmpdrv->exprs["bcc2fcc"] << " "
-      << lmpdrv->exprs["bcc2hcp"] << endl;
+      << lmpdrv->exprs["bcc2hcp"] << " " << lmpdrv->lgsf["111z110"][5] << " "
+      << lmpdrv->lgsf["111z211"][5] << endl;
 }
 
+// for meamc
 // if (i == 1) {
 // of2 << i << " " << std::setprecision(4) << alpha_meam[0][0] << " "
 //     << beta0_meam[0] << " " << beta1_meam[0] << " " << beta2_meam[0] << "
