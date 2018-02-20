@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-20 02:46:44
+ * @Last Modified time: 2018-02-20 02:55:18
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -196,7 +196,7 @@ double pfHome::cmaes(arma::mat& iterate) {
       }
 
       lastid = i;
-    } else if ((i - lastid) > 3)
+    } else if ((i - lastid) > 5)
       phyweigh *= 0.98;
 
     // for meams
