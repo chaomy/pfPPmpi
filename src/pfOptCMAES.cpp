@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-20 02:55:18
+ * @Last Modified time: 2018-02-22 23:52:36
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -132,7 +132,8 @@ double pfHome::cmaes(arma::mat& iterate) {
   double currentobj =
       (this->*calobj[sparams["ptype"]])(decodev(mps.slice(0)), 1);
   double overallobj = currentobj;
-  double overallphy = 1e30;
+  vector<double> bestphy(4, 1e30);
+  vector<string> bestfiles({"meam.lib.best", "lib.01", "lib.02", "lib.03"});
   double lastobj = 1e30;
 
   // Population parameters.
@@ -188,16 +189,22 @@ double pfHome::cmaes(arma::mat& iterate) {
       if (i % iparams["lmpfreq"] == 0) {
         (this->*write[sparams["ptype"]])();
         lmpCheck(i, of1);
-        if (error["phy"] < overallphy) {
-          overallphy = error["phy"];
-          std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
-          best = iterate;
+        for (int kk = 0; kk < bestphy.size(); kk++) {
+          if (error["phy"] < bestphy[kk]) {
+            int tmpid = kk;
+            for (kk = bestphy.size() - 1; kk > tmpid; kk--) {
+              bestphy[kk] = bestphy[kk - 1];
+              std::rename(bestfiles[kk - 1].c_str(), bestfiles[kk].c_str());
+            }
+            bestphy[tmpid] = error["phy"];
+            std::rename(sparams["lmpfile"].c_str(), bestfiles[tmpid].c_str());
+            if (tmpid == 0) best = iterate;
+            break;
+          }
         }
       }
-
       lastid = i;
-    } else if ((i - lastid) > 5)
-      phyweigh *= 0.98;
+    }
 
     // for meams
     cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
@@ -205,11 +212,6 @@ double pfHome::cmaes(arma::mat& iterate) {
          << " cs " << sigma(idx1) << " " << ominrho << " " << omaxrho << " "
          << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
          << " " << configs[0].fitengy << " " << configs[0].engy << endl;
-    //
-    cout << lmpdrv->error["lat"] << " " << lmpdrv->error["bcc2fcc"] << " "
-         << lmpdrv->error["bcc2hcp"] << " " << lmpdrv->error["suf110"] << " "
-         << lmpdrv->error["suf100"] << " " << lmpdrv->error["suf111"] << " "
-         << error["gsf"] << endl;
 
     if (iterate.n_rows > iterate.n_cols) {  // Update Step Size.
       ps.slice(idx1) =
@@ -291,6 +293,7 @@ double pfHome::cmaes(arma::mat& iterate) {
     }
 
     if (i % iparams["resfreq"] == 1) checkupdateBoundary(iterate);
+
     // if ((i % iparams["resfreq"] == 1) && checkBoundary(iterate)) {
     // cout << "update boundary" << endl;
     // updateBoundary(decodev(iterate));
@@ -307,8 +310,13 @@ double pfHome::cmaes(arma::mat& iterate) {
 }
 
 void pfHome::lmpCheck(int i, ofstream& of1) {
-  error["phy"] = 0.0;
-  // no need to cal BCC FCC HCP anymore
+  error["phy"] = error["gsf"] = 0.0;
+  if (!iparams["runlmp"]) {
+    lmpdrv->calLatticeBCC();
+    lmpdrv->calLatticeFCC();
+    lmpdrv->calLatticeHCP();
+    lmpdrv->calGSFUrlx();
+  }
   lmpdrv->calElastic();
   lmpdrv->calSurface();
 
@@ -320,7 +328,7 @@ void pfHome::lmpCheck(int i, ofstream& of1) {
   vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
                      "bcc2fcc", "bcc2hcp"});
 
-  vector<double> ww({1e5, 400, 800, 2000, 1e3, 1e3, 1e3, 5e3, 5e3});
+  vector<double> ww({1e5, 400, 1000, 3000, 1e3, 1e3, 1e3, 5e3, 5e3});
   for (int i = 0; i < aa.size(); i++) {
     string ee(aa[i]);
     error["phy"] +=
@@ -330,16 +338,22 @@ void pfHome::lmpCheck(int i, ofstream& of1) {
   }
 
   for (int i : lmpdrv->gsfpnts)
-    error["phy"] +=
-        400 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
+    error["gsf"] +=
+        50 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
+  error["phy"] += error["gsf"];
 
-  of1 << i << " " << std::setprecision(4) << error["phy"] << " "
-      << lmpdrv->exprs["lat"] << " " << lmpdrv->exprs["c11"] << " "
-      << lmpdrv->exprs["c12"] << " " << lmpdrv->exprs["c44"] << " "
-      << lmpdrv->exprs["suf110"] << " " << lmpdrv->exprs["suf100"] << " "
-      << lmpdrv->exprs["suf111"] << " " << lmpdrv->exprs["bcc2fcc"] << " "
-      << lmpdrv->exprs["bcc2hcp"] << " " << lmpdrv->lgsf["111z110"][5] << " "
-      << lmpdrv->lgsf["111z211"][5] << endl;
+  of1 << i << "   " << std::setprecision(4) << lmpdrv->exprs["lat"] << " "
+      << lmpdrv->exprs["c11"] << " " << lmpdrv->exprs["c12"] << " "
+      << lmpdrv->exprs["c44"] << " " << lmpdrv->exprs["suf110"] << " "
+      << lmpdrv->exprs["suf100"] << " " << lmpdrv->exprs["suf111"] << " "
+      << lmpdrv->exprs["bcc2fcc"] << " " << lmpdrv->exprs["bcc2hcp"] << " "
+      << lmpdrv->lgsf["111z110"][5] << " " << lmpdrv->lgsf["111z211"][5] << "  "
+      << error["phy"] << " " << lmpdrv->error["lat"] << " "
+      << lmpdrv->error["c11"] << " " << lmpdrv->error["c12"] << " "
+      << lmpdrv->error["c44"] << " " << lmpdrv->error["suf110"] << " "
+      << lmpdrv->error["suf100"] << " " << lmpdrv->error["suf111"] << " "
+      << lmpdrv->error["bcc2fcc"] << " " << lmpdrv->error["bcc2hcp"] << " "
+      << error["gsf"] << endl;
 }
 
 // for meamc

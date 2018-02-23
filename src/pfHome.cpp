@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-18 12:20:42
+ * @Last Modified time: 2018-02-22 23:53:02
  */
 
 #include "pfHome.h"
@@ -121,7 +121,10 @@ pfHome::pfHome(int argc, char* argv[])
   int del = nconfs / cmm.size();
   locstt = del * cmm.rank();
   locend = del * (cmm.rank() + 1);
-  cout << "report " << del << " " << locstt << " " << locend << endl;
+  for (int i = 0; i < nconfs; i++) {
+    if (i % cmm.size() == cmm.rank()) locls.push_back(i);
+  }
+
   (cmm.barrier)();  //  important!
   // temporarily close these functionalities
   // optdrv = new pfOptimizer(this);

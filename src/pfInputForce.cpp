@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-20 16:53:38
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-13 13:02:30
+ * @Last Modified time: 2018-02-22 21:35:13
  */
 
 #include "pfHome.h"
@@ -47,6 +47,7 @@ void pfHome::readConfig() {    /* read atomic force file */
              &config.bvz[1], &config.bvz[2]);
     } else if (!segs[0].compare("#W")) {
       sscanf(buff.c_str(), "%s %lf", tmp, &config.weigh);
+      cout << "cnf weigh " << config.weigh << endl;
     } else if (!segs[0].compare("#E")) {
       sscanf(buff.c_str(), "%s %lf", tmp, &config.engy);
       config.engy -= eb;

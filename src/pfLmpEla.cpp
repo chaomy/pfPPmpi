@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-14 14:19:02
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 17:39:51
+ * @Last Modified time: 2018-02-23 00:02:02
  */
 
 #include "pfLmpDrv.h"
@@ -29,7 +29,7 @@ void pfHome::pfLMPdrv::calElastic() {
   sprintf(cmds[i++], "variable  maxeval equal 1000");
   sprintf(cmds[i++], "variable  dmax    equal 1.0e-2");
 
-  sprintf(cmds[i++], "variable a  equal  %.5f", exprs["lat"]);
+  sprintf(cmds[i++], "variable a  equal  %.12f", exprs["lat"]);
   sprintf(cmds[i++], "boundary p p p");
 
   sprintf(cmds[i++], "lattice  bcc $a");
@@ -1049,13 +1049,13 @@ void pfHome::pfLMPdrv::calElastic() {
   exprs["c12"] = *ptc12;
   exprs["c44"] = *ptc44;
 
-  double de1 = abs(exprs["c11"] - targs["c11"]);
-  double de2 = abs(exprs["c12"] - targs["c12"]);
-  double de3 = abs(exprs["c44"] - targs["c44"]);
+  // double de1 = abs(exprs["c11"] - targs["c11"]);
+  // double de2 = abs(exprs["c12"] - targs["c12"]);
+  // double de3 = abs(exprs["c44"] - targs["c44"]);
 
-  error["c11"] = de1 / targs["c11"];
-  error["c12"] = de2 / targs["c12"];
-  error["c44"] = de3 / targs["c44"];
+  // error["c11"] = de1 / targs["c11"];
+  // error["c12"] = de2 / targs["c12"];
+  // error["c44"] = de3 / targs["c44"];
 
   free(ptc11);
   free(ptc12);

@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-20 02:44:24
+ * @Last Modified time: 2018-02-23 14:13:50
  */
 
 #include "pfHome.h"
@@ -30,20 +30,20 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
     double efrc = 0.0, eengy = 0.0;  // epsh = 0.0;
-    error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
+    error["frc"] = 0.0, error["shift"] = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
 
-    for (int i = locstt; i < locend; i++) {
+    for (int i : locls) {
       Config &cnf = configs[i];
       forceMEAMS(cnf);
       for (pfAtom &atm : cnf.atoms) {
         for (int it : {X, Y, Z}) {
           atm.fitfrc[it] =
               atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
-          efrc += square11(atm.fitfrc[it] * atm.fweigh[it]);
+          efrc += cnf.weigh * square11(atm.fitfrc[it] * atm.fweigh[it]);
         }
       }
-      eengy += square11(cnf.fitengy - cnf.engy);
+      eengy += cnf.weigh * square11(cnf.fitengy - cnf.engy);
       omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
       ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
     }
@@ -53,43 +53,44 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-
-  error["phy"] = 0.0;
-  if (iparams["runlmp"]) {
-    (this->*write[sparams["ptype"]])();
-    lmpdrv->calLatticeBCC();
-    lmpdrv->calLatticeFCC();
-    lmpdrv->calLatticeHCP();
-    lmpdrv->calSurfaceUrlx();
-    lmpdrv->calGSFUrlx();
-
-    remove("no");
-    remove("log.lammps");
-    remove("restart.equil");
-    lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
-    lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
-
-    vector<string> aa(
-        {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
-    vector<double> ww({2e5, 5e3, 5e3, 1e3, 1e3, 1e3});
-
-    for (int i = 0; i < aa.size(); i++) {
-      string ee(aa[i]);
-      error["phy"] +=
-          (lmpdrv->error[ee] =
-               ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
-                                lmpdrv->targs[ee]));
-    }
-
-    error["gsf"] = 0.0;
-    for (int i : lmpdrv->gsfpnts)
-      error["gsf"] +=
-          500 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
-    error["phy"] += error["gsf"];
-    error["phy"] *= phyweigh;
-  }
-  return error["frc"] + error["engy"] + error["phy"];
+  return error["frc"] + error["engy"];
 }
+
+// close fiting physical
+// error["phy"] = 0.0;
+// if (iparams["runlmp"]) {
+//   (this->*write[sparams["ptype"]])();
+//   lmpdrv->calLatticeBCC();
+//   lmpdrv->calLatticeFCC();
+//   lmpdrv->calLatticeHCP();
+//   lmpdrv->calSurfaceUrlx();
+//   lmpdrv->calGSFUrlx();
+
+//   remove("no");
+//   remove("log.lammps");
+//   remove("restart.equil");
+//   lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
+//   lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
+
+//   vector<string> aa(
+//       {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
+//   vector<double> ww({2e5, 5e3, 5e3, 1e3, 1e3, 1e3});
+
+//   for (int i = 0; i < aa.size(); i++) {
+//     string ee(aa[i]);
+//     error["phy"] +=
+//         (lmpdrv->error[ee] =
+//              ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
+//                               lmpdrv->targs[ee]));
+//   }
+
+//   error["gsf"] = 0.0;
+//   for (int i : lmpdrv->gsfpnts)
+//     error["gsf"] +=
+//         500 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
+//   error["phy"] += error["gsf"];
+//   error["phy"] *= phyweigh;
+// }
 
 double pfHome::forceMEAMS(const arma::mat &vv) {
   error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
