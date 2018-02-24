@@ -179,7 +179,8 @@ class Config {
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
     ar &cfgid &natoms &weigh &engy &fitengy &phiengy &emfengy &vol &rhomx &rhomi
-        &scale &bvx &tvx &bvy &tvy &bvz &tvz &strs &atoms &natomsv &nelemsv;
+        &scale &bvx &tvx &bvy &tvy &bvz &tvz &strs &fitstrs &atoms &natomsv
+            &nelemsv;
   }
 
   int cfgid, natoms;
@@ -189,6 +190,7 @@ class Config {
   vector<int> scale;
   vector<double> bvx, tvx, bvy, tvy, bvz, tvz;
   vector<double> strs;
+  vector<double> fitstrs;
   vector<pfAtom> atoms;
   vector<int> natomsv;
   vector<string> nelemsv;
@@ -204,7 +206,8 @@ class Config {
         tvy(3),
         bvz(3),
         tvz(3),
-        strs(6) {
+        strs(6),
+        fitstrs(6) {
     weigh = 0.0, engy = 0.0;
   };
   Config(int n)
@@ -217,7 +220,8 @@ class Config {
         tvy(3),
         bvz(3),
         tvz(3),
-        strs(6) {
+        strs(6),
+        fitstrs(6) {
     weigh = 0.0, engy = 0.0;
   };
   ~Config(){};

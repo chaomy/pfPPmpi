@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-23 14:13:50
+ * @Last Modified time: 2018-02-23 21:53:08
  */
 
 #include "pfHome.h"
@@ -29,8 +29,8 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
 
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
-    double efrc = 0.0, eengy = 0.0;  // epsh = 0.0;
-    error["frc"] = 0.0, error["shift"] = 0.0;
+    double efrc = 0.0, eengy = 0.0, estrs = 0.0;
+    error["frc"] = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
 
     for (int i : locls) {
@@ -46,9 +46,14 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
       eengy += cnf.weigh * square11(cnf.fitengy - cnf.engy);
       omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
       ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
-    }
 
+      for (int it : {0, 1, 2, 3, 4, 5})
+        estrs += square11(cnf.fitstrs[it] - cnf.strs[it]);
+      estrs *= cnf.weigh;
+    }
     reduce(cmm, dparams["eweight"] * eengy, error["engy"], std::plus<double>(),
+           PFROOT);
+    reduce(cmm, dparams["sweight"] * estrs, error["strs"], std::plus<double>(),
            PFROOT);
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
@@ -56,92 +61,10 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
   return error["frc"] + error["engy"];
 }
 
-// close fiting physical
-// error["phy"] = 0.0;
-// if (iparams["runlmp"]) {
-//   (this->*write[sparams["ptype"]])();
-//   lmpdrv->calLatticeBCC();
-//   lmpdrv->calLatticeFCC();
-//   lmpdrv->calLatticeHCP();
-//   lmpdrv->calSurfaceUrlx();
-//   lmpdrv->calGSFUrlx();
-
-//   remove("no");
-//   remove("log.lammps");
-//   remove("restart.equil");
-//   lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
-//   lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
-
-//   vector<string> aa(
-//       {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
-//   vector<double> ww({2e5, 5e3, 5e3, 1e3, 1e3, 1e3});
-
-//   for (int i = 0; i < aa.size(); i++) {
-//     string ee(aa[i]);
-//     error["phy"] +=
-//         (lmpdrv->error[ee] =
-//              ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
-//                               lmpdrv->targs[ee]));
-//   }
-
-//   error["gsf"] = 0.0;
-//   for (int i : lmpdrv->gsfpnts)
-//     error["gsf"] +=
-//         500 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
-//   error["phy"] += error["gsf"];
-//   error["phy"] *= phyweigh;
-// }
-
-double pfHome::forceMEAMS(const arma::mat &vv) {
-  error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
-  omaxrho = -1e10, ominrho = 1e10;
-
-  int cnt = 0;
-  for (int i = 0; i < nfuncs; i++) {
-    Func &ff = funcs[i];
-    if (i == PHI || i == RHO || i == MEAMF) {
-      for (int j = 0; j < ff.npts - 1; j++) ff.yy[j] = vv[cnt++];
-    } else {
-      for (int j = 0; j < ff.npts; j++) ff.yy[j] = vv[cnt++];
-    }
-    ff.s.set_points(ff.xx, ff.yy);
-  }
-
-  int ls[] = {PHI, RHO, MEAMF};
-  for (int it : ls) {
-    for (double ee : funcs[it].s.m_b) error["punish"] += square11(ee);
-    for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
-      error["punish"] += 0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1];
-  }
-
-  error["frc"] = 0.0;
-  for (Config &cnf : configs) {
-    forceMEAMS(cnf);
-    for (pfAtom &atm : cnf.atoms)
-      for (int it : {X, Y, Z}) {
-        atm.fitfrc[it] =
-            atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
-        error["frc"] += square11(atm.fitfrc[it] * atm.fweigh[it]);
-      }
-    ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
-    omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
-    error["frc"] += square11(cnf.fitengy - cnf.engy);
-  }  // cc
-  error["punish"] *= dparams["pweight"];
-  error["frc"] *= 1e2;
-  return error["frc"] + error["punish"];  // + error["shift"];
-}
-
-double pfHome::forceMEAMS(const vector<double> &vv) {
-  int cnt = 0;
-  for (Func &ff : funcs)  // left examples of how to use it
-    for (int j = 0; j < ff.npts; j++) ff.yy[j] = vv[cnt++];
-  return error["frc"];
-}
-
 void pfHome::forceMEAMS(Config &cnf) {
   cnf.phiengy = cnf.emfengy = 0.0;
   cnf.rhomi = 1e10, cnf.rhomx = -1e10;
+  for (auto &ee : cnf.fitstrs) ee = 0.0;
   for (pfAtom &atm : cnf.atoms) { /* loop over atoms to reset values */
     atm.crho = 0.0;
     for (int it : {X, Y, Z})
@@ -156,7 +79,17 @@ void pfHome::forceMEAMS(Config &cnf) {
       funcs[PHI].s.deriv(ngbj.slots[PHI], ngbj.shifts[PHI], ngbj.phi,
                          ngbj.phig);
       cnf.phiengy += ngbj.phi;
-      for (int it : {X, Y, Z}) atm.phifrc[it] += ngbj.dist2r[it] * ngbj.phig;
+
+      double tmp[3];
+      for (int it : {X, Y, Z})
+        atm.phifrc[it] += (tmp[it] = ngbj.dist2r[it] * ngbj.phig);
+
+      cnf.fitstrs[XX] -= 0.5 * ngbj.dist[X] * tmp[X];
+      cnf.fitstrs[YY] -= 0.5 * ngbj.dist[Y] * tmp[Y];
+      cnf.fitstrs[ZZ] -= 0.5 * ngbj.dist[Z] * tmp[Z];
+      cnf.fitstrs[XY] -= 0.5 * ngbj.dist[X] * tmp[Y];
+      cnf.fitstrs[YZ] -= 0.5 * ngbj.dist[Y] * tmp[Z];
+      cnf.fitstrs[ZX] -= 0.5 * ngbj.dist[Z] * tmp[X];
 
       // rho
       funcs[RHO].s.deriv(ngbj.slots[RHO], ngbj.shifts[RHO], ngbj.rho,
@@ -223,32 +156,37 @@ void pfHome::forceMEAMS(Config &cnf) {
           forces_i[it] -= fk[it];
           cnf.atoms[ngbk.aid].trifrc[it] += fk[it];
         }
+
+        // stresses
+        cnf.fitstrs[XX] += ngbj.dist[X] * fj[X] + ngbk.dist[X] * fk[X];
+        cnf.fitstrs[YY] += ngbj.dist[Y] * fj[Y] + ngbk.dist[Y] * fk[Y];
+        cnf.fitstrs[ZZ] += ngbj.dist[Z] * fj[Z] + ngbk.dist[Z] * fk[Z];
+        cnf.fitstrs[XY] += ngbj.dist[X] * fj[Y] + ngbk.dist[X] * fk[Y];
+        cnf.fitstrs[YZ] += ngbj.dist[Y] * fj[Z] + ngbk.dist[Y] * fk[Z];
+        cnf.fitstrs[ZX] += ngbj.dist[Z] * fj[X] + ngbk.dist[Z] * fk[X];
       }  // loop over kk
       for (int it : {X, Y, Z}) {
         atm.trifrc[it] -= forces_j[it];
         cnf.atoms[ngbj.aid].trifrc[it] += forces_j[it];
       }
-
     }  // loop over jj
     for (int it : {X, Y, Z}) atm.trifrc[it] += forces_i[it];
   }                             // atm
   for (pfAtom &atm : cnf.atoms) /* eambedding forces */
     for (Neigh &ngb : atm.neighsFull) {
-      if (ngb.r < funcs[RHO].xx.back()) {
-        double emf = ngb.rhog * (atm.gradF + cnf.atoms[ngb.aid].gradF);
-        for (int it : {X, Y, Z}) atm.rhofrc[it] += ngb.dist2r[it] * emf;
-      }  // cutoff(rho)
-    }    // nn
+      // if (ngb.r < funcs[RHO].xx.back()) {
+      double emf = ngb.rhog * (atm.gradF + cnf.atoms[ngb.aid].gradF);
+      double tmp[3];
+      for (int it : {X, Y, Z})
+        atm.rhofrc[it] += (tmp[it] = ngb.dist2r[it] * emf);
+      cnf.fitstrs[XX] -= 0.5 * ngb.dist[X] * tmp[X];
+      cnf.fitstrs[YY] -= 0.5 * ngb.dist[Y] * tmp[Y];
+      cnf.fitstrs[ZZ] -= 0.5 * ngb.dist[Z] * tmp[Z];
+      cnf.fitstrs[XY] -= 0.5 * ngb.dist[X] * tmp[Y];
+      cnf.fitstrs[YZ] -= 0.5 * ngb.dist[Y] * tmp[Z];
+      cnf.fitstrs[ZX] -= 0.5 * ngb.dist[Z] * tmp[X];
+      // }  // cutoff(rho)
+    }  // nn
   cnf.fitengy = (cnf.phiengy / 2. + cnf.emfengy) / cnf.natoms;
+  for (auto &ee : cnf.fitstrs) ee /= cnf.vol;
 }
-
-// int ls[] = {PHI, RHO, MEAMF};
-// for (int it : ls) {
-//   double invrg = 1. / square11(funcs[it].rng);
-//   double tm = 0.0;
-//   for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
-//     tm += (square11(funcs[it].s.m_b[i]) +
-//            0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1]);
-//   tm += square11(funcs[it].s.m_b.back());
-//   epsh += tm * invrg;
-// }

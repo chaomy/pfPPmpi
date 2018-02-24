@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-22 23:37:51
+ * @Last Modified time: 2018-02-23 20:58:17
  */
 
 #include "pfHome.h"
@@ -25,6 +25,7 @@ void pfHome::initParam() {
   dparams["ivari"] = 0.3;
   dparams["pratio"] = 0.5;
   dparams["eweight"] = 5.0;
+  dparams["sweight"] = 1.0;
   dparams["pweight"] = 1.0;
   dparams["pshift"] = 10;
   dparams["xtol"] = 1e-4;

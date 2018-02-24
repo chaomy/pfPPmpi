@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-20 16:53:38
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-22 21:35:13
+ * @Last Modified time: 2018-02-23 16:27:35
  */
 
 #include "pfHome.h"
@@ -51,6 +51,10 @@ void pfHome::readConfig() {    /* read atomic force file */
     } else if (!segs[0].compare("#E")) {
       sscanf(buff.c_str(), "%s %lf", tmp, &config.engy);
       config.engy -= eb;
+    } else if (!segs[0].compare("#S")) {
+      sscanf(buff.c_str(), "%s %lf %lf %lf %lf %lf %lf", tmp, &config.strs[0],
+             &config.strs[1], &config.strs[2], &config.strs[3], &config.strs[4],
+             &config.strs[5]);
     } else if (!segs[0].compare("#F")) {
       for (int i = 0; i < config.natoms; i++) {
         getline(fid, buff);
