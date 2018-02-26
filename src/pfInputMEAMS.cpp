@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-17 14:00:51
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-11 17:14:19
+ * @Last Modified time: 2018-02-26 11:30:36
  */
 
 #include "pfHome.h"
@@ -28,7 +28,7 @@ void pfHome::readMEAMS() {
   pfu.split(buff, " ", segs);
 
   for (int i = 1; i < 11; i++) recordbd.push_back(stoi(segs[i]));
-  for (int i = 11; i < segs.size(); i++) optidx.push_back(stoi(segs[i]));
+  for (int i : {0, 1, 2, 3, 4}) optidx.push_back(stoi(segs[11 + i]));
   for (int i : {0, 1, 2, 3, 4})
     if (optidx[i] == 1) cout << "to be optimized : " << i << endl;
 

@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-23 21:11:41
+ * @Last Modified time: 2018-02-26 11:42:38
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -19,8 +19,6 @@ using arma::linspace;
 using arma::mat;
 using arma::randu;
 using arma::vec;
-using std::cout;
-using std::endl;
 using std::ofstream;
 using std::to_string;
 
@@ -132,6 +130,7 @@ double pfHome::cmaes(arma::mat& iterate) {
   double currentobj =
       (this->*calobj[sparams["ptype"]])(decodev(mps.slice(0)), 1);
   double overallobj = currentobj;
+  vector<double> besttol(4, 1e30);
   vector<double> bestphy(4, 1e30);
   vector<string> bestfiles({"meam.lib.best", "lib.01", "lib.02", "lib.03"});
   double lastobj = 1e30;
@@ -189,19 +188,24 @@ double pfHome::cmaes(arma::mat& iterate) {
       if (i % iparams["lmpfreq"] == 0) {
         (this->*write[sparams["ptype"]])();
         lmpCheck(i, of1);
-        for (int kk = 0; kk < bestphy.size(); kk++) {
-          if (error["phy"] < bestphy[kk]) {
+        for (int kk = 0; kk < besttol.size(); kk++) {
+          if (error["phy"] + currentobj < besttol[kk]) {
             int tmpid = kk;
-            for (kk = bestphy.size() - 1; kk > tmpid; kk--) {
+            for (kk = besttol.size() - 1; kk > tmpid; kk--) {
+              besttol[kk] = besttol[kk - 1];
               bestphy[kk] = bestphy[kk - 1];
               std::rename(bestfiles[kk - 1].c_str(), bestfiles[kk].c_str());
             }
+            besttol[tmpid] = error["phy"] + currentobj;
             bestphy[tmpid] = error["phy"];
             std::rename(sparams["lmpfile"].c_str(), bestfiles[tmpid].c_str());
             if (tmpid == 0) best = iterate;
             break;
           }
         }
+        for (int kk = 0; kk < besttol.size(); kk++)
+          of1 << besttol[kk] << " " << bestphy[kk] << " ";
+        of1 << endl;
       }
       lastid = i;
     }
