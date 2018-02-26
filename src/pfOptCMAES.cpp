@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-26 11:42:38
+ * @Last Modified time: 2018-02-26 16:09:48
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -48,7 +48,6 @@ void pfHome::loopcmaes() {
   (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
   for (int i = 0; i < iparams["kmax"]; i++) {
     if (cmm.rank() == PFROOT) {
-      phyweigh = dparams["pweight"];
       if ((cr = cmaes(iterate)) < op) {
         op = cr;
         std::rename("meam.lib.best", "meam.lib.best.overall");
@@ -347,6 +346,7 @@ void pfHome::lmpCheck(int i, ofstream& of1) {
     error["gsf"] +=
         50 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
   error["phy"] += error["gsf"];
+  error["phy"] *= dparams["pweight"];
 
   of1 << i << "   " << std::setprecision(4) << lmpdrv->exprs["lat"] << " "
       << lmpdrv->exprs["c11"] << " " << lmpdrv->exprs["c12"] << " "
