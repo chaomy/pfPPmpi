@@ -2,13 +2,11 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-26 23:13:10
+ * @Last Modified time: 2018-02-27 15:04:41
  */
 
 #include "pfHome.h"
 #include "pfLmpDrv.h"
-using std::cout;
-using std::endl;
 
 double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
   while (true) {
@@ -38,9 +36,9 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
       forceMEAMS(cnf);
       for (pfAtom &atm : cnf.atoms) {
         for (int it : {X, Y, Z}) {
-          atm.fitfrc[it] =
-              atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
-          efrc += cnf.weigh * square11(atm.fitfrc[it] * atm.fweigh[it]);
+          atm.fitfrc[it] = atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it];
+          efrc += cnf.weigh *
+                  square11((atm.fitfrc[it] - atm.frc[it]) * atm.fweigh[it]);
         }
       }
       eengy += cnf.weigh * square11(cnf.fitengy - cnf.engy);

@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-17 14:00:51
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-26 23:13:18
+ * @Last Modified time: 2018-02-27 15:26:50
  */
 
 #include "pfHome.h"
@@ -38,6 +38,7 @@ void pfHome::readMEAMS() {
     segs.clear();
     Func tm;
     getline(fid, buff);
+    cout << "buff is" << buff << endl;
     tm.npts = stoi(buff);
     tm.g1 = vector<double>(tm.npts, 0);
     tm.g2 = vector<double>(tm.npts, 0);

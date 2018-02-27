@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-26 16:09:48
+ * @Last Modified time: 2018-02-27 16:13:26
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -184,8 +184,8 @@ double pfHome::cmaes(arma::mat& iterate) {
       overallobj = currentobj;
       iterate = mps.slice(idx1);
 
+      (this->*write[sparams["ptype"]])();
       if (i % iparams["lmpfreq"] == 0) {
-        (this->*write[sparams["ptype"]])();
         lmpCheck(i, of1);
         for (int kk = 0; kk < besttol.size(); kk++) {
           if (error["phy"] + currentobj < besttol[kk]) {
@@ -217,6 +217,16 @@ double pfHome::cmaes(arma::mat& iterate) {
          << " " << configs[0].fitengy << " " << configs[0].engy << " "
          << configs[0].strs[0] << " " << configs[0].fitstrs[0] << " "
          << configs[0].strs[4] << " " << configs[0].fitstrs[4] << endl;
+
+    ofstream of2("force.txt", std::ofstream::out);
+    for (int i : locls) {
+      for (pfAtom& atm : configs[i].atoms)
+        for (int it : {0, 1, 2})
+          of2 << std::setprecision(4) << atm.frc[it] << " " << atm.fitfrc[it]
+              << " " << atm.phifrc[it] << " " << atm.rhofrc[it] << " "
+              << atm.trifrc[it] << " " << atm.fweigh[it] << endl;
+    }
+    of2.close();
 
     if (iterate.n_rows > iterate.n_cols) {  // Update Step Size.
       ps.slice(idx1) =
@@ -291,7 +301,7 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     if ((std::abs(lastobj - overallobj) < tolerance ||
          sigma(idx1) < sigmatol) &&
-        i > 100) {
+        i > 1e5) {
       cout << "CMA-ES: minimized within tolerance " << tolerance << "; "
            << "terminating optimization." << std::endl;
       return overallobj;
