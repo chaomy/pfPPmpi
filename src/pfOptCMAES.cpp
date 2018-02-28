@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-27 16:13:26
+ * @Last Modified time: 2018-02-28 11:56:15
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -129,9 +129,11 @@ double pfHome::cmaes(arma::mat& iterate) {
   double currentobj =
       (this->*calobj[sparams["ptype"]])(decodev(mps.slice(0)), 1);
   double overallobj = currentobj;
-  vector<double> besttol(4, 1e30);
-  vector<double> bestphy(4, 1e30);
-  vector<string> bestfiles({"meam.lib.best", "lib.01", "lib.02", "lib.03"});
+  int saven = 2;
+  vector<double> besttol(saven, 1e30);
+  vector<double> bestphy(saven, 1e30);
+  vector<string> bestfiles({"meam.lib.best", "lib.01"});
+  // for (int i = 1; i < saven; i++) bestfiles.push_back("lib." + to_string(i));
   double lastobj = 1e30;
 
   // Population parameters.
@@ -185,27 +187,26 @@ double pfHome::cmaes(arma::mat& iterate) {
       iterate = mps.slice(idx1);
 
       (this->*write[sparams["ptype"]])();
-      if (i % iparams["lmpfreq"] == 0) {
-        lmpCheck(i, of1);
-        for (int kk = 0; kk < besttol.size(); kk++) {
-          if (error["phy"] + currentobj < besttol[kk]) {
-            int tmpid = kk;
-            for (kk = besttol.size() - 1; kk > tmpid; kk--) {
-              besttol[kk] = besttol[kk - 1];
-              bestphy[kk] = bestphy[kk - 1];
-              std::rename(bestfiles[kk - 1].c_str(), bestfiles[kk].c_str());
-            }
-            besttol[tmpid] = error["phy"] + currentobj;
-            bestphy[tmpid] = error["phy"];
-            std::rename(sparams["lmpfile"].c_str(), bestfiles[tmpid].c_str());
-            if (tmpid == 0) best = iterate;
-            break;
-          }
-        }
-        for (int kk = 0; kk < besttol.size(); kk++)
-          of1 << besttol[kk] << " " << bestphy[kk] << " ";
-        of1 << endl;
-      }
+      // if (i % iparams["lmpfreq"] == 0) {
+      // lmpCheck(i, of1);
+      // for (int kk = 0; kk < besttol.size(); kk++) {
+      //   if (error["phy"] + currentobj < besttol[kk]) {
+      //     int tmpid = kk;
+      //     for (kk = besttol.size() - 1; kk > tmpid; kk--) {
+      //       besttol[kk] = besttol[kk - 1];
+      //       bestphy[kk] = bestphy[kk - 1];
+      //       std::rename(bestfiles[kk - 1].c_str(), bestfiles[kk].c_str());
+      //     }
+      //     besttol[tmpid] = error["phy"] + currentobj;
+      //     bestphy[tmpid] = error["phy"];
+      //     std::rename(sparams["lmpfile"].c_str(),
+      //     bestfiles[tmpid].c_str()); if (tmpid == 0) best = iterate; break;
+      //   }
+      // }
+      // for (int kk = 0; kk < besttol.size(); kk++)
+      //   of1 << besttol[kk] << " " << bestphy[kk] << " ";
+      // of1 << endl;
+      // }
       lastid = i;
     }
 
@@ -307,14 +308,7 @@ double pfHome::cmaes(arma::mat& iterate) {
       return overallobj;
     }
 
-    if (i % iparams["resfreq"] == 1) checkupdateBoundary(iterate);
-
-    // if ((i % iparams["resfreq"] == 1) && checkBoundary(iterate)) {
-    // cout << "update boundary" << endl;
-    // updateBoundary(decodev(iterate));
-    // mps.slice(idx1) =
-    //     5.0 + cs * (arma::mat(nvars, 1, arma::fill::randu) - 0.5);
-    // }
+    // if (i % iparams["resfreq"] == 1) checkupdateBoundary(iterate);
 
     lastobj = overallobj;
   }

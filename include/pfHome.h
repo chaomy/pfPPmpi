@@ -545,11 +545,11 @@ inline void pfHome::checkupdateBoundary(arma::mat& vv) {
     if (vv[i] < 0.1 || vv[i] > 9.9) {
       double val = decode(vv[i], i);
       double vari = (fabs(val) >= 1e-8) ? dparams["ivari"] * fabs(val) : 0.001;
-      cout << i << "before update boundary" << lob[i] << " " << hib[i] << endl;
+      cout << i << " before update boundary" << lob[i] << " " << hib[i] << endl;
       lob[i] = val - vari;
       hib[i] = val + vari;
       deb[i] = 2 * vari;
-      cout << i << "after update boundary" << lob[i] << " " << hib[i] << endl;
+      cout << i << " after update boundary" << lob[i] << " " << hib[i] << endl;
       vv[i] = 5.0;
     }
   }

@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-18 15:33:52
+ * @Last Modified time: 2018-02-28 11:41:11
  */
 
 #include "pfHome.h"
@@ -13,68 +13,92 @@ using std::to_string;
 using std::vector;
 
 void pfHome::resample() {
-  int npts = 12;
-  double rout = 6.25;
-  ricut -= 0.01;
-  double delt = (rout - ricut) / npts;
-  cout << "PHI" << endl;
-
-  for (int i = 0; i <= npts; i++) {
-    double xx = delt * i + ricut;
-    double phinew, phinewdriv;
-    funcs[PHI].s.deriv(xx, phinew, phinewdriv);
-    cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
-         << endl;
+  for (auto kk : {0, 1, 2, 3, 4}) {
+    int npts = funcs[kk].npts;
+    double ri = ricut - 0.005, ro = 0.0;
+    if (kk == PHI)
+      ro = 6.25;
+    else if (kk == RHO || kk == MEAMF)
+      ro = 5.50;
+    else if (kk == EMF) {
+      ri = ominrho - 10.0;
+      ro = omaxrho + 10.0;
+    } else if (kk == MEAMG) {
+      ri = -1.0;
+      ro = 1.0;
+    }
+    double delt = (ro - ri) / (npts - 1);
+    for (int i = 0; i < npts; i++) {
+      funcs[kk].xx[i] = delt * i + ri;
+      funcs[kk].s.deriv(funcs[kk].xx[i], funcs[kk].yy[i], funcs[kk].g1[i]);
+    }
   }
-
-  npts = 10;
-  rout = 5.50;
-  delt = (rout - ricut) / npts;
-  cout << "RHO" << endl;
-  for (int i = 0; i <= npts; i++) {
-    double xx = delt * i + ricut;
-    double phinew, phinewdriv;
-    funcs[RHO].s.deriv(xx, phinew, phinewdriv);
-    cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
-         << endl;
-  }
-
-  npts = 10;
-  rout = 5.50;
-  delt = (rout - ricut) / npts;
-  cout << "MEAMF" << endl;
-  for (int i = 0; i <= npts; i++) {
-    double xx = delt * i + ricut;
-    double phinew, phinewdriv;
-    funcs[MEAMF].s.deriv(xx, phinew, phinewdriv);
-    cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
-         << endl;
-  }
-
-  npts = 3;
-  double rhmn = -40.0;
-  double rhmx = -10.0;
-  double dl = (rhmx - rhmn) / (npts - 1);
-
-  cout << "RHO" << endl;
-  for (int i = 0; i <= npts; i++) {
-    double xx = dl * i + rhmn;
-    double phinew, phinewdriv;
-    funcs[EMF].s.deriv(xx, phinew, phinewdriv);
-    cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
-         << endl;
-  }
-
-  dl = ((rhmx = 1. + 1e-12) - (rhmn = -1.0 - 1e-12)) / ((npts = 6) - 1);
-  cout << "MEAMG" << endl;
-  for (int i = 0; i < npts; i++) {
-    double xx = dl * i + rhmn;
-    double phinew, phinewdriv;
-    funcs[MEAMG].s.deriv(xx, phinew, phinewdriv);
-    cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
-         << endl;
-  }
+  (this->*write[sparams["ptype"]])();
 }
+
+// void pfHome::resample() {
+//   int npts = 12;
+//   double rout = 6.25;
+//   ricut -= 0.01;
+//   double delt = (rout - ricut) / npts;
+//   cout << "PHI" << endl;
+
+//   for (int i = 0; i <= npts; i++) {
+//     double xx = delt * i + ricut;
+//     double phinew, phinewdriv;
+//     funcs[PHI].s.deriv(xx, phinew, phinewdriv);
+//     cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
+//          << endl;
+//   }
+
+//   npts = 11;
+//   rout = 5.50;
+//   delt = (rout - ricut) / npts;
+//   cout << "RHO" << endl;
+//   for (int i = 0; i <= npts; i++) {
+//     double xx = delt * i + ricut;
+//     double phinew, phinewdriv;
+//     funcs[RHO].s.deriv(xx, phinew, phinewdriv);
+//     cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
+//          << endl;
+//   }
+
+//   npts = 11;
+//   rout = 5.50;
+//   delt = (rout - ricut) / npts;
+//   cout << "MEAMF" << endl;
+//   for (int i = 0; i <= npts; i++) {
+//     double xx = delt * i + ricut;
+//     double phinew, phinewdriv;
+//     funcs[MEAMF].s.deriv(xx, phinew, phinewdriv);
+//     cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
+//          << endl;
+//   }
+
+//   npts = 3;
+//   double rhmn = -100.0;
+//   double rhmx = -60.0;
+//   double dl = (rhmx - rhmn) / (npts - 1);
+
+//   cout << "RHO" << endl;
+//   for (int i = 0; i <= npts; i++) {
+//     double xx = dl * i + rhmn;
+//     double phinew, phinewdriv;
+//     funcs[EMF].s.deriv(xx, phinew, phinewdriv);
+//     cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
+//          << endl;
+//   }
+
+//   dl = ((rhmx = 1. + 1e-12) - (rhmn = -1.0 - 1e-12)) / ((npts = 6) - 1);
+//   cout << "MEAMG" << endl;
+//   for (int i = 0; i < npts; i++) {
+//     double xx = dl * i + rhmn;
+//     double phinew, phinewdriv;
+//     funcs[MEAMG].s.deriv(xx, phinew, phinewdriv);
+//     cout << std::setprecision(16) << xx << " " << phinew << " " << phinewdriv
+//          << endl;
+//   }
+// }
 
 void pfHome::loopBwth() {
   for (int i = 1; i < 20; i++) {

@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-22 23:53:02
+ * @Last Modified time: 2018-02-28 10:58:23
  */
 
 #include "pfHome.h"
@@ -15,8 +15,8 @@ pfHome::pfHome(int argc, char* argv[])
     : ricut(2.08),
       rocut(6.00),
       mfrc(3),
-      hil({1.5, 0.5, 0.0, 1.0, 1.0}),
-      lol({-1.0, -0.1, -10.0, -0.5, -0.5}),
+      hil({5.0, 2.0, 0.0, 1.0, 1.0}),
+      lol({-1.0, -30.0, -10.0, -0.5, -0.5}),
       gradRight(5, 0),
       nelt(1),
       Ec_meam(MXEL, vector<double>(MXEL, 1.55)),
