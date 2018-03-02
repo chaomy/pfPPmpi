@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-02 01:17:32
+ * @Last Modified time: 2018-03-02 13:01:46
  */
 
 #include "pfHome.h"
@@ -31,17 +31,19 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     error["frc"] = 0.0, error["punish"] = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
 
-    // int ls[] = {PHI, RHO, MEAMF, MEAMG};
-    // int ls[] = {PHI, RHO};
-    for (int it : smthidx) {
-      double tm = 0.0;
-      // for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
-      //   tm += (square11(funcs[it].s.m_b[i]) +
-      //          0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1]);
-      // tm += square11(funcs[it].s.m_b.back());
-      for (auto ee : funcs[it].s.m_b) tm += square11(ee);
-      error["punish"] += tm;  //  * invrg;
+    // for (int it : smthidx)
+    //   for (auto ee : funcs[it].s.m_b) error["punish"] += square11(ee);
+
+    for (int it : smthidx) {  // covarance of second derivative
+      vector<double> &vv = funcs[it].s.m_b;
+      double mn = 0.0, cov = 0.0;
+      for (int i = 2; i < vv.size() - 2; i++) {
+        mn = (vv[i - 2] + vv[i - 1] + vv[i] + vv[i + 1] + vv[i + 2]) / 5.0;
+        for (int it : {-2, -1, 0, 1, 2}) cov += square11(vv[i + it] - mn);
+      }
+      error["punish"] += cov;
     }
+
     error["punish"] *= dparams["pweight"];
 
     for (int i : locls) {
