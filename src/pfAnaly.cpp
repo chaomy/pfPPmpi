@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-28 11:41:11
+ * @Last Modified time: 2018-03-02 02:32:44
  */
 
 #include "pfHome.h"
@@ -17,9 +17,9 @@ void pfHome::resample() {
     int npts = funcs[kk].npts;
     double ri = ricut - 0.005, ro = 0.0;
     if (kk == PHI)
-      ro = 6.25;
+      ro = 6.15;
     else if (kk == RHO || kk == MEAMF)
-      ro = 5.50;
+      ro = 5.15;
     else if (kk == EMF) {
       ri = ominrho - 10.0;
       ro = omaxrho + 10.0;

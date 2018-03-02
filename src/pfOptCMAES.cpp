@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-28 11:56:15
+ * @Last Modified time: 2018-03-01 23:12:06
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -93,7 +93,7 @@ double pfHome::cmaes(arma::mat& iterate) {
 
   // double upperBound = 10., lowerBound = -10.;
   // sigma(0) = 0.1 * (upperBound - lowerBound);
-  sigma(0) = 3. * dparams["istep"];
+  sigma(0) = 10. * dparams["istep"];
 
   const double cs = (muEffective + 2) / (iterate.n_elem + muEffective + 5);
   const double ds =
@@ -212,9 +212,10 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     // for meams
     cout << "CMA-ES: i = " << i << ", objective " << overallobj << " "
-         << error["frc"] << " " << error["engy"] << " " << error["strs"]
-         << " cs " << sigma(idx1) << " " << ominrho << " " << omaxrho << " "
-         << funcs[EMF].xx.front() << " " << funcs[EMF].xx.back() << " "
+         << error["frc"] << " " << error["engy"] << " " << error["strs"] << " "
+         << error["punish"] << " cs " << sigma(idx1) << " " << ominrho << " "
+         << omaxrho << " " << funcs[EMF].xx.front() << " "
+         << funcs[EMF].xx.back() << " "
          << " " << configs[0].fitengy << " " << configs[0].engy << " "
          << configs[0].strs[0] << " " << configs[0].fitstrs[0] << " "
          << configs[0].strs[4] << " " << configs[0].fitstrs[4] << endl;

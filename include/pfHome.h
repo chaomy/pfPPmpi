@@ -52,6 +52,7 @@ class pfHome {
   int locstt;
   int locend;
   vector<int> locls;
+  vector<int> smthidx;
   double fsm, phyweigh;
 
   double ricut;
@@ -186,6 +187,7 @@ class pfHome {
   double forceMEAMS(const arma::mat& vv);
   double forceMEAMS(const arma::mat& vv, int tg);
   double forceMEAMSNoStress(const arma::mat& vv, int tg);
+  double forceMEAMSNoPunish(const arma::mat& vv, int tg);
   double forceMEAMC(const arma::mat& vv, int tg);
   void forceMEAMC(Config& cc);
   void forceMEAMS(Config& cc);

@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-28 10:58:23
+ * @Last Modified time: 2018-03-01 21:34:50
  */
 
 #include "pfHome.h"
@@ -90,11 +90,11 @@ pfHome::pfHome(int argc, char* argv[])
     // outMkdir(sparams["tmpdir"]);
     // outMkdir(sparams["lmpdir"]);
 
-    sparams["tmpfile"] = string("dummy.tmp");
-    sparams["parfile"] = string("dummy.param");
-    sparams["cnffile"] = string("dummy.config");
+    sparams["tmpfile"] = string("pf.tmp");
+    sparams["parfile"] = string("pf.par");
+    sparams["cnffile"] = string("pf.cnf");
     // sparams["potfile"] = string("dummy.pot");
-    sparams["lmppot"] = string("dummy.lmp");
+    sparams["lmppot"] = string("pf.lmp");
     sparams["potfile"] = string("meam.lib");
     sparams["meamcnt"] = string("meam.cnt");
     sparams["meamlib"] = string("meam.tmp");

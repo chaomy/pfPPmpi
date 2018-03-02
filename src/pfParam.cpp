@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-26 11:10:26
+ * @Last Modified time: 2018-03-01 22:04:05
  */
 
 #include "pfHome.h"
@@ -40,7 +40,7 @@ void pfHome::initParam() {
   iparams["runlmp"] = 0;
   readParam();
   cout << "ptype = " << sparams["ptype"] << endl;
-  sparams["lmpfile"] = string("dummy.lammps.") + sparams["ptype"];
+  sparams["lmpfile"] = string("lmp.") + sparams["ptype"];
 }
 
 void pfHome::readParam() {

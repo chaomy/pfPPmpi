@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-11 16:54:55
+ * @Last Modified time: 2018-03-01 22:57:47
  */
 
 #include "pfHome.h"
@@ -20,8 +20,7 @@ void pfHome::bcdata() {
   broadcast(cmm, nconfs, PFROOT);
   broadcast(cmm, configs, PFROOT);
 
-  /* funcstions */
-  if (!sparams["ptype"].compare("MEAMC")) {
+  if (!sparams["ptype"].compare("MEAMC")) { /* funcstions */
     broadcast(cmm, elems, PFROOT);
     broadcast(cmm, cnn1, PFROOT);
     broadcast(cmm, ielement, PFROOT);
@@ -37,6 +36,7 @@ void pfHome::bcdata() {
     broadcast(cmm, nfuncs, PFROOT);
     broadcast(cmm, ini, PFROOT);
     broadcast(cmm, optidx, PFROOT);
+    broadcast(cmm, smthidx, PFROOT);
     nvars = ini.size();
     broadcast(cmm, lob, PFROOT);
     broadcast(cmm, hib, PFROOT);

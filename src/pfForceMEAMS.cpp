@@ -2,13 +2,77 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-27 15:04:41
+ * @Last Modified time: 2018-03-02 01:17:32
  */
 
 #include "pfHome.h"
 #include "pfLmpDrv.h"
 
 double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
+  while (true) {
+    broadcast(cmm, tg, PFROOT);
+    if (tg == EXT) break;
+
+    int cnt = 0;
+    for (int i : {0, 1, 2, 3, 4}) {
+      if (optidx[i] == 0) continue;
+      Func &ff = funcs[i];
+      for (int j : ff.rlxid) ff.yy[j] = vv[cnt++];
+    }
+
+    for (int i = 0; i < nfuncs; i++) {  // broadcast functions
+      broadcast(cmm, funcs[i].xx, PFROOT);
+      broadcast(cmm, funcs[i].yy, PFROOT);
+    }
+
+    for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
+
+    double efrc = 0.0, eengy = 0.0, estrs = 0.0;
+    error["frc"] = 0.0, error["punish"] = 0.0;
+    omaxrho = -1e10, ominrho = 1e10;
+
+    // int ls[] = {PHI, RHO, MEAMF, MEAMG};
+    // int ls[] = {PHI, RHO};
+    for (int it : smthidx) {
+      double tm = 0.0;
+      // for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
+      //   tm += (square11(funcs[it].s.m_b[i]) +
+      //          0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1]);
+      // tm += square11(funcs[it].s.m_b.back());
+      for (auto ee : funcs[it].s.m_b) tm += square11(ee);
+      error["punish"] += tm;  //  * invrg;
+    }
+    error["punish"] *= dparams["pweight"];
+
+    for (int i : locls) {
+      Config &cnf = configs[i];
+      forceMEAMS(cnf);
+      for (pfAtom &atm : cnf.atoms) {
+        for (int it : {X, Y, Z}) {
+          atm.fitfrc[it] = atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it];
+          efrc += cnf.weigh *
+                  square11((atm.fitfrc[it] - atm.frc[it]) * atm.fweigh[it]);
+        }
+      }
+      eengy += cnf.weigh * square11(cnf.fitengy - cnf.engy);
+      omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
+      ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
+
+      for (int it : {0, 1, 2, 3, 4, 5})
+        estrs += square11(cnf.fitstrs[it] - cnf.strs[it]);
+      estrs *= cnf.weigh;
+    }
+    reduce(cmm, dparams["eweight"] * eengy, error["engy"], std::plus<double>(),
+           PFROOT);
+    reduce(cmm, dparams["sweight"] * estrs, error["strs"], std::plus<double>(),
+           PFROOT);
+    reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
+    if (cmm.rank() == PFROOT) break;
+  }
+  return error["frc"] + error["engy"] + error["strs"] + error["punish"];
+}
+
+double pfHome::forceMEAMSNoPunish(const arma::mat &vv, int tg) {
   while (true) {
     broadcast(cmm, tg, PFROOT);
     if (tg == EXT) break;
@@ -56,7 +120,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"] + error["engy"];
+  return error["frc"] + error["engy"] + error["strs"];
 }
 
 void pfHome::forceMEAMS(Config &cnf) {

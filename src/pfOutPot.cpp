@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 18:46:14
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-26 11:30:21
+ * @Last Modified time: 2018-03-01 23:11:01
  */
 
 #include "pfHome.h"
@@ -152,10 +152,12 @@ void pfHome::writeMEAMC() {
 void pfHome::writeMEAMS() {
   FILE* fid = fopen(sparams["lmpfile"].c_str(), "w");
   if (!fid) cerr << "error opening " + sparams["lmpfile"] << endl;
-  fprintf(fid, "# %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n", funcs[0].bl,
+  fprintf(fid, "# %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", funcs[0].bl,
           funcs[0].br, funcs[1].bl, funcs[1].br, funcs[2].bl, funcs[2].br,
           funcs[3].bl, funcs[3].br, funcs[4].bl, funcs[4].br, optidx[0],
           optidx[1], optidx[2], optidx[3], optidx[4]);
+  for (auto ee : smthidx) fprintf(fid, " %d", ee);
+  fprintf(fid, "\n");
   for (int i = 0; i < nfuncs; i++) {
     fprintf(fid, "%d\n", funcs[i].npts);
     fprintf(fid, "%.16e %.16e\n",
