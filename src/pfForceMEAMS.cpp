@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-02 13:01:46
+ * @Last Modified time: 2018-03-02 13:08:49
  */
 
 #include "pfHome.h"
@@ -37,7 +37,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     for (int it : smthidx) {  // covarance of second derivative
       vector<double> &vv = funcs[it].s.m_b;
       double mn = 0.0, cov = 0.0;
-      for (int i = 2; i < vv.size() - 2; i++) {
+      for (int i = 3; i < vv.size() - 3; i++) {  // don't account first/last
         mn = (vv[i - 2] + vv[i - 1] + vv[i] + vv[i + 1] + vv[i + 2]) / 5.0;
         for (int it : {-2, -1, 0, 1, 2}) cov += square11(vv[i + it] - mn);
       }
