@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-01 21:55:39
+ * @Last Modified time: 2018-03-03 12:57:46
  */
 
 #include "pfHome.h"
@@ -62,7 +62,6 @@ void pfHome::setSplineVariables() {  // func -> ini
       lob.push_back(ff.yy[j] - del);
       hib.push_back(ff.yy[j] + del);
       deb.push_back(2 * del);
-      cout << "min " << lob.back() << " max " << hib.back() << endl;
     }
     endps.push_back(nvars);
   }  // i

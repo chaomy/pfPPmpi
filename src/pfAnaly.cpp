@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-02 12:04:24
+ * @Last Modified time: 2018-03-03 01:54:02
  */
 
 #include "pfHome.h"
@@ -15,11 +15,13 @@ using std::vector;
 void pfHome::resample() {
   for (auto kk : {0, 1, 2, 3, 4}) {
     int npts = funcs[kk].npts;
-    double ri = ricut - 0.005, ro = 0.0;
+    // double ri = ricut - 0.01,
+    double ri = funcs[PHI].xx[0];
+    double ro = 0.0;
     if (kk == PHI)
-      ro = 6.15;
+      ro = 5.20;
     else if (kk == RHO || kk == MEAMF)
-      ro = 5.15;
+      ro = 5.20;
     else if (kk == EMF) {
       ri = ominrho - 10.0;
       ro = omaxrho + 10.0;
@@ -33,6 +35,7 @@ void pfHome::resample() {
       funcs[kk].s.deriv(funcs[kk].xx[i], funcs[kk].yy[i], funcs[kk].g1[i]);
     }
   }
+  for (Func& ff : funcs) ff.s.set_points(ff.xx, ff.yy);
   (this->*write[sparams["ptype"]])();
 }
 

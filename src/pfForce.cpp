@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-28 11:15:31
+ * @Last Modified time: 2018-03-03 13:15:24
  */
 
 #include "pfHome.h"
@@ -89,10 +89,16 @@ void pfHome::calErr() {  // make potential
   (this->*calobj[sparams["ptype"]])(mm, 1);
   if (cmm.rank() == PFROOT) {
     double err = (this->*calobj[sparams["ptype"]])(mm, 1);
-    cout << "Err " << err << endl;
     (this->*calobj[sparams["ptype"]])(mm, EXT);
     (this->*write[sparams["ptype"]])();
+
+    ofstream of("err.txt", std::ofstream::out);
+    of << std::setprecision(4) << err << " " << error["frc"] << " "
+       << error["engy"] << " " << error["strs"] << " " << error["punish"]
+       << endl;
+    of.close();
   }
+
   // check the encoding
   // arma::mat v1 = encodev(mm);
   // arma::mat v2 = decodev(v1);

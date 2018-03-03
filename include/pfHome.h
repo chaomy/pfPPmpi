@@ -25,6 +25,7 @@
 #include "pfEle.h"
 #include "spline.h"
 
+using std::cerr;
 using std::ofstream;
 using std::string;
 using std::unordered_map;
@@ -179,19 +180,18 @@ class pfHome {
   double errFunct(const vector<double>& x);
   double errFunctGrad(const vector<double>& x, vector<double>& g);
   double forceEAM(vector<Func>& ffs, int tag);
-  double forceEAM(const vector<double>& vv);
   double forceADP(const vector<double>& vv, int tag);
-  double forceMEAMS(const vector<double>& vv);
+  // double forceMEAMS(const vector<double>& vv);
   double forceEAM(const arma::mat& vv);
   double forceEAM(const arma::mat& vv, int tg);
   double forceMEAMS(const arma::mat& vv);
   double forceMEAMS(const arma::mat& vv, int tg);
-  double forceMEAMSNoStress(const arma::mat& vv, int tg);
-  double forceMEAMSNoPunish(const arma::mat& vv, int tg);
+  double forceMEAMSStress(const arma::mat& vv, int tg);
+  double forceMEAMSStressPunish(const arma::mat& vv, int tg);
   double forceMEAMC(const arma::mat& vv, int tg);
   void forceMEAMC(Config& cc);
   void forceMEAMS(Config& cc);
-  void forceMEAMSNoStress(Config& cc);
+  void forceMEAMSStress(Config& cc);
   void forceEAM(Config& cc);
   void stressMEAM(Config& cc);
 

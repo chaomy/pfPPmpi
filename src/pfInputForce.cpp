@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-20 16:53:38
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-28 17:55:31
+ * @Last Modified time: 2018-03-03 13:08:32
  */
 
 #include "pfHome.h"
@@ -75,9 +75,6 @@ void pfHome::readConfig() {    /* read atomic force file */
       configs.push_back(config);
     }  // #F
   }    // while
-
-  for (int ii : {0, 1, 2}) mfrc[ii] /= tln;
-  printf("%f %f %f\n", mfrc[0], mfrc[1], mfrc[2]);
 
   fid.close();
   cout << "finish reading " << configs.size() << " configs" << endl;

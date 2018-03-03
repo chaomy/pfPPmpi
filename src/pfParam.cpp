@@ -2,15 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-01 22:04:05
+ * @Last Modified time: 2018-03-03 13:05:41
  */
 
 #include "pfHome.h"
 
-using std::cerr;
 using std::ifstream;
-using std::string;
-using std::unordered_map;
 
 void pfHome::initParam() {
   sparams["spline"] = string("nat");
@@ -39,7 +36,6 @@ void pfHome::initParam() {
   iparams["kmax"] = 1000;  // number of outer loop in simulated annealing
   iparams["runlmp"] = 0;
   readParam();
-  cout << "ptype = " << sparams["ptype"] << endl;
   sparams["lmpfile"] = string("lmp.") + sparams["ptype"];
 }
 

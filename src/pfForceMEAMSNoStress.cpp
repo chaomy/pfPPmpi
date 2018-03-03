@@ -2,13 +2,13 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-23 16:37:40
+ * @Last Modified time: 2018-03-03 02:03:15
  */
 
 #include "pfHome.h"
 #include "pfLmpDrv.h"
 
-double pfHome::forceMEAMSNoStress(const arma::mat &vv, int tg) {
+double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
   while (true) {
     broadcast(cmm, tg, PFROOT);
     if (tg == EXT) break;
@@ -27,9 +27,23 @@ double pfHome::forceMEAMSNoStress(const arma::mat &vv, int tg) {
 
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
-    double efrc = 0.0, eengy = 0.0;  // epsh = 0.0;
-    error["frc"] = 0.0, error["shift"] = 0.0;
+    double efrc = 0.0, eengy = 0.0;
+    error["frc"] = 0.0, error["punish"] = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
+
+    int ww = 1;
+    for (int it : smthidx) {  // covarance of third derivative
+      vector<double> &vv = funcs[it].s.m_a;
+      double mn = 0.0, cov = 0.0;
+      for (int i = ww + 1; i < vv.size() - ww; i++) {
+        for (int it = -ww; it <= ww; it++) mn += vv[i + it];
+        mn /= (2 * ww + 1);
+        for (int it = -ww; it <= ww; it++) cov += square11(vv[i + it] - mn);
+      }
+      error["punish"] += cov / (2 * ww + 1);
+      // error["punish"] += square11(mn);
+    }
+    error["punish"] *= dparams["pweight"];
 
     for (int i : locls) {
       Config &cnf = configs[i];
@@ -46,98 +60,15 @@ double pfHome::forceMEAMSNoStress(const arma::mat &vv, int tg) {
       ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
     }
 
-    reduce(cmm, dparams["eweight"] * eengy, error["engy"], std::plus<double>(),
-           PFROOT);
+    eengy *= dparams["eweight"];
+    reduce(cmm, eengy, error["engy"], std::plus<double>(), PFROOT);
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"] + error["engy"];
+  return error["frc"] + error["engy"] + error["punish"];
 }
 
-// close fiting physical
-// error["phy"] = 0.0;
-// if (iparams["runlmp"]) {
-//   (this->*write[sparams["ptype"]])();
-//   lmpdrv->calLatticeBCC();
-//   lmpdrv->calLatticeFCC();
-//   lmpdrv->calLatticeHCP();
-//   lmpdrv->calSurfaceUrlx();
-//   lmpdrv->calGSFUrlx();
-
-//   remove("no");
-//   remove("log.lammps");
-//   remove("restart.equil");
-//   lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
-//   lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
-
-//   vector<string> aa(
-//       {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
-//   vector<double> ww({2e5, 5e3, 5e3, 1e3, 1e3, 1e3});
-
-//   for (int i = 0; i < aa.size(); i++) {
-//     string ee(aa[i]);
-//     error["phy"] +=
-//         (lmpdrv->error[ee] =
-//              ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
-//                               lmpdrv->targs[ee]));
-//   }
-
-//   error["gsf"] = 0.0;
-//   for (int i : lmpdrv->gsfpnts)
-//     error["gsf"] +=
-//         500 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
-//   error["phy"] += error["gsf"];
-//   error["phy"] *= phyweigh;
-// }
-
-double pfHome::forceMEAMS(const arma::mat &vv) {
-  error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
-  omaxrho = -1e10, ominrho = 1e10;
-
-  int cnt = 0;
-  for (int i = 0; i < nfuncs; i++) {
-    Func &ff = funcs[i];
-    if (i == PHI || i == RHO || i == MEAMF) {
-      for (int j = 0; j < ff.npts - 1; j++) ff.yy[j] = vv[cnt++];
-    } else {
-      for (int j = 0; j < ff.npts; j++) ff.yy[j] = vv[cnt++];
-    }
-    ff.s.set_points(ff.xx, ff.yy);
-  }
-
-  int ls[] = {PHI, RHO, MEAMF};
-  for (int it : ls) {
-    for (double ee : funcs[it].s.m_b) error["punish"] += square11(ee);
-    for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
-      error["punish"] += 0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1];
-  }
-
-  error["frc"] = 0.0;
-  for (Config &cnf : configs) {
-    forceMEAMS(cnf);
-    for (pfAtom &atm : cnf.atoms)
-      for (int it : {X, Y, Z}) {
-        atm.fitfrc[it] =
-            atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
-        error["frc"] += square11(atm.fitfrc[it] * atm.fweigh[it]);
-      }
-    ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
-    omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
-    error["frc"] += square11(cnf.fitengy - cnf.engy);
-  }  // cc
-  error["punish"] *= dparams["pweight"];
-  error["frc"] *= 1e2;
-  return error["frc"] + error["punish"];  // + error["shift"];
-}
-
-double pfHome::forceMEAMS(const vector<double> &vv) {
-  int cnt = 0;
-  for (Func &ff : funcs)  // left examples of how to use it
-    for (int j = 0; j < ff.npts; j++) ff.yy[j] = vv[cnt++];
-  return error["frc"];
-}
-
-void pfHome::forceMEAMSNoStress(Config &cnf) {  // It's benchmark one
+void pfHome::forceMEAMS(Config &cnf) {  // It's benchmark one
   cnf.phiengy = cnf.emfengy = 0.0;
   cnf.rhomi = 1e10, cnf.rhomx = -1e10;
   for (pfAtom &atm : cnf.atoms) { /* loop over atoms to reset values */
@@ -232,13 +163,52 @@ void pfHome::forceMEAMSNoStress(Config &cnf) {  // It's benchmark one
   }                             // atm
   for (pfAtom &atm : cnf.atoms) /* eambedding forces */
     for (Neigh &ngb : atm.neighsFull) {
-      if (ngb.r < funcs[RHO].xx.back()) {
-        double emf = ngb.rhog * (atm.gradF + cnf.atoms[ngb.aid].gradF);
-        for (int it : {X, Y, Z}) atm.rhofrc[it] += ngb.dist2r[it] * emf;
-      }  // cutoff(rho)
-    }    // nn
+      // if (ngb.r < funcs[RHO].xx.back()) {
+
+      double emf = ngb.rhog * (atm.gradF + cnf.atoms[ngb.aid].gradF);
+      for (int it : {X, Y, Z}) atm.rhofrc[it] += ngb.dist2r[it] * emf;
+
+      // }  // cutoff(rho)
+
+    }  // nn
   cnf.fitengy = (cnf.phiengy / 2. + cnf.emfengy) / cnf.natoms;
 }
+
+// close fiting physical
+// error["phy"] = 0.0;
+// if (iparams["runlmp"]) {
+//   (this->*write[sparams["ptype"]])();
+//   lmpdrv->calLatticeBCC();
+//   lmpdrv->calLatticeFCC();
+//   lmpdrv->calLatticeHCP();
+//   lmpdrv->calSurfaceUrlx();
+//   lmpdrv->calGSFUrlx();
+
+//   remove("no");
+//   remove("log.lammps");
+//   remove("restart.equil");
+//   lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
+//   lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
+
+//   vector<string> aa(
+//       {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
+//   vector<double> ww({2e5, 5e3, 5e3, 1e3, 1e3, 1e3});
+
+//   for (int i = 0; i < aa.size(); i++) {
+//     string ee(aa[i]);
+//     error["phy"] +=
+//         (lmpdrv->error[ee] =
+//              ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
+//                               lmpdrv->targs[ee]));
+//   }
+
+//   error["gsf"] = 0.0;
+//   for (int i : lmpdrv->gsfpnts)
+//     error["gsf"] +=
+//         500 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
+//   error["phy"] += error["gsf"];
+//   error["phy"] *= phyweigh;
+// }
 
 // int ls[] = {PHI, RHO, MEAMF};
 // for (int it : ls) {

@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-01 23:12:06
+ * @Last Modified time: 2018-03-02 21:42:02
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -93,7 +93,7 @@ double pfHome::cmaes(arma::mat& iterate) {
 
   // double upperBound = 10., lowerBound = -10.;
   // sigma(0) = 0.1 * (upperBound - lowerBound);
-  sigma(0) = 10. * dparams["istep"];
+  sigma(0) = 3. * dparams["istep"];
 
   const double cs = (muEffective + 2) / (iterate.n_elem + muEffective + 5);
   const double ds =

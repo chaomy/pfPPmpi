@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-01 22:57:47
+ * @Last Modified time: 2018-03-03 01:54:08
  */
 
 #include "pfHome.h"
@@ -73,9 +73,11 @@ void pfHome::bcdata() {
     vector<tk::spline::bd_type> bdmp(
         {tk::spline::first_deriv, tk::spline::second_deriv});
 
-    for (Func& ff : funcs)
-      ff.s.set_boundary(bdmp[ff.bl - 1], ff.g1.front(), bdmp[ff.br - 1],
-                        ff.g1.back(), true);
+    for (Func& ff : funcs) {
+      double al = (ff.bl == 1) ? ff.g1.front() : ff.g2.front();
+      double bl = (ff.br == 1) ? ff.g1.back() : ff.g2.back();
+      ff.s.set_boundary(bdmp[ff.bl - 1], al, bdmp[ff.br - 1], bl, true);
+    }
 
     if (1 == 2) {  // boundary
       funcs[MEAMF].s.set_boundary(

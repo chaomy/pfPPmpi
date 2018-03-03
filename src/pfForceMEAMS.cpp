@@ -2,13 +2,13 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-02 13:08:49
+ * @Last Modified time: 2018-03-03 13:15:41
  */
 
 #include "pfHome.h"
 #include "pfLmpDrv.h"
 
-double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
+double pfHome::forceMEAMSStressPunish(const arma::mat &vv, int tg) {
   while (true) {
     broadcast(cmm, tg, PFROOT);
     if (tg == EXT) break;
@@ -31,20 +31,18 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     error["frc"] = 0.0, error["punish"] = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
 
-    // for (int it : smthidx)
-    //   for (auto ee : funcs[it].s.m_b) error["punish"] += square11(ee);
-
-    for (int it : smthidx) {  // covarance of second derivative
-      vector<double> &vv = funcs[it].s.m_b;
-      double mn = 0.0, cov = 0.0;
-      for (int i = 3; i < vv.size() - 3; i++) {  // don't account first/last
-        mn = (vv[i - 2] + vv[i - 1] + vv[i] + vv[i + 1] + vv[i + 2]) / 5.0;
-        for (int it : {-2, -1, 0, 1, 2}) cov += square11(vv[i + it] - mn);
-      }
-      error["punish"] += cov;
-    }
-
-    error["punish"] *= dparams["pweight"];
+    // int ww = 1;
+    // for (int it : smthidx) {  // covarance of second derivative
+    //   vector<double> &vv = funcs[it].s.m_b;
+    //   double mn = 0.0, cov = 0.0;
+    //   for (int i = ww + 1; i < vv.size() - ww; i++) {
+    //     for (int it = -ww; it <= ww; it++) mn += vv[i + it];
+    //     mn /= (2 * ww + 1);
+    //     for (int it = -ww; it <= ww; it++) cov += square11(vv[i + it] - mn);
+    //   }
+    //   error["punish"] += cov / (2 * ww + 1);
+    //   // error["punish"] += square11(mn);
+    // }
 
     for (int i : locls) {
       Config &cnf = configs[i];
@@ -56,25 +54,28 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
                   square11((atm.fitfrc[it] - atm.frc[it]) * atm.fweigh[it]);
         }
       }
-      eengy += cnf.weigh * square11(cnf.fitengy - cnf.engy);
       omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
       ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
+      eengy += cnf.weigh * square11(cnf.fitengy - cnf.engy);
 
       for (int it : {0, 1, 2, 3, 4, 5})
         estrs += square11(cnf.fitstrs[it] - cnf.strs[it]);
       estrs *= cnf.weigh;
     }
-    reduce(cmm, dparams["eweight"] * eengy, error["engy"], std::plus<double>(),
-           PFROOT);
-    reduce(cmm, dparams["sweight"] * estrs, error["strs"], std::plus<double>(),
-           PFROOT);
+
+    error["punish"] *= dparams["pweight"];
+    estrs *= dparams["sweight"];
+    eengy *= dparams["eweight"];
+
+    reduce(cmm, eengy, error["engy"], std::plus<double>(), PFROOT);
+    reduce(cmm, estrs, error["strs"], std::plus<double>(), PFROOT);
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
   return error["frc"] + error["engy"] + error["strs"] + error["punish"];
 }
 
-double pfHome::forceMEAMSNoPunish(const arma::mat &vv, int tg) {
+double pfHome::forceMEAMSStress(const arma::mat &vv, int tg) {
   while (true) {
     broadcast(cmm, tg, PFROOT);
     if (tg == EXT) break;
@@ -125,7 +126,55 @@ double pfHome::forceMEAMSNoPunish(const arma::mat &vv, int tg) {
   return error["frc"] + error["engy"] + error["strs"];
 }
 
-void pfHome::forceMEAMS(Config &cnf) {
+// double pfHome::forceMEAMS(const vector<double> &vv) {
+//   int cnt = 0;
+//   for (Func &ff : funcs)  // left examples of how to use it
+//     for (int j = 0; j < ff.npts; j++) ff.yy[j] = vv[cnt++];
+//   return error["frc"];
+// }
+
+double pfHome::forceMEAMS(const arma::mat &vv) {
+  error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
+  omaxrho = -1e10, ominrho = 1e10;
+
+  int cnt = 0;
+  for (int i = 0; i < nfuncs; i++) {
+    Func &ff = funcs[i];
+    if (i == PHI || i == RHO || i == MEAMF) {
+      for (int j = 0; j < ff.npts - 1; j++) ff.yy[j] = vv[cnt++];
+    } else {
+      for (int j = 0; j < ff.npts; j++) ff.yy[j] = vv[cnt++];
+    }
+    ff.s.set_points(ff.xx, ff.yy);
+  }
+
+  int ls[] = {PHI, RHO, MEAMF};
+  for (int it : ls) {
+    for (double ee : funcs[it].s.m_b) error["punish"] += square11(ee);
+    for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
+      error["punish"] += 0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1];
+  }
+
+  error["frc"] = 0.0;
+  for (Config &cnf : configs) {
+    forceMEAMS(cnf);
+    for (pfAtom &atm : cnf.atoms)
+      for (int it : {X, Y, Z}) {
+        atm.fitfrc[it] =
+            atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
+        error["frc"] += square11(atm.fitfrc[it] * atm.fweigh[it]);
+      }
+
+    ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
+    omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
+    error["frc"] += square11(cnf.fitengy - cnf.engy);
+  }  // cc
+  error["punish"] *= dparams["pweight"];
+  error["frc"] *= 1e2;
+  return error["frc"] + error["punish"];  // + error["shift"];
+}
+
+void pfHome::forceMEAMSStress(Config &cnf) {
   cnf.phiengy = cnf.emfengy = 0.0;
   cnf.rhomi = 1e10, cnf.rhomx = -1e10;
   for (auto &ee : cnf.fitstrs) ee = 0.0;

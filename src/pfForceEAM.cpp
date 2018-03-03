@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-03 17:28:26
+ * @Last Modified time: 2018-03-03 01:44:36
  */
 
 #include "pfHome.h"
@@ -13,22 +13,15 @@ double pfHome::forceEAM(const arma::mat& vv, int tg) {
     if (tg == EXT) break;
 
     int cnt = 0;
-    for (int i = 0; i < nfuncs; i++) { /* interpolates */
+    for (int i : {0, 1, 2}) {
+      if (optidx[i] == 0) continue;
       Func& ff = funcs[i];
-      // double mxf = -1e10, mif = 1e10;
-      int nt = (i == PHI || i == RHO) ? ff.npts - 1 : ff.npts;
-      for (int j = 0; j < nt; j++) {
-        ff.yy[j] = vv[cnt++];
-        // mxf = ff.yy[j] > mxf ? ff.yy[j] : mxf;
-        // mif = ff.yy[j] < mif ? ff.yy[j] : mif;
-      }
-      // ff.rng = mxf - mif;
+      for (int j : ff.rlxid) ff.yy[j] = vv[cnt++];
     }
 
     for (int i = 0; i < nfuncs; i++) {  // broadcast functions
       broadcast(cmm, funcs[i].xx, PFROOT);
       broadcast(cmm, funcs[i].yy, PFROOT);
-      // broadcast(cmm, funcs[i].rng, PFROOT);
     }
 
     for (Func& ff : funcs) ff.s.set_points(ff.xx, ff.yy);
@@ -72,8 +65,6 @@ double pfHome::forceEAM(const arma::mat& vv, int tg) {
   }
   return error["frc"];  // error["punish"] + error["shift"];
 }
-
-double pfHome::forceEAM(const vector<double>& vv) { return 0.0; }
 
 double pfHome::forceEAM(const arma::mat& vv) {
   error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
