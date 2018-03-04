@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-22 13:53:23
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-11-23 05:33:35
+ * @Last Modified time: 2018-03-03 15:36:16
  */
 
 #include "pfEle.h"
@@ -27,7 +27,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.000000;
   tmp.strm[0][1] = 0.000000;
@@ -45,7 +45,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = -0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.0] = mp;
 
   tmp.strm[0][0] = 1.010000;
@@ -64,7 +64,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.010000;
   tmp.strm[0][1] = 0.000000;
@@ -82,7 +82,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.01] = mp;
 
   tmp.strm[0][0] = 1.020000;
@@ -101,7 +101,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.020000;
   tmp.strm[0][1] = 0.000000;
@@ -119,7 +119,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.02] = mp;
 
   tmp.strm[0][0] = 1.030000;
@@ -138,7 +138,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.030000;
   tmp.strm[0][1] = 0.000000;
@@ -156,7 +156,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.03] = mp;
 
   tmp.strm[0][0] = 1.040000;
@@ -175,7 +175,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.040000;
   tmp.strm[0][1] = 0.000000;
@@ -193,7 +193,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.04] = mp;
 
   tmp.strm[0][0] = 1.050000;
@@ -212,7 +212,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.050000;
   tmp.strm[0][1] = 0.000000;
@@ -230,7 +230,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.05] = mp;
 
   tmp.strm[0][0] = 1.060000;
@@ -249,8 +249,8 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
-  
+  mp["tpath"] = tmp;
+
   tmp.strm[0][0] = 1.060000;
   tmp.strm[0][1] = 0.000000;
   tmp.strm[0][2] = 0.000000;
@@ -267,7 +267,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.06] = mp;
 
   tmp.strm[0][0] = 1.070000;
@@ -277,7 +277,7 @@ void Melem::initDFTiten() {
   tmp.strm[1][1] = 0.976521;
   tmp.strm[1][2] = 0.000000;
   tmp.strm[2][0] = 0.000000;
-  tmp.strm[2][1] = 0.000000; 
+  tmp.strm[2][1] = 0.000000;
   tmp.strm[2][2] = 0.979292;
   tmp.egy = -20.105389;
   tmp.stsv[0] = -98.073050;
@@ -286,7 +286,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.070000;
   tmp.strm[0][1] = 0.000000;
@@ -304,7 +304,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.07] = mp;
 
   tmp.strm[0][0] = 1.080000;
@@ -323,7 +323,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.080000;
   tmp.strm[0][1] = 0.000000;
@@ -341,7 +341,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.08] = mp;
 
   tmp.strm[0][0] = 1.090000;
@@ -360,7 +360,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.090000;
   tmp.strm[0][1] = 0.000000;
@@ -378,7 +378,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = -0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.09] = mp;
 
   tmp.strm[0][0] = 1.100000;
@@ -397,8 +397,8 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
-  
+  mp["tpath"] = tmp;
+
   tmp.strm[0][0] = 1.100000;
   tmp.strm[0][1] = 0.000000;
   tmp.strm[0][2] = 0.000000;
@@ -415,7 +415,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.10] = mp;
 
   tmp.strm[0][0] = 1.110000;
@@ -434,7 +434,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.110000;
   tmp.strm[0][1] = 0.000000;
@@ -452,7 +452,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.11] = mp;
 
   tmp.strm[0][0] = 1.120000;
@@ -471,7 +471,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.120000;
   tmp.strm[0][1] = 0.000000;
@@ -489,7 +489,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = -0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.12] = mp;
 
   tmp.strm[0][0] = 1.130000;
@@ -508,7 +508,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.130000;
   tmp.strm[0][1] = 0.000000;
@@ -526,7 +526,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = -0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.13] = mp;
 
   tmp.strm[0][0] = 1.140000;
@@ -545,7 +545,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.140000;
   tmp.strm[0][1] = 0.000000;
@@ -563,7 +563,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.14] = mp;
 
   tmp.strm[0][0] = 1.150000;
@@ -582,7 +582,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.150000;
   tmp.strm[0][1] = 0.000000;
@@ -600,7 +600,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.15] = mp;
 
   tmp.strm[0][0] = 1.160000;
@@ -619,7 +619,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.160000;
   tmp.strm[0][1] = 0.000000;
@@ -637,7 +637,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.16] = mp;
 
   tmp.strm[0][0] = 1.170000;
@@ -656,7 +656,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.170000;
   tmp.strm[0][1] = 0.000000;
@@ -674,7 +674,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = -0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.17] = mp;
 
   tmp.strm[0][0] = 1.180000;
@@ -693,7 +693,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.180000;
   tmp.strm[0][1] = 0.000000;
@@ -711,7 +711,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.18] = mp;
 
   tmp.strm[0][0] = 1.190000;
@@ -730,7 +730,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.190000;
   tmp.strm[0][1] = 0.000000;
@@ -748,7 +748,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.19] = mp;
 
   tmp.strm[0][0] = 1.200000;
@@ -767,7 +767,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.200000;
   tmp.strm[0][1] = 0.000000;
@@ -785,7 +785,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.20] = mp;
 
   tmp.strm[0][0] = 1.210000;
@@ -804,7 +804,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.210000;
   tmp.strm[0][1] = 0.000000;
@@ -822,7 +822,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = -0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.21] = mp;
 
   tmp.strm[0][0] = 1.220000;
@@ -841,7 +841,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.220000;
   tmp.strm[0][1] = 0.000000;
@@ -859,7 +859,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.22] = mp;
 
   tmp.strm[0][0] = 1.230000;
@@ -878,7 +878,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = -0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp;  
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.230000;
   tmp.strm[0][1] = 0.000000;
@@ -896,7 +896,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.23] = mp;
 
   tmp.strm[0][0] = 1.240000;
@@ -915,7 +915,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.240000;
   tmp.strm[0][1] = 0.000000;
@@ -933,9 +933,9 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.24] = mp;
- 
+
   tmp.strm[0][0] = 1.250000;
   tmp.strm[0][1] = 0.000000;
   tmp.strm[0][2] = 0.000000;
@@ -952,7 +952,7 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["tpath"] = tmp; 
+  mp["tpath"] = tmp;
 
   tmp.strm[0][0] = 1.250000;
   tmp.strm[0][1] = 0.000000;
@@ -970,6 +970,6 @@ void Melem::initDFTiten() {
   tmp.stsv[3] = 0.000000;
   tmp.stsv[4] = 0.000000;
   tmp.stsv[5] = 0.000000;
-  mp["opath"] = tmp; 
+  mp["opath"] = tmp;
   itdftm[0.25] = mp;
 }

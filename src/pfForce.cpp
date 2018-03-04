@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-03 13:15:24
+ * @Last Modified time: 2018-03-03 16:22:23
  */
 
 #include "pfHome.h"
@@ -98,7 +98,16 @@ void pfHome::calErr() {  // make potential
        << endl;
     of.close();
   }
-
+  // data set
+  // Melem aa;
+  // for (int i = 0; i < 13; i++) {
+  //   double delta = 0.02 * i;
+  //   ItenT &tmp = aa.itdftm[delta]["opath"];
+  //   cout << delta << " " << tmp.egy << " " << tmp.strm[1][1] << " "
+  //        << tmp.strm[2][2] << " " << -0.1 * tmp.stsv[0] << " "
+  //        << -0.1 * tmp.stsv[2] << " " << -0.1 * tmp.stsv[1] << " "
+  //        << tmp.stsv[3] << " " << tmp.stsv[4] << " " << tmp.stsv[5] << endl;
+  // }
   // check the encoding
   // arma::mat v1 = encodev(mm);
   // arma::mat v2 = decodev(v1);

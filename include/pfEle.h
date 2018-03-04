@@ -40,7 +40,7 @@ class Melem {
   unordered_map<string, ElasT> cijm;
   unordered_map<string, vector<double>> pvm;
   unordered_map<string, vector<double>> gsf;
-  unordered_map<string, vector<double>> lat; 
+  unordered_map<string, vector<double>> lat;
   friend class pfLMPdrv;
   friend class pfHome;
 };

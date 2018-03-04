@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-03 01:54:08
+ * @Last Modified time: 2018-03-04 02:02:42
  */
 
 #include "pfHome.h"
@@ -72,6 +72,7 @@ void pfHome::bcdata() {
     // cutforcesq = rocut * rocut;
     vector<tk::spline::bd_type> bdmp(
         {tk::spline::first_deriv, tk::spline::second_deriv});
+    vector<bool> odmp({true, false});
 
     for (Func& ff : funcs) {
       double al = (ff.bl == 1) ? ff.g1.front() : ff.g2.front();
