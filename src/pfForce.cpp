@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-03 16:22:23
+ * @Last Modified time: 2018-03-05 03:05:15
  */
 
 #include "pfHome.h"
@@ -53,8 +53,8 @@ void pfHome::run(int argc, char *argv[]) {
     buildD03("d03", 7.400, 0.005);
   else if (!sparams["opt"].compare("anlz")) {
     calErr();
-    calLat("bcc", 20);
-    calLat("fcc", 20);
+    calLat("bcc", 30);
+    calLat("fcc", 30);
     lmpdrv->calLatticeBCC();
     exprs["lat"] = lmpdrv->exprs["lat"];
     calElas(25);
@@ -97,6 +97,18 @@ void pfHome::calErr() {  // make potential
        << error["engy"] << " " << error["strs"] << " " << error["punish"]
        << endl;
     of.close();
+
+    ofstream of2("angle.txt", std::ofstream::out);
+    for (auto &cc : configs) {
+      for (auto &atm : cc.atoms) {
+        for (int jj = 0; jj < atm.nneighsFull; jj++) {
+          for (int kk = 0; kk < jj; kk++)
+            of2 << atm.angMat[jj][kk].gcos << " " << atm.angMat[jj][kk].gval
+                << " " << atm.angMat[jj][kk].ggrad << endl;
+        }
+      }
+    }
+    of2.close();
   }
   // data set
   // Melem aa;

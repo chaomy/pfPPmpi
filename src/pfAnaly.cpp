@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-04 11:48:21
+ * @Last Modified time: 2018-03-05 15:21:30
  */
 
 #include "pfHome.h"
@@ -13,10 +13,10 @@ using std::to_string;
 using std::vector;
 
 void pfHome::resample() {
-  for (auto kk : {0, 1, 2, 3, 4}) {
+  for (auto kk : {0, 1, 3}) {
     int npts = funcs[kk].npts;
-    double ri = ricut - 0.01;
-    // double ri = funcs[PHI].xx[0];
+    // double ri = ricut - 0.01;
+    double ri = funcs[PHI].xx[0];
     double ro = 0.0;
     if (kk == PHI)
       ro = 5.25;

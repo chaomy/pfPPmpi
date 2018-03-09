@@ -2,14 +2,14 @@
  * @Author: chaomy
  * @Date:   2017-12-16 16:00:09
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-18 12:21:13
+ * @Last Modified time: 2018-03-05 03:05:08
  */
 
 #include "pfHome.h"
 
 void pfHome::calLat(string kk, int npts) {
   double la = (kk == "bcc") ? 3.30 : 4.20;
-  double del = 0.8;
+  double del = 1.5;
   double dl = del / npts;
   double lo = la - del;
 
