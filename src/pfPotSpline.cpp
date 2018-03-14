@@ -2,17 +2,10 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-14 03:43:46
+ * @Last Modified time: 2018-03-14 03:58:08
  */
 
 #include "pfHome.h"
-
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::ifstream;
-using std::string;
-using std::vector;
 
 // void pfHome::setSplineVariablesNear() {  // func -> ini
 //   nvars = 0;
@@ -57,7 +50,7 @@ void pfHome::setSplineVariables() {  // func -> ini
       mx = std::max(ff.yy[j], mx);
       nvars++;
     }
-    double del = (mx - mn);  // be careful on the delta
+    double del = 2 * (mx - mn);  // be careful on the delta
     for (int j : ff.rlxid) {
       lob.push_back(ff.yy[j] - del);
       hib.push_back(ff.yy[j] + del);
