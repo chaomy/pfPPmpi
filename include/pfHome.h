@@ -191,11 +191,13 @@ class pfHome {
   double forceEAM(const arma::mat& vv, int tg);
   double forceMEAMS(const arma::mat& vv);
   double forceMEAMS(const arma::mat& vv, int tg);
+  double forceMEAMSNoForce(const arma::mat& vv, int tg);
   double forceMEAMSStress(const arma::mat& vv, int tg);
   double forceMEAMSStressPunish(const arma::mat& vv, int tg);
   double forceMEAMC(const arma::mat& vv, int tg);
   void forceMEAMC(Config& cc);
   void forceMEAMS(Config& cc);
+  void forceMEAMSNoForce(Config& cc);
   void forceMEAMSStress(Config& cc);
   void forceEAM(Config& cc);
   void stressMEAM(Config& cc);
