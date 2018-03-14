@@ -33,6 +33,7 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfForceADP.cpp   \
 			   ./pfForceMEAMS.cpp  \
 			   ./pfForceMEAMSNoStress.cpp \
+			   ./pfForceMEAMSNoForce.cpp \
 			   ./pfStressMEAM.cpp \
 			   ./pfInputForce.cpp \
 			   ./pfInputPot.cpp   \
