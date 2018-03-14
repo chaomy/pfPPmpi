@@ -2,17 +2,10 @@
  * @Author: chaomy
  * @Date:   2017-12-17 14:00:51
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-03 13:00:59
+ * @Last Modified time: 2018-03-13 16:20:26
  */
 
 #include "pfHome.h"
-
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::ifstream;
-using std::string;
-using std::vector;
 
 void pfHome::readMEAMS() {
   funcs.clear();

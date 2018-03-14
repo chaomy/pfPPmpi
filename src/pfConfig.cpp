@@ -2,14 +2,10 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-22 23:07:10
+ * @Last Modified time: 2018-03-13 16:21:38
  */
 
 #include "pfHome.h"
-
-using std::cout;
-using std::endl;
-using std::vector;
 
 void pfHome::initAngles() {
   for (Config &tmpc : configs) initAngles(tmpc);
@@ -122,6 +118,7 @@ void pfHome::initNeighsFull(Config &tmpc) {
                        iz * tmpc.bvz[k];
 
             double r = sqrt(square33(dij));
+            if (cmm.rank() == PFROOT && r < 2.01) cout << tmpc.cfgid << endl;
 
             if (r < rocut) {
               ricut = fmin(ricut, r);

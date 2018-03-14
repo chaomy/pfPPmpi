@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-03 21:18:48
+ * @Last Modified time: 2018-03-13 22:52:30
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -19,7 +19,6 @@ using arma::linspace;
 using arma::mat;
 using arma::randu;
 using arma::vec;
-using std::ofstream;
 using std::to_string;
 
 double pfHome::testFunc(arma::mat& vc) {
@@ -172,8 +171,7 @@ double pfHome::cmaes(arma::mat& iterate) {
           (this->*calobj[sparams["ptype"]])(decodev(pps.slice(idx(j))), 1);
     }
 
-    // Sort population.
-    idx = sort_index(pobj);
+    idx = sort_index(pobj);  // Sort population.
 
     step = w(0) * pStep.slice(idx(0));
     for (size_t j = 1; j < mu; ++j) step += w(j) * pStep.slice(idx(j));
@@ -207,28 +205,16 @@ double pfHome::cmaes(arma::mat& iterate) {
       //   of1 << besttol[kk] << " " << bestphy[kk] << " ";
       // of1 << endl;
       // }
-      lastid = i;
+      // lastid = i;
     }
 
     // for meams
-    cout << "CMA-ES: i = " << i << " " << overallobj << " "
-         << error["frc"] << " " << error["engy"] << " " << error["strs"] << " "
+    cout << "CMA-ES: i = " << i << " " << overallobj << " " << error["frc"]
+         << " " << error["engy"] << " " << error["strs"] << " "
          << error["punish"] << " cs " << sigma(idx1) << " " << ominrho << " "
          << omaxrho << " " << funcs[EMF].xx.front() << " "
          << funcs[EMF].xx.back() << " "
-         << " " << configs[0].fitengy << " " << configs[0].engy << " "
-         << configs[0].strs[0] << " " << configs[0].fitstrs[0] << " "
-         << configs[0].strs[4] << " " << configs[0].fitstrs[4] << endl;
-
-    ofstream of2("force.txt", std::ofstream::out);
-    for (int i : locls) {
-      for (pfAtom& atm : configs[i].atoms)
-        for (int it : {0, 1, 2})
-          of2 << std::setprecision(4) << atm.frc[it] << " " << atm.fitfrc[it]
-              << " " << atm.phifrc[it] << " " << atm.rhofrc[it] << " "
-              << atm.trifrc[it] << " " << atm.fweigh[it] << endl;
-    }
-    of2.close();
+         << " " << configs[0].fitengy << " " << configs[0].engy << endl;
 
     if (iterate.n_rows > iterate.n_cols) {  // Update Step Size.
       ps.slice(idx1) =
@@ -310,7 +296,6 @@ double pfHome::cmaes(arma::mat& iterate) {
     }
 
     // if (i % iparams["resfreq"] == 1) checkupdateBoundary(iterate);
-
     lastobj = overallobj;
   }
   of1.close();

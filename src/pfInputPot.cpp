@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-13 01:17:49
+ * @Last Modified time: 2018-03-13 16:17:58
  */
 
 #include "pfHome.h"
@@ -14,7 +14,11 @@ using std::ifstream;
 using std::string;
 using std::vector;
 
-void pfHome::readPot() {  // read dummy.pot
+/*
+  read dummy.pot, initially I use, and it is replaced by read MEAMS
+*/
+
+void pfHome::readPot() {
   funcs.clear();
   ini.clear();
 

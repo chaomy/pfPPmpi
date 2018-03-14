@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-03 13:06:41
+ * @Last Modified time: 2018-03-13 22:45:29
  */
 
 #include "pfHome.h"
@@ -93,7 +93,6 @@ pfHome::pfHome(int argc, char* argv[])
     sparams["tmpfile"] = string("pf.tmp");
     sparams["parfile"] = string("pf.par");
     sparams["cnffile"] = string("pf.cnf");
-    // sparams["potfile"] = string("dummy.pot");
     sparams["lmppot"] = string("pf.lmp");
     sparams["potfile"] = string("meam.lib");
     sparams["meamcnt"] = string("meam.cnt");
@@ -106,7 +105,7 @@ pfHome::pfHome(int argc, char* argv[])
     pfInit();
   }
 
-  (cmm.barrier)();  //  important!
+  (cmm.barrier)();  //  important, be careful
   bcdata();
   if (!sparams["ptype"].compare("MEAMS")) {
     initNeighsFull();
@@ -118,13 +117,7 @@ pfHome::pfHome(int argc, char* argv[])
 
   cmmlm = cmm.split(cmm.rank() == PFROOT);  // split group lm to run lammps
   lmpdrv = new pfLMPdrv(argc, argv, this);
-  int del = nconfs / cmm.size();
-  locstt = del * cmm.rank();
-  locend = del * (cmm.rank() + 1);
-  for (int i = 0; i < nconfs; i++) {
-    if (i % cmm.size() == cmm.rank()) locls.push_back(i);
-  }
-
+  assignConfigs(2);
   (cmm.barrier)();  //  important!
   // temporarily close these functionalities
   // optdrv = new pfOptimizer(this);
@@ -139,6 +132,34 @@ pfHome::~pfHome() {
   startps.clear();
   if (lmpdrv) delete lmpdrv;
   // if (optdrv) delete optdrv;
+}
+
+void pfHome::assignConfigs(int tag) {
+  if (tag == 1) {  // evenly assign configurations
+    int del = nconfs / cmm.size();
+    locstt = del * cmm.rank();
+    locend = del * (cmm.rank() + 1);
+    for (int i = 0; i < nconfs; i++) {
+      if (i % cmm.size() == cmm.rank()) locls.push_back(i);
+    }
+  }
+  if (tag == 2) {  // assign configurations based on number of atoms
+    locnatoms = vector<int>(cmm.size(), 0);
+    for (int i = 0; i < nconfs; i++) {
+      int mid = 0;
+      int mnatms = INT_MAX;
+      for (int j = 0; j < cmm.size(); j++) {
+        if (locnatoms[j] <= mnatms) {
+          mnatms = locnatoms[j];
+          mid = j;
+        }
+      }
+      locnatoms[mid] += configs[i].atoms.size();
+      if (cmm.rank() == mid) locls.push_back(i);
+    }
+  }
+  cout << " rank " << cmm.rank() << " has " << locnatoms[cmm.rank()] << " atoms"
+       << endl;
 }
 
 void pfHome::pfInit() {

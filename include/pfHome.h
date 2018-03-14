@@ -26,6 +26,9 @@
 #include "spline.h"
 
 using std::cerr;
+using std::cout;
+using std::endl;
+using std::ifstream;
 using std::ofstream;
 using std::string;
 using std::unordered_map;
@@ -52,6 +55,7 @@ class pfHome {
   int nconfs;
   int locstt;
   int locend;
+  vector<int> locnatoms;
   vector<int> locls;
   vector<int> smthidx;
   double fsm, phyweigh;
@@ -137,6 +141,7 @@ class pfHome {
   void parseArgs(int argc, char* argv[]);
   void initParam();
   void initTargs();
+  void assignConfigs(int tag = 2);
 
   // void setupMEAMC();  // setup meam params
   void wrapAtomPos(Config& cc);
@@ -243,6 +248,7 @@ class pfHome {
 
   // inputs
   void readConfig();
+  void readPOSCAR();
   void readPot();
   void readMEAMC();
   void readMEAMS();

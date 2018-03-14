@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-05 03:05:15
+ * @Last Modified time: 2018-03-13 22:51:35
  */
 
 #include "pfHome.h"
@@ -109,6 +109,17 @@ void pfHome::calErr() {  // make potential
       }
     }
     of2.close();
+
+    // just for check how much
+    ofstream of3("force.txt", std::ofstream::out);
+    for (int i : locls) {
+      for (pfAtom &atm : configs[i].atoms)
+        for (int it : {0, 1, 2})
+          of2 << std::setprecision(4) << atm.frc[it] << " " << atm.fitfrc[it]
+              << " " << atm.phifrc[it] << " " << atm.rhofrc[it] << " "
+              << atm.trifrc[it] << " " << atm.fweigh[it] << endl;
+    }
+    of3.close();
   }
   // data set
   // Melem aa;
