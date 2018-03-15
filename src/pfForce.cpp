@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-15 03:01:33
+ * @Last Modified time: 2018-03-15 14:14:48
  */
 
 #include "pfHome.h"
@@ -121,6 +121,14 @@ void pfHome::calErr() {  // make potential
               << square11(atm.fitfrc[it] * atm.fweigh[it]) << endl;
     }
     of3.close();
+
+    // check the energies of fitting
+    ofstream of4("engy.txt", std::ofstream::out);
+    for (auto &cnf : configs) {
+      of4 << std::setprecision(6) << cnf.fitengy << " " << cnf.engy << " "
+          << square11((cnf.fitengy - cnf.engy) * cnf.weigh) << endl;
+    }
+    of4.close();
   }
   // data set
   // Melem aa;

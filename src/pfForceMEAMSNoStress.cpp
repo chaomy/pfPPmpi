@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-15 02:48:30
+ * @Last Modified time: 2018-03-15 13:53:40
  */
 
 #include "pfHome.h"
@@ -59,7 +59,6 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
       omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
       ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
     }
-
     eengy *= dparams["eweight"];
     reduce(cmm, eengy, error["engy"], std::plus<double>(), PFROOT);
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);

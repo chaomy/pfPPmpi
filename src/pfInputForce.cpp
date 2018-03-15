@@ -2,14 +2,15 @@
  * @Author: chaomy
  * @Date:   2018-01-20 16:53:38
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-15 03:01:28
+ * @Last Modified time: 2018-03-15 14:18:09
  */
 
 #include "pfHome.h"
 
 void pfHome::readConfig() {    /* read atomic force file */
   double eb = -3.09477080931;  // Energy per atom shift -3.09477080931
-  configs.clear();             // clear
+  double eperf = -6.9950724562545;
+  configs.clear();  // clear
   pfUtil pfu;
   char tmp[MAXLEN];
 
@@ -40,6 +41,7 @@ void pfHome::readConfig() {    /* read atomic force file */
     } else if (!segs[0].compare("#E")) {
       sscanf(buff.c_str(), "%s %lf", tmp, &cnf.engy);
       cnf.engy -= eb;
+      cnf.weigh = std::exp(-square11(cnf.engy - eperf) / dparams["bwidth"]);
     } else if (!segs[0].compare("#S")) {
       sscanf(buff.c_str(), "%s %lf %lf %lf %lf %lf %lf", tmp, &cnf.strs[0],
              &cnf.strs[1], &cnf.strs[2], &cnf.strs[3], &cnf.strs[4],
