@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-13 22:51:35
+ * @Last Modified time: 2018-03-15 03:01:33
  */
 
 #include "pfHome.h"
@@ -92,11 +92,11 @@ void pfHome::calErr() {  // make potential
     (this->*calobj[sparams["ptype"]])(mm, EXT);
     (this->*write[sparams["ptype"]])();
 
-    ofstream of("err.txt", std::ofstream::out);
-    of << std::setprecision(4) << err << " " << error["frc"] << " "
-       << error["engy"] << " " << error["strs"] << " " << error["punish"]
-       << endl;
-    of.close();
+    ofstream of1("err.txt", std::ofstream::out);
+    of1 << std::setprecision(4) << err << " " << error["frc"] << " "
+        << error["engy"] << " " << error["strs"] << " " << error["punish"]
+        << endl;
+    of1.close();
 
     ofstream of2("angle.txt", std::ofstream::out);
     for (auto &cc : configs) {
@@ -110,14 +110,15 @@ void pfHome::calErr() {  // make potential
     }
     of2.close();
 
-    // just for check how much
+    // check the behaviors of force fitting
     ofstream of3("force.txt", std::ofstream::out);
     for (int i : locls) {
       for (pfAtom &atm : configs[i].atoms)
         for (int it : {0, 1, 2})
-          of2 << std::setprecision(4) << atm.frc[it] << " " << atm.fitfrc[it]
-              << " " << atm.phifrc[it] << " " << atm.rhofrc[it] << " "
-              << atm.trifrc[it] << " " << atm.fweigh[it] << endl;
+          of3 << std::setprecision(4) << atm.frc[it] << " "
+              << atm.fitfrc[it] + atm.frc[it] << " " << atm.phifrc[it] << " "
+              << atm.rhofrc[it] << " " << atm.trifrc[it] << " "
+              << square11(atm.fitfrc[it] * atm.fweigh[it]) << endl;
     }
     of3.close();
   }
