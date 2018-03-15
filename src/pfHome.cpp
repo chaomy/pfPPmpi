@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-14 16:35:14
+ * @Last Modified time: 2018-03-15 16:51:25
  */
 
 #include "pfHome.h"
@@ -59,12 +59,10 @@ pfHome::pfHome(int argc, char* argv[])
       erose_form(2) {
   calfrc["EAM"] = &pfHome::forceEAM;
   calfrc["MEAMS"] = &pfHome::forceMEAMS;
-  // calfrc["MEAMS"] = &pfHome::forceMEAMSNoForce;
   calfrc["MEAMC"] = &pfHome::forceMEAMC;
 
   calobj["EAM"] = &pfHome::forceEAM;
   calobj["MEAMS"] = &pfHome::forceMEAMS;
-  // calobj["MEAMS"] = &pfHome::forceMEAMSNoForce;
   calobj["MEAMC"] = &pfHome::forceMEAMC;
 
   write["EAM"] = &pfHome::writeLMPS;

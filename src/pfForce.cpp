@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-15 14:14:48
+ * @Last Modified time: 2018-03-15 16:51:12
  */
 
 #include "pfHome.h"
@@ -111,22 +111,29 @@ void pfHome::calErr() {  // make potential
     of2.close();
 
     // check the behaviors of force fitting
+    double M = dparams["fwidth"];
     ofstream of3("force.txt", std::ofstream::out);
     for (int i : locls) {
       for (pfAtom &atm : configs[i].atoms)
-        for (int it : {0, 1, 2})
-          of3 << std::setprecision(4) << atm.frc[it] << " "
+        for (int it : {0, 1, 2}) {
+          double rs = fabs(atm.fitfrc[it] * atm.fweigh[it]);
+          double err = rs < M ? square11(rs) : M * (2 * rs - M);
+          of3 << std::setprecision(6) << atm.frc[it] << " "
               << atm.fitfrc[it] + atm.frc[it] << " " << atm.phifrc[it] << " "
-              << atm.rhofrc[it] << " " << atm.trifrc[it] << " "
-              << square11(atm.fitfrc[it] * atm.fweigh[it]) << endl;
+              << atm.rhofrc[it] << " " << atm.trifrc[it] << " " << rs << " "
+              << square11(rs) << " " << err << endl;
+        }
     }
     of3.close();
 
     // check the energies of fitting
+    M = dparams["ewidth"];
     ofstream of4("engy.txt", std::ofstream::out);
     for (auto &cnf : configs) {
-      of4 << std::setprecision(6) << cnf.fitengy << " " << cnf.engy << " "
-          << square11((cnf.fitengy - cnf.engy) * cnf.weigh) << endl;
+      double rs = fabs(cnf.fitengy - cnf.engy);
+      double err = rs < M ? square11(cnf.fitengy - cnf.engy) : M * (2 * rs - M);
+      of4 << std::setprecision(6) << cnf.fitengy << " " << cnf.engy << " " << rs
+          << " " << square11(cnf.fitengy - cnf.engy) << " " << err << endl;
     }
     of4.close();
   }

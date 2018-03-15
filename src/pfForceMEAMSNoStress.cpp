@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-15 13:53:40
+ * @Last Modified time: 2018-03-15 16:50:51
  */
 
 #include "pfHome.h"
@@ -45,6 +45,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     }
     error["punish"] *= dparams["pweight"];
 
+    double rs = 0, Mf = dparams["fwidth"], Me = dparams["ewidth"];
     for (int i : locls) {
       Config &cnf = configs[i];
       forceMEAMS(cnf);
@@ -52,10 +53,12 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
         for (int it : {X, Y, Z}) {
           atm.fitfrc[it] =
               atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
-          efrc += cnf.weigh * square11(atm.fitfrc[it] * atm.fweigh[it]);
+          rs = fabs(atm.fitfrc[it] * atm.fweigh[it]);
+          efrc += rs < Mf ? square11(rs) : Mf * (2 * rs - Mf);
         }
       }
-      eengy += cnf.weigh * square11(cnf.fitengy - cnf.engy);
+      rs = fabs(cnf.fitengy - cnf.engy);
+      eengy += rs < Me ? square11(rs) : Me * (2 * rs - Me);
       omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
       ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
     }

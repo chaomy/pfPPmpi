@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-15 14:17:33
+ * @Last Modified time: 2018-03-15 16:47:57
  */
 
 #include "pfHome.h"
@@ -28,6 +28,8 @@ void pfHome::initParam() {
   dparams["xtol"] = 1e-4;
   dparams["ftol"] = 1e-6;
   dparams["bwidth"] = 5.0;
+  dparams["ewidth"] = 0.02;
+  dparams["fwidth"] = 0.01;
   dparams["frceps"] = 0.1;
 
   iparams["maxstep"] = 10000;
