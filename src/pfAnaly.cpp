@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-05 15:21:30
+ * @Last Modified time: 2018-03-16 15:56:29
  */
 
 #include "pfHome.h"
@@ -13,7 +13,7 @@ using std::to_string;
 using std::vector;
 
 void pfHome::resample() {
-  for (auto kk : {0, 1, 3}) {
+  for (auto kk : {0, 1, 2, 3}) {
     int npts = funcs[kk].npts;
     // double ri = ricut - 0.01;
     double ri = funcs[PHI].xx[0];
@@ -23,8 +23,8 @@ void pfHome::resample() {
     else if (kk == RHO || kk == MEAMF)
       ro = 5.25;
     else if (kk == EMF) {
-      ri = ominrho - 10.0;
-      ro = omaxrho + 10.0;
+      ri = ominrho - 15.0;
+      ro = omaxrho + 15.0;
     } else if (kk == MEAMG) {
       ri = -1.0;
       ro = 1.0;
