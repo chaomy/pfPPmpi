@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-16 20:58:49
+ * @Last Modified time: 2018-03-17 11:19:48
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -183,8 +183,10 @@ double pfHome::cmaes(arma::mat& iterate) {
     if (currentobj < overallobj) {  // Update best parameters.
       overallobj = currentobj;
       iterate = mps.slice(idx1);
-
       (this->*write[sparams["ptype"]])();
+      if (i % iparams["lmpfreq"] == 0)
+        std::rename("lmp.MEAMS",
+                    (sparams["lmpdir"] + "/lib." + to_string(i)).c_str());
       // if (i % iparams["lmpfreq"] == 0) {
       // lmpCheck(i, of1);
       // for (int kk = 0; kk < besttol.size(); kk++) {

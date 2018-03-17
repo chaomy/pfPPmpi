@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-15 16:51:25
+ * @Last Modified time: 2018-03-17 11:18:49
  */
 
 #include "pfHome.h"
@@ -85,10 +85,9 @@ pfHome::pfHome(int argc, char* argv[])
     for (int ii : {0, 1, 2}) mfrc[ii] = 0.0;
     iparams["atomicNum"] = 40;
     dparams["mass"] = 92.906400;
-    sparams["tmpdir"] = string("dirtmp");
-    sparams["lmpdir"] = string("dirlmp");
+    outMkdir(sparams["lmpdir"] = string("dirlmp"));
+    // sparams["tmpdir"] = string("dirtmp");
     // outMkdir(sparams["tmpdir"]);
-    // outMkdir(sparams["lmpdir"]);
 
     sparams["tmpfile"] = string("pf.tmp");
     sparams["parfile"] = string("pf.par");

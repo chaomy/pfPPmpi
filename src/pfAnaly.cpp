@@ -2,15 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-16 15:56:29
+ * @Last Modified time: 2018-03-17 07:18:47
  */
 
 #include "pfHome.h"
 
-using std::cout;
-using std::endl;
 using std::to_string;
-using std::vector;
 
 void pfHome::resample() {
   for (auto kk : {0, 1, 2, 3}) {
@@ -23,8 +20,8 @@ void pfHome::resample() {
     else if (kk == RHO || kk == MEAMF)
       ro = 5.25;
     else if (kk == EMF) {
-      ri = ominrho - 15.0;
-      ro = omaxrho + 15.0;
+      ri = ominrho - 20.0;
+      ro = omaxrho + 20.0;
     } else if (kk == MEAMG) {
       ri = -1.0;
       ro = 1.0;

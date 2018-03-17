@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-15 16:47:57
+ * @Last Modified time: 2018-03-17 11:16:51
  */
 
 #include "pfHome.h"
@@ -34,7 +34,7 @@ void pfHome::initParam() {
 
   iparams["maxstep"] = 10000;
   iparams["resfreq"] = 10;
-  iparams["lmpfreq"] = 15;
+  iparams["lmpfreq"] = 50;
   iparams["kmax"] = 1000;  // number of outer loop in simulated annealing
   iparams["runlmp"] = 0;
   readParam();
