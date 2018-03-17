@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-16 18:21:43
+ * @Last Modified time: 2018-03-16 21:08:43
  */
 
 #include "pfHome.h"
@@ -29,7 +29,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
 
     double efrc = 0.0, eengy = 0.0;
     error["frc"] = 0.0, error["punish"] = 0.0;
-    omaxrho = -1e10, ominrho = 1e10;
+    double omax = -1e10, omin = 1e10;
 
     int ww = 1;
     for (int it : smthidx) {  // covarance of third derivative
@@ -59,10 +59,12 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
       }
       rs = fabs(cnf.fitengy - cnf.engy);
       eengy += cnf.weigh * (rs < Me ? square11(rs) : Me * (2 * rs - Me));
-      omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
-      ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
+      omax = cnf.rhomx > omax ? cnf.rhomx : omax;
+      omin = cnf.rhomi < omin ? cnf.rhomi : omin;
     }
     eengy *= dparams["eweight"];
+    reduce(cmm, omin, ominrho, mpi::minimum<double>(), PFROOT);
+    reduce(cmm, omax, omaxrho, mpi::maximum<double>(), PFROOT);
     reduce(cmm, eengy, error["engy"], std::plus<double>(), PFROOT);
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
