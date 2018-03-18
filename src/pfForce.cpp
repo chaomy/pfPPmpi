@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-17 06:54:51
+ * @Last Modified time: 2018-03-18 15:01:56
  */
 
 #include "pfHome.h"
@@ -92,50 +92,16 @@ void pfHome::calErr() {  // make potential
     (this->*calobj[sparams["ptype"]])(mm, EXT);
     (this->*write[sparams["ptype"]])();
 
-    ofstream of1("err.txt", std::ofstream::out);
-    of1 << std::setprecision(4) << err << " " << error["frc"] << " "
-        << error["engy"] << " " << error["strs"] << " " << error["punish"]
-        << endl;
-    of1.close();
+    ofstream of("err.txt", std::ofstream::out);
+    of << std::setprecision(4) << err << " " << error["frc"] << " "
+       << error["engy"] << " " << error["strs"] << " " << error["punish"]
+       << endl;
+    of.close();
 
-    ofstream of2("angle.txt", std::ofstream::out);
-    for (auto &cc : configs) {
-      for (auto &atm : cc.atoms) {
-        for (int jj = 0; jj < atm.nneighsFull; jj++) {
-          for (int kk = 0; kk < jj; kk++)
-            of2 << atm.angMat[jj][kk].gcos << " " << atm.angMat[jj][kk].gval
-                << " " << atm.angMat[jj][kk].ggrad << endl;
-        }
-      }
-    }
-    of2.close();
-
-    // check the behaviors of force fitting
-    double M = dparams["fwidth"];
-    ofstream of3("force.txt", std::ofstream::out);
-    for (int i : locls) {
-      for (pfAtom &atm : configs[i].atoms)
-        for (int it : {0, 1, 2}) {
-          double rs = fabs(atm.fitfrc[it] * atm.fweigh[it]);
-          double err = rs < M ? square11(rs) : M * (2 * rs - M);
-          of3 << std::setprecision(6) << atm.frc[it] << " "
-              << atm.fitfrc[it] + atm.frc[it] << " " << atm.phifrc[it] << " "
-              << atm.rhofrc[it] << " " << atm.trifrc[it] << " " << rs << " "
-              << square11(rs) << " " << err << endl;
-        }
-    }
-    of3.close();
-
-    // check the energies of fitting
-    M = dparams["ewidth"];
-    ofstream of4("engy.txt", std::ofstream::out);
-    for (auto &cnf : configs) {
-      double rs = fabs(cnf.fitengy - cnf.engy);
-      double err = rs < M ? square11(cnf.fitengy - cnf.engy) : M * (2 * rs - M);
-      of4 << std::setprecision(6) << cnf.fitengy << " " << cnf.engy << " " << rs
-          << " " << square11(cnf.fitengy - cnf.engy) << " " << err << endl;
-    }
-    of4.close();
+    writeRadDist();
+    writeAngDist();
+    writeFrcDist();
+    writeEngDist();
   }
   // data set
   // Melem aa;

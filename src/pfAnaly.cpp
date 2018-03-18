@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-17 07:18:47
+ * @Last Modified time: 2018-03-18 06:53:52
  */
 
 #include "pfHome.h"
@@ -20,8 +20,16 @@ void pfHome::resample() {
     else if (kk == RHO || kk == MEAMF)
       ro = 5.25;
     else if (kk == EMF) {
-      ri = ominrho - 20.0;
+      ri = ominrho - 40.0;
       ro = omaxrho + 20.0;
+      double dl = (funcs[EMF].xx.back() - funcs[EMF].xx.front()) / 3.;
+      for (int i = 0; i <= 3; i++) {
+        double xx = dl * i + funcs[EMF].xx.front();
+        double phinew, phinewdriv;
+        funcs[EMF].s.deriv(xx, phinew, phinewdriv);
+        cout << std::setprecision(16) << xx << " " << phinew << " "
+             << phinewdriv << endl;
+      }
     } else if (kk == MEAMG) {
       ri = -1.0;
       ro = 1.0;
@@ -34,6 +42,132 @@ void pfHome::resample() {
   }
   for (Func& ff : funcs) ff.s.set_points(ff.xx, ff.yy);
   (this->*write[sparams["ptype"]])();
+}
+
+void pfHome::writeRadDist() {
+  ofstream of("radius.txt", std::ofstream::out);
+  for (auto& cc : configs)
+    for (auto& atm : cc.atoms)
+      for (auto& ngb : atm.neighsFull) {
+        of << ngb.r << " " << funcs[PHI].s(ngb.r) << " " << funcs[RHO].s(ngb.r)
+           << " " << funcs[MEAMF].s(ngb.r) << endl;
+      }
+  of.close();
+}
+
+void pfHome::writeAngDist() {
+  ofstream of("angle.txt", std::ofstream::out);
+  for (auto& cc : configs) {
+    for (auto& atm : cc.atoms) {
+      for (int jj = 0; jj < atm.nneighsFull; jj++) {
+        for (int kk = 0; kk < jj; kk++)
+          of << atm.angMat[jj][kk].gcos << " " << atm.angMat[jj][kk].gval << " "
+             << atm.angMat[jj][kk].ggrad << endl;
+      }
+    }
+  }
+  of.close();
+}
+
+void pfHome::writeFrcDist() {  // check the behaviors of force fitting
+  double M = dparams["fwidth"];
+  ofstream of("force.txt", std::ofstream::out);
+  for (int i : locls) {
+    for (pfAtom& atm : configs[i].atoms)
+      for (int it : {0, 1, 2}) {
+        double rs = fabs(atm.fitfrc[it] * atm.fweigh[it]);
+        double err = rs < M ? square11(rs) : M * (2 * rs - M);
+        of << std::setprecision(6) << atm.frc[it] << " "
+           << atm.fitfrc[it] + atm.frc[it] << " " << atm.phifrc[it] << " "
+           << atm.rhofrc[it] << " " << atm.trifrc[it] << " " << rs << " "
+           << square11(rs) << " " << err << endl;
+      }
+  }
+  of.close();
+}
+
+void pfHome::writeEngDist() {  // check energy distributions
+  double M = dparams["ewidth"];
+  ofstream of("engy.txt", std::ofstream::out);
+  for (auto& cnf : configs) {
+    double rs = fabs(cnf.fitengy - cnf.engy);
+    double err = rs < M ? square11(cnf.fitengy - cnf.engy) : M * (2 * rs - M);
+    of << std::setprecision(6) << cnf.fitengy << " " << cnf.engy << " " << rs
+       << " " << square11(cnf.fitengy - cnf.engy) << " " << err << endl;
+  }
+  of.close();
+}
+
+void pfHome::loopBwth() {
+  for (int i = 1; i < 20; i++) {
+    double tm = 0.2 + 0.2 * i;
+    for (Config& tmpc : configs)
+      for (pfAtom& atm : tmpc.atoms)
+        for (int it : {0, 1, 2})
+          atm.fweigh[it] = exp(-tm * atm.frc[it] * atm.frc[it]);
+
+    vector<double> mtm(3, 0);
+    for (Config& tmpc : configs)
+      for (pfAtom& atm : tmpc.atoms)
+        for (int ii : {0, 1, 2}) mtm[ii] += fabs(atm.frc[ii]) * atm.fweigh[ii];
+
+    for (int ii : {0, 1, 2}) mtm[ii] /= ftn;
+
+    for (Config& tmpc : configs)
+      for (pfAtom& atm : tmpc.atoms)
+        for (int ii : {0, 1, 2}) atm.fweigh[ii] *= (mfrc[ii] / mtm[ii]);
+
+    string fm("fc" + to_string(i) + ".txt");
+    FILE* fid = fopen(fm.c_str(), "w");
+    for (Config& tmpc : configs)
+      for (pfAtom& atm : tmpc.atoms)
+        fprintf(fid, "%f %f %f %f %f %f\n", atm.frc[X], atm.frc[Y], atm.frc[Z],
+                atm.frc[X] * atm.fweigh[X], atm.frc[Y] * atm.fweigh[Y],
+                atm.frc[Z] * atm.fweigh[Z]);
+    fclose(fid);
+  }  // i = 1 to 9
+}
+
+void pfHome::forceDis() {
+  vector<double> mtm(3, 0);
+  for (Config& tmpc : configs)
+    for (pfAtom& atm : tmpc.atoms)
+      for (int ii : {0, 1, 2}) mtm[ii] += fabs(atm.frc[ii]) * atm.fweigh[ii];
+  fsm = square11(mfrc[X]) + square11(mfrc[Y]) + square11(mfrc[Z]);
+}
+
+void pfHome::deleteAtoms() { /* delete some atoms (Better Not)*/
+  for (Config& tmpc : configs) {
+    vector<pfAtom> ntm;
+    for (pfAtom& atm : tmpc.atoms)
+      if (atm.nneighs == N3 && atm.nneighsFull == N3) ntm.push_back(atm);
+    tmpc.atoms = ntm;
+    tmpc.natoms = tmpc.atoms.size();
+  }
+}
+
+void pfHome::cutoffNeighs() { /* for chossing a cutoff*/
+  FILE* fid = fopen("cutoff.txt", "w");
+  rocut = 4.60;
+
+  /* loop over cutoff */
+  while (rocut < 6.40) {
+    for (Config& tmpc : configs)
+      for (pfAtom& atm : tmpc.atoms) atm.neighsFull.clear();
+
+    initNeighsFull();
+    fprintf(fid, "%0.3f ", rocut);
+    for (Config& tmpc : configs) {
+      int aven = 0;
+      for (pfAtom& atm : tmpc.atoms) aven += atm.nneighsFull;
+      fprintf(fid, "%03.1f ", float(aven) / tmpc.natoms);
+    }
+
+    fprintf(fid, "\n");
+    rocut += 0.01;
+  }
+
+  fclose(fid);
 }
 
 // void pfHome::resample() {
@@ -99,81 +233,3 @@ void pfHome::resample() {
 //          << endl;
 //   }
 // }
-
-void pfHome::loopBwth() {
-  for (int i = 1; i < 20; i++) {
-    double tm = 0.2 + 0.2 * i;
-    for (Config& tmpc : configs)
-      for (pfAtom& atm : tmpc.atoms)
-        for (int it : {0, 1, 2})
-          atm.fweigh[it] = exp(-tm * atm.frc[it] * atm.frc[it]);
-
-    vector<double> mtm(3, 0);
-    for (Config& tmpc : configs)
-      for (pfAtom& atm : tmpc.atoms)
-        for (int ii : {0, 1, 2}) mtm[ii] += fabs(atm.frc[ii]) * atm.fweigh[ii];
-
-    for (int ii : {0, 1, 2}) mtm[ii] /= ftn;
-
-    for (Config& tmpc : configs)
-      for (pfAtom& atm : tmpc.atoms)
-        for (int ii : {0, 1, 2}) atm.fweigh[ii] *= (mfrc[ii] / mtm[ii]);
-
-    string fm("fc" + to_string(i) + ".txt");
-    FILE* fid = fopen(fm.c_str(), "w");
-    for (Config& tmpc : configs)
-      for (pfAtom& atm : tmpc.atoms)
-        fprintf(fid, "%f %f %f %f %f %f\n", atm.frc[X], atm.frc[Y], atm.frc[Z],
-                atm.frc[X] * atm.fweigh[X], atm.frc[Y] * atm.fweigh[Y],
-                atm.frc[Z] * atm.fweigh[Z]);
-    fclose(fid);
-  }  // i = 1 to 9
-}
-
-void pfHome::forceDis() {
-  vector<double> mtm(3, 0);
-  for (Config& tmpc : configs) {
-    for (pfAtom& atm : tmpc.atoms)
-      for (int ii : {0, 1, 2}) mtm[ii] += fabs(atm.frc[ii]) * atm.fweigh[ii];
-  }
-  // for (int ii : {0, 1, 2}) mtm[ii] /= ftn;
-  // for (Config& tmpc : configs) {
-  //   for (pfAtom& atm : tmpc.atoms)
-  //     for (int ii : {0, 1, 2}) atm.fweigh[ii] *= (mfrc[ii] / mtm[ii]);
-  // }
-  fsm = square11(mfrc[X]) + square11(mfrc[Y]) + square11(mfrc[Z]);
-}
-
-void pfHome::deleteAtoms() { /* delete some atoms */
-  for (Config& tmpc : configs) {
-    vector<pfAtom> ntm;
-    for (pfAtom& atm : tmpc.atoms)
-      if (atm.nneighs == N3 && atm.nneighsFull == N3) ntm.push_back(atm);
-    tmpc.atoms = ntm;
-    tmpc.natoms = tmpc.atoms.size();
-  }
-}
-
-void pfHome::cutoffNeighs() { /* for chossing a cutoff*/
-  FILE* fid = fopen("cutoff.txt", "w");
-  rocut = 4.60;
-
-  /* loop over cutoff */
-  while (rocut < 6.40) {
-    for (Config& tmpc : configs)
-      for (pfAtom& atm : tmpc.atoms) atm.neighsFull.clear();
-
-    initNeighsFull();
-    fprintf(fid, "%0.3f ", rocut);
-    for (Config& tmpc : configs) {
-      int aven = 0;
-      for (pfAtom& atm : tmpc.atoms) aven += atm.nneighsFull;
-      fprintf(fid, "%03.1f ", float(aven) / tmpc.natoms);
-    }
-
-    fprintf(fid, "\n");
-    rocut += 0.01;
-  }
-
-  fclose(fid);
-}

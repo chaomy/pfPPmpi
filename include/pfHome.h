@@ -266,6 +266,10 @@ class pfHome {
   void writePOSCAR(const Config& cc, string fnm = "POSCAR.vasp");
   void writeMEAMS();
   void writeMEAMC();
+  void writeRadDist();
+  void writeAngDist();
+  void writeFrcDist();
+  void writeEngDist();
 
   // utils
   void outMkdir(string mdir);
