@@ -2,16 +2,10 @@
  * @Author: chaomy
  * @Date:   2017-10-30 18:46:14
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-02 22:39:02
+ * @Last Modified time: 2018-03-18 17:44:09
  */
 
 #include "pfHome.h"
-
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::fstream;
-using std::to_string;
 
 void pfHome::recordStage(int cnt) {
   string copy = sparams["tmpfile"];
@@ -159,11 +153,11 @@ void pfHome::writeMEAMS() {
   for (auto ee : smthidx) fprintf(fid, " %d", ee);
   fprintf(fid, "\n");
   for (int i = 0; i < nfuncs; i++) {
+    for (auto idx : funcs[i].rlxid) fprintf(fid, "%d ", idx);
     fprintf(fid, "%d\n", funcs[i].npts);
     fprintf(fid, "%.16e %.16e\n",
             funcs[i].bl == 2 ? funcs[i].s.m_c0 : funcs[i].s.m_b.front(),
             funcs[i].br == 2 ? funcs[i].s.m_c.back() : funcs[i].s.m_b.back());
-    for (auto idx : funcs[i].rlxid) fprintf(fid, "%d ", idx);
     fprintf(fid, "\n");
     for (int j = 0; j < funcs[i].npts; j++)
       fprintf(fid, "%.16e %.16e %.16e\n", funcs[i].xx[j], funcs[i].yy[j],
@@ -174,21 +168,15 @@ void pfHome::writeMEAMS() {
 
 void pfHome::writeLMPS(const vector<double>& vv) {
   int cnt = 0;
-
   for (int i = 0; i < nfuncs; i++) {
     Func& ff = funcs[i];
     if (i == PHI || i == RHO || i == MEAMF) {
       for (int j = 0; j < ff.npts - 1; j++) ff.yy[j] = vv[cnt++];
-    } else {
+    } else
       for (int j = 0; j < ff.npts; j++) ff.yy[j] = vv[cnt++];
-    }
     ff.s.set_points(ff.xx, ff.yy);
   }
-
-  if (!sparams["ptype"].compare("MEAM"))
-    writeMEAMS();
-  else
-    writeLMPS();
+  (!sparams["ptype"].compare("MEAM")) ? writeMEAMS() : writeLMPS();
 }
 
 void pfHome::writeLMPS() {
