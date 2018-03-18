@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-18 15:11:33
+ * @Last Modified time: 2018-03-18 15:13:47
  */
 
 #include "pfHome.h"
@@ -56,12 +56,12 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
               atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
           rs = fabs(atm.fitfrc[it] * atm.fweigh[it]);
           // efrc += cnf.weigh * (rs < Mf ? square11(rs) : Mf * (2 * rs - Mf));
-          if (rs < Bf)
+          if (rs < Bf)  // Be careful to ignore the error that is too huge!
             efrc += cnf.weigh * (rs < Mf ? square11(rs) : Mf * (2 * rs - Mf));
         }
       }
       rs = fabs(cnf.fitengy - cnf.engy);
-      if (rs < Be)
+      if (rs < Be)  // Be careful to ignore the error that is too huge!
         eengy += cnf.weigh * (rs < Me ? square11(rs) : Me * (2 * rs - Me));
       omax = cnf.rhomx > omax ? cnf.rhomx : omax;
       omin = cnf.rhomi < omin ? cnf.rhomi : omin;
