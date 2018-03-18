@@ -2,15 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-18 15:01:56
+ * @Last Modified time: 2018-03-18 16:41:38
  */
 
 #include "pfHome.h"
 #include "pfLmpDrv.h"
 #include "pfOptimizer.h"
-
-using std::cout;
-using std::endl;
 
 void pfHome::increAnneal() {
   scnt = 0;

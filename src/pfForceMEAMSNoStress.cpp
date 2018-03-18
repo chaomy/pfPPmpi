@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-18 15:49:43
+ * @Last Modified time: 2018-03-18 16:33:07
  */
 
 #include "pfHome.h"
@@ -172,9 +172,7 @@ void pfHome::forceMEAMS(Config &cnf) {  // It's benchmark one
 
       double emf = ngb.rhog * (atm.gradF + cnf.atoms[ngb.aid].gradF);
       for (int it : {X, Y, Z}) atm.rhofrc[it] += ngb.dist2r[it] * emf;
-
       // }  // cutoff(rho)
-
     }  // nn
   cnf.fitengy = (cnf.phiengy / 2. + cnf.emfengy) / cnf.natoms;
 }
