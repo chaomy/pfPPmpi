@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-17 14:00:51
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-19 10:17:36
+ * @Last Modified time: 2018-03-19 10:21:24
  */
 
 #include "pfHome.h"
@@ -18,7 +18,6 @@ void pfHome::readMEAMS() {
   vector<string> segs;
   vector<int> recordbd;
   getline(fid, buff);  // read head line
-  getline(fid, buff);  // read head line 2
   pfu.split(buff, " ", segs);
 
   for (int i = 1; i < 11; i++) recordbd.push_back(stoi(segs[i]));
@@ -28,6 +27,7 @@ void pfHome::readMEAMS() {
     if (optidx[i] == 1) cout << "to be optimized : " << i << endl;
   for (int i : smthidx) cout << "smth idx " << i << endl;
 
+  getline(fid, buff);  // read head line 2
   int cnt = nfuncs = 5;
   vector<int>::iterator it = recordbd.begin();
   while (--cnt >= 0) {
