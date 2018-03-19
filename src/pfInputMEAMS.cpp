@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-17 14:00:51
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-13 16:20:26
+ * @Last Modified time: 2018-03-19 10:17:36
  */
 
 #include "pfHome.h"
@@ -18,6 +18,7 @@ void pfHome::readMEAMS() {
   vector<string> segs;
   vector<int> recordbd;
   getline(fid, buff);  // read head line
+  getline(fid, buff);  // read head line 2
   pfu.split(buff, " ", segs);
 
   for (int i = 1; i < 11; i++) recordbd.push_back(stoi(segs[i]));
@@ -32,17 +33,24 @@ void pfHome::readMEAMS() {
   while (--cnt >= 0) {
     segs.clear();
     Func tm;
+    // find id of nodes to be relaxed
+    getline(fid, buff);
+    pfu.split(buff, " ", segs);
+    for (auto ee : segs) tm.rlxid.push_back(stoi(ee));
+
+    // find how many nodes in total
     getline(fid, buff);
     tm.npts = stoi(buff);
     tm.g1 = vector<double>(tm.npts, 0);
     tm.g2 = vector<double>(tm.npts, 0);
     tm.xx = vector<double>(tm.npts, 0);
     tm.yy = vector<double>(tm.npts, 0);
+
+    // read first derivatives
     getline(fid, buff);
     sscanf(buff.c_str(), "%lf %lf", &tm.g1.front(), &tm.g1.back());
-    getline(fid, buff);
-    pfu.split(buff, " ", segs);
-    for (auto ee : segs) tm.rlxid.push_back(stoi(ee));
+
+    // read xx, yy, and second derivatives
     for (int j = 0; j < tm.npts; j++) {
       getline(fid, buff);
       sscanf(buff.c_str(), "%lf %lf %lf", &tm.xx[j], &tm.yy[j], &tm.g2[j]);
