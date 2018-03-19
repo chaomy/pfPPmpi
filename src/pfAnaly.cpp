@@ -2,12 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-18 06:53:52
+ * @Last Modified time: 2018-03-19 15:21:04
  */
 
 #include "pfHome.h"
 
-using std::to_string;
+using std::setw;
 
 void pfHome::resample() {
   for (auto kk : {0, 1, 2, 3}) {
@@ -42,6 +42,52 @@ void pfHome::resample() {
   }
   for (Func& ff : funcs) ff.s.set_points(ff.xx, ff.yy);
   (this->*write[sparams["ptype"]])();
+}
+
+void pfHome::analyLoss() {
+  double rs = 0;
+  double Mf = dparams["fbndq"], Me = dparams["ebndq"];
+  double Bf = dparams["fbndl"], Be = dparams["ebndl"];
+  double OutE = Me * (2 * Be - Me);
+  double OutF = Mf * (2 * Bf - Mf);
+
+  int qEnb = 0, lEnb = 0, cEnb = 0;
+  int qFnb = 0, lFnb = 0, cFnb = 0;
+  double qEer = 0, lEer = 0, cEer = 0;
+  double qFer = 0, lFer = 0, cFer = 0;
+
+  for (Config& cnf : configs) {
+    for (pfAtom& atm : cnf.atoms) {
+      for (int it : {X, Y, Z}) {
+        rs = fabs(atm.fitfrc[it] * atm.fweigh[it]);
+        if (rs < Mf) {
+          qFnb += 1;
+          qFer += square11(rs);
+        } else if (rs < Bf) {
+          lFnb += 1;
+          lFer += Mf * (2 * rs - Mf);
+        } else {
+          cFnb += 1;
+          cFer += OutF;
+        }
+      }
+    }
+    rs = fabs(cnf.fitengy - cnf.engy);
+    if (rs < Me) {
+      qEnb += 1;
+      qEer += square11(rs);
+    } else if (rs < Be) {
+      lEnb += 1;
+      lEer += Me * (2 * rs - Me);
+    } else {
+      cEnb += 1;
+      cEer += OutE;
+    }
+  }
+  cout << setw(10) << "Enum " << qEnb << " " << lEnb << " " << cEnb << endl;
+  cout << setw(10) << "Eerr " << qEer << " " << lEer << " " << cEer << endl;
+  cout << setw(10) << "Fnum " << qFnb << " " << lFnb << " " << cFnb << endl;
+  cout << setw(10) << "Ferr " << qFer << " " << lFer << " " << cFer << endl;
 }
 
 void pfHome::writeRadDist() {

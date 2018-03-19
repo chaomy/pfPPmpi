@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 18:46:14
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-19 09:34:35
+ * @Last Modified time: 2018-03-19 14:47:51
  */
 
 #include "pfHome.h"
@@ -23,7 +23,6 @@ void pfHome::recordStage(int cnt) {
 void pfHome::writePot(const vector<double>& vv) {
   FILE* fid = fopen(sparams["tmpfile"].c_str(), "w");
   if (!fid) cerr << "error opening " + sparams["tmpfile"] << endl;
-
   fprintf(fid, "#F 4 %d\n", nfuncs);
   fprintf(fid, "#T %s \n", sparams["ptype"].c_str());
   fprintf(fid, "#C %s \n", sparams["elem"].c_str());

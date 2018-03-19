@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-19 14:01:38
+ * @Last Modified time: 2018-03-19 15:19:38
  */
 
 #include "pfHome.h"
@@ -32,7 +32,6 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     double omax = -1e10, omin = 1e10;
 
     int ww = 1;
-
     // to inference covarance of third derivative
     // for (int it : smthidx) {
     //   vector<double> &vv = funcs[it].s.m_a;
@@ -53,8 +52,8 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     // }
 
     double rs = 0;
-    double Mf = dparams["fwidth"], Me = dparams["ewidth"];
-    double Bf = dparams["lrange"] * Mf, Be = dparams["lrange"] * Me;
+    double Mf = dparams["fbndq"], Me = dparams["ebndq"];
+    double Bf = dparams["fbndl"], Be = dparams["ebndl"];
     double OutE = Me * (2 * Be - Me);
     double OutF = Mf * (2 * Bf - Mf);
 

@@ -309,6 +309,7 @@ class pfHome {
   void cutoffNeighs();
   void loopBwth();
   void forceDis();
+  void analyLoss();
 
   // MEAM
  private:

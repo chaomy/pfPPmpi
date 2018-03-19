@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-18 16:41:38
+ * @Last Modified time: 2018-03-19 14:42:45
  */
 
 #include "pfHome.h"
@@ -99,6 +99,7 @@ void pfHome::calErr() {  // make potential
     writeAngDist();
     writeFrcDist();
     writeEngDist();
+    analyLoss();
   }
   // data set
   // Melem aa;
