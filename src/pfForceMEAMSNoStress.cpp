@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-19 10:46:25
+ * @Last Modified time: 2018-03-19 13:25:55
  */
 
 #include "pfHome.h"
@@ -45,13 +45,13 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     //   error["punish"] += cov / (2 * ww + 1);
     //   // error["punish"] += square11(mn);
     // }
+    // error["punish"] *= dparams["pweight"];
 
     // to decrease third derivative
-    for (int it : smthidx) {
-      vector<double> &vv = funcs[it].s.m_a;
-      for (auto ee : vv) error["punish"] += square11(ee);
-    }
-    error["punish"] *= dparams["pweight"];
+    // for (int it : smthidx) {
+    //   vector<double> &vv = funcs[it].s.m_a;
+    //   for (auto ee : vv) error["punish"] += square11(ee);
+    // }
 
     double rs = 0, Mf = dparams["fwidth"], Me = dparams["ewidth"];
     // double Bf = 30 * Mf, Be = 30 * Me;
