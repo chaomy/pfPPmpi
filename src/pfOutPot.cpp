@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 18:46:14
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-18 17:44:09
+ * @Last Modified time: 2018-03-19 09:11:22
  */
 
 #include "pfHome.h"
@@ -154,11 +154,11 @@ void pfHome::writeMEAMS() {
   fprintf(fid, "\n");
   for (int i = 0; i < nfuncs; i++) {
     for (auto idx : funcs[i].rlxid) fprintf(fid, "%d ", idx);
+    fprintf(fid, "\n");
     fprintf(fid, "%d\n", funcs[i].npts);
     fprintf(fid, "%.16e %.16e\n",
             funcs[i].bl == 2 ? funcs[i].s.m_c0 : funcs[i].s.m_b.front(),
             funcs[i].br == 2 ? funcs[i].s.m_c.back() : funcs[i].s.m_b.back());
-    fprintf(fid, "\n");
     for (int j = 0; j < funcs[i].npts; j++)
       fprintf(fid, "%.16e %.16e %.16e\n", funcs[i].xx[j], funcs[i].yy[j],
               2. * funcs[i].s.m_b[j]);
