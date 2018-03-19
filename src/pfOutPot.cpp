@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 18:46:14
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-19 09:16:43
+ * @Last Modified time: 2018-03-19 09:34:35
  */
 
 #include "pfHome.h"
@@ -150,9 +150,9 @@ void pfHome::writeMEAMS() {
           funcs[0].br, funcs[1].bl, funcs[1].br, funcs[2].bl, funcs[2].br,
           funcs[3].bl, funcs[3].br, funcs[4].bl, funcs[4].br, optidx[0],
           optidx[1], optidx[2], optidx[3], optidx[4]);
-  fprintf(fid, "meam/spline 1 Nb\n");
   for (auto ee : smthidx) fprintf(fid, " %d", ee);
   fprintf(fid, "\n");
+  fprintf(fid, "meam/spline 1 Nb\n");
   for (int i = 0; i < nfuncs; i++) {
     for (auto idx : funcs[i].rlxid) fprintf(fid, "%d ", idx);
     fprintf(fid, "\n");
