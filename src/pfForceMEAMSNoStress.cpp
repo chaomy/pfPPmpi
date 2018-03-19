@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-19 13:25:55
+ * @Last Modified time: 2018-03-19 14:00:12
  */
 
 #include "pfHome.h"
@@ -46,15 +46,18 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     //   // error["punish"] += square11(mn);
     // }
     // error["punish"] *= dparams["pweight"];
-
     // to decrease third derivative
     // for (int it : smthidx) {
     //   vector<double> &vv = funcs[it].s.m_a;
     //   for (auto ee : vv) error["punish"] += square11(ee);
     // }
 
-    double rs = 0, Mf = dparams["fwidth"], Me = dparams["ewidth"];
-    // double Bf = 30 * Mf, Be = 30 * Me;
+    double rs = 0;
+    double Mf = dparams["fwidth"], Me = dparams["ewidth"];
+    double Bf = dparams["lrange"] * Mf, Be = dparams["lrange"] * Me;
+    double OutE = Me * (2 * Be - Me);
+    double OutF = Mf * (2 * Bf - Mf);
+
     for (int i : locls) {
       Config &cnf = configs[i];
       forceMEAMS(cnf);
@@ -63,11 +66,17 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
           atm.fitfrc[it] =
               atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
           rs = fabs(atm.fitfrc[it] * atm.fweigh[it]);
-          efrc += cnf.weigh * (rs < Mf ? square11(rs) : Mf * (2 * rs - Mf));
+          if (rs < Bf)
+            efrc += cnf.weigh * (rs < Mf ? square11(rs) : Mf * (2 * rs - Mf));
+          else
+            efrc += cnf.weigh * OutF;
         }
       }
       rs = fabs(cnf.fitengy - cnf.engy);
-      eengy += cnf.weigh * (rs < Me ? square11(rs) : Me * (2 * rs - Me));
+      if (rs < Be)
+        eengy += cnf.weigh * (rs < Me ? square11(rs) : Me * (2 * rs - Me));
+      else
+        eengy += cnf.weigh * OutE;
       omax = cnf.rhomx > omax ? cnf.rhomx : omax;
       omin = cnf.rhomi < omin ? cnf.rhomi : omin;
     }
