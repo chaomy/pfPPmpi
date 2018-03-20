@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-19 15:19:38
+ * @Last Modified time: 2018-03-20 07:55:22
  */
 
 #include "pfHome.h"
@@ -53,9 +53,9 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
 
     double rs = 0;
     double Mf = dparams["fbndq"], Me = dparams["ebndq"];
-    double Bf = dparams["fbndl"], Be = dparams["ebndl"];
-    double OutE = Me * (2 * Be - Me);
-    double OutF = Mf * (2 * Bf - Mf);
+    // double Bf = dparams["fbndl"], Be = dparams["ebndl"];
+    // double OutE = Me * (2 * Be - Me);
+    // double OutF = Mf * (2 * Bf - Mf);
 
     for (int i : locls) {
       Config &cnf = configs[i];
@@ -65,21 +65,16 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
           atm.fitfrc[it] =
               atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
           rs = fabs(atm.fitfrc[it] * atm.fweigh[it]);
-          if (rs < Bf)
-            efrc += cnf.weigh * (rs < Mf ? square11(rs) : Mf * (2 * rs - Mf));
-          else
-            efrc += cnf.weigh * OutF;
+          efrc += (rs < Mf ? square11(rs) : Mf * (2 * rs - Mf));
         }
       }
       rs = fabs(cnf.fitengy - cnf.engy);
-      if (rs < Be)
-        eengy += cnf.weigh * (rs < Me ? square11(rs) : Me * (2 * rs - Me));
-      else
-        eengy += cnf.weigh * OutE;
+      eengy += (rs < Me ? square11(rs) : Me * (2 * rs - Me));
       omax = cnf.rhomx > omax ? cnf.rhomx : omax;
       omin = cnf.rhomi < omin ? cnf.rhomi : omin;
     }
-    eengy *= dparams["eweight"];
+    efrc *= cnf.weigh;
+    eengy *= (dparams["eweight"] * cnf.weigh);
     reduce(cmm, omin, ominrho, mpi::minimum<double>(), PFROOT);
     reduce(cmm, omax, omaxrho, mpi::maximum<double>(), PFROOT);
     reduce(cmm, eengy, error["engy"], std::plus<double>(), PFROOT);

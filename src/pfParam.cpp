@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-19 14:47:19
+ * @Last Modified time: 2018-03-20 07:53:13
  */
 
 #include "pfHome.h"
@@ -27,7 +27,7 @@ void pfHome::initParam() {
   dparams["pshift"] = 10;
   dparams["xtol"] = 1e-4;
   dparams["ftol"] = 1e-6;
-  dparams["bwidth"] = 5.0;
+  dparams["bwidth"] = 10.0;
   dparams["fbndl"] = 30 * (dparams["fbndq"] = 0.02);
   dparams["ebndl"] = 30 * (dparams["ebndq"] = 0.01);
   dparams["frceps"] = 0.1;
@@ -82,8 +82,8 @@ void pfHome::readParam() {
   fid.close();
 }
 
+/**** parse the command line ****/
 void pfHome::parseArgs(int argc, char *argv[]) {
-  /**** parse the command line ****/
   for (int i = 0; i < argc; i++) {
     if (!strcmp(argv[i], "--p") || !strcmp(argv[i], "-p"))
       sparams["parfile"] = string(argv[++i]);

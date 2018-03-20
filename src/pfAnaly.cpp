@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-19 15:21:04
+ * @Last Modified time: 2018-03-20 07:43:37
  */
 
 #include "pfHome.h"
@@ -10,7 +10,10 @@
 using std::setw;
 
 void pfHome::resample() {
-  for (auto kk : {0, 1, 2, 3}) {
+  /* rule of thumb :
+   * add phi(r), rho(r), meamf(r) first , then consider g(cos)
+   */
+  for (auto kk : {0, 1, 2, 3, 4}) {
     int npts = funcs[kk].npts;
     // double ri = ricut - 0.01;
     double ri = funcs[PHI].xx[0];
@@ -20,9 +23,10 @@ void pfHome::resample() {
     else if (kk == RHO || kk == MEAMF)
       ro = 5.25;
     else if (kk == EMF) {
-      ri = ominrho - 40.0;
+      ri = ominrho - 20.0;
       ro = omaxrho + 20.0;
       double dl = (funcs[EMF].xx.back() - funcs[EMF].xx.front()) / 3.;
+      // output interpolated embedding function values
       for (int i = 0; i <= 3; i++) {
         double xx = dl * i + funcs[EMF].xx.front();
         double phinew, phinewdriv;
@@ -44,6 +48,7 @@ void pfHome::resample() {
   (this->*write[sparams["ptype"]])();
 }
 
+/* measure points and erors in those regimes */
 void pfHome::analyLoss() {
   double rs = 0;
   double Mf = dparams["fbndq"], Me = dparams["ebndq"];
@@ -138,8 +143,9 @@ void pfHome::writeEngDist() {  // check energy distributions
   for (auto& cnf : configs) {
     double rs = fabs(cnf.fitengy - cnf.engy);
     double err = rs < M ? square11(cnf.fitengy - cnf.engy) : M * (2 * rs - M);
-    of << std::setprecision(6) << cnf.fitengy << " " << cnf.engy << " " << rs
-       << " " << square11(cnf.fitengy - cnf.engy) << " " << err << endl;
+    of << std::setprecision(6) << cnf.fitengy << " " << cnf.engy << " "
+       << cnf.weigh << " " << rs << " " << square11(cnf.fitengy - cnf.engy)
+       << " " << err << endl;
   }
   of.close();
 }

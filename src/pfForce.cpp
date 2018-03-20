@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-19 14:42:45
+ * @Last Modified time: 2018-03-20 07:38:41
  */
 
 #include "pfHome.h"
@@ -99,7 +99,10 @@ void pfHome::calErr() {  // make potential
     writeAngDist();
     writeFrcDist();
     writeEngDist();
-    analyLoss();
+    for (int i = 0; i < 8; i++) {
+      cout << "ebndl" << (dparams["fbndq"] = 0.03 + 0.003 * i) << endl;
+      analyLoss();
+    }
   }
   // data set
   // Melem aa;
