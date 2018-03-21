@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-20 22:45:13
+ * @Last Modified time: 2018-03-21 14:51:59
  */
 
 #include "pfHome.h"
@@ -32,19 +32,19 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     double omax = -1e10, omin = 1e10;
 
     // to inference covarance of third derivative
-    // int ww = 1;
-    // for (int it : smthidx) {
-    //   vector<double> &vv = funcs[it].s.m_a;
-    //   double mn = 0.0, cov = 0.0;
-    //   for (int i = ww + 1; i < vv.size() - ww; i++) {
-    //     for (int it = -ww; it <= ww; it++) mn += vv[i + it];
-    //     mn /= (2 * ww + 1);
-    //     for (int it = -ww; it <= ww; it++) cov += square11(vv[i + it] - mn);
-    //   }
-    //   error["punish"] += cov / (2 * ww + 1);
-    //   // error["punish"] += square11(mn);
-    // }
-    // error["punish"] *= dparams["pweight"];
+    int ww = 1;
+    for (int it : smthidx) {
+      vector<double> &vv = funcs[it].s.m_a;
+      double mn = 0.0, cov = 0.0;
+      for (int i = ww + 1; i < vv.size() - ww; i++) {
+        for (int it = -ww; it <= ww; it++) mn += vv[i + it];
+        mn /= (2 * ww + 1);
+        for (int it = -ww; it <= ww; it++) cov += square11(vv[i + it] - mn);
+      }
+      error["punish"] += cov / (2 * ww + 1);
+      // error["punish"] += square11(mn);
+    }
+    error["punish"] *= dparams["pweight"];
 
     // to decrease third derivative
     // for (int it : smthidx) {
