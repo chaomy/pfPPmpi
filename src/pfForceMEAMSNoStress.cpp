@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-20 08:02:29
+ * @Last Modified time: 2018-03-20 22:45:13
  */
 
 #include "pfHome.h"
@@ -31,8 +31,8 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     error["frc"] = 0.0, error["punish"] = 0.0;
     double omax = -1e10, omin = 1e10;
 
-    int ww = 1;
     // to inference covarance of third derivative
+    // int ww = 1;
     // for (int it : smthidx) {
     //   vector<double> &vv = funcs[it].s.m_a;
     //   double mn = 0.0, cov = 0.0;
@@ -45,6 +45,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     //   // error["punish"] += square11(mn);
     // }
     // error["punish"] *= dparams["pweight"];
+
     // to decrease third derivative
     // for (int it : smthidx) {
     //   vector<double> &vv = funcs[it].s.m_a;

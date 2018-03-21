@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-20 07:43:37
+ * @Last Modified time: 2018-03-20 22:57:13
  */
 
 #include "pfHome.h"
@@ -35,8 +35,13 @@ void pfHome::resample() {
              << phinewdriv << endl;
       }
     } else if (kk == MEAMG) {
-      ri = -1.0;
-      ro = 1.0;
+      ri = -1.0, ro = 1.0;
+      double phinew, phinewdriv;
+      for (auto ee : funcs[kk].xx) {
+        funcs[kk].s.deriv(ee, phinew, phinewdriv);
+        cout << std::setprecision(16) << ee << " " << phinew - funcs[kk].s(0.0)
+             << " " << phinewdriv << endl;
+      }
     }
     double delt = (ro - ri) / (npts - 1);
     for (int i = 0; i < npts; i++) {
@@ -145,7 +150,7 @@ void pfHome::writeEngDist() {  // check energy distributions
     double err = rs < M ? square11(cnf.fitengy - cnf.engy) : M * (2 * rs - M);
     of << std::setprecision(6) << cnf.fitengy << " " << cnf.engy << " "
        << cnf.weigh << " " << rs << " " << square11(cnf.fitengy - cnf.engy)
-       << " " << err << endl;
+       << " " << cnf.weigh * err << endl;
   }
   of.close();
 }
