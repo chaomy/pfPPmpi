@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-23 10:06:10
+ * @Last Modified time: 2018-03-23 10:27:57
  */
 
 #include "pfHome.h"
@@ -82,8 +82,9 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"] * error["frc"] + error["engy"] * error["engy"] +
-         error["punish"];
+  double e1 = error["frc"] * error["frc"];
+  double e2 = error["engy"] * error["engy"];
+  return e1 * e1 + e2 * e2;
 }
 
 void pfHome::forceMEAMS(Config &cnf) {  // It's benchmark one
