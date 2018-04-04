@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 13:31:44
+ * @Last Modified time: 2018-04-04 15:11:18
  */
 
 #include "pfHome.h"
@@ -116,12 +116,6 @@ pfHome::pfHome(int argc, char* argv[])
   lmpdrv = new pfLMPdrv(argc, argv, this);
   assignConfigs(2);
   (cmm.barrier)();  //  important!
-
-  if (cmm.rank() == 2)
-    for (auto cc : configs) {
-      cout << "cnf weigh " << cc.weigh << endl;
-      if (cc.weigh > 100) exit(1);
-    }
   // temporarily close these functionalities
   // optdrv = new pfOptimizer(this);
 };
