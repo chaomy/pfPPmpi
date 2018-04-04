@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-20 16:53:38
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 02:40:23
+ * @Last Modified time: 2018-04-04 02:44:49
  */
 
 #include "pfHome.h"
@@ -41,8 +41,6 @@ void pfHome::readConfig() {    /* read atomic force file */
     } else if (!segs[0].compare("#E")) {
       sscanf(buff.c_str(), "%s %lf", tmp, &cnf.engy);
       cnf.engy -= eb;
-      cnf.weigh = std::exp(-abs((cnf.engy - eperf) / dparams["bwidth"]));
-      cout << "cnf weigh" << cnf.weigh << endl;
     } else if (!segs[0].compare("#S")) {
       sscanf(buff.c_str(), "%s %lf %lf %lf %lf %lf %lf", tmp, &cnf.strs[0],
              &cnf.strs[1], &cnf.strs[2], &cnf.strs[3], &cnf.strs[4],
@@ -64,8 +62,10 @@ void pfHome::readConfig() {    /* read atomic force file */
         cnf.atoms.push_back(atom);
       }
       tln += cnf.natoms;
-      cnf.cfgid = cnt++;
-      configs.push_back(cnf);
+      cnf.cfgid = cnt++; 
+      cnf.weigh = std::exp(-abs((cnf.engy - eperf) / dparams["bwidth"]));
+      cout << "cnf weigh" << cnf.weigh << endl;
+      configs.push_back(cnf);  
     }  // #F
   }    // while
 
