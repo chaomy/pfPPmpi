@@ -34,6 +34,7 @@ using std::string;
 using std::to_string;
 using std::unordered_map;
 using std::vector;
+using std::abs;
 
 namespace mpi = boost::mpi;
 typedef enum { FCC, BCC, HCP, DAM, DIA, B1, C11, L12, B2 } lattice_t;
