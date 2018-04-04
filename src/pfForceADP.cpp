@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-13 12:16:09
+ * @Last Modified time: 2018-04-04 13:32:49
  */
 
 #include "pfHome.h"
@@ -10,12 +10,12 @@
 double pfHome::forceADP(const vector<double>& vv, int tag) {
   vector<Func>& ffs = funcs;
   // vv to funcs
+  // This part hasn't been updated yet ! REWRITE BEFORE USE 
   int cnt = 0;
   for (int i = 0; i < nfuncs; i++) {
     for (int j = 0; j < ffs[i].npts; j++) ffs[i].yy[j] = vv[cnt++];
     ffs[i].g1.front() = vv[cnt++];
     ffs[i].g1.back() = vv[cnt++];
-    splineNe(ffs[i], gradRight[i]);  // update splines
   }
 
   FILE* ptfile = fopen("force.adp.loc", "w");

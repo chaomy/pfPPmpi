@@ -3,7 +3,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 21:34:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-17 15:09:17
+ * @Last Modified time: 2018-04-04 13:43:39
  */
 
 #include "pfHome.h"
@@ -24,7 +24,8 @@ void pfHome::updaterhoMEAM(vector<double>& vv) {
   funcs[EMF].g1.back() = vv[cnt++];
   funcs[MEAMG].g1.back() = vv[cnt++];
 
-  for (int i = 0; i < nfuncs; i++) splineNe(funcs[i], gradRight[i]);
+  {  // update spline
+  }
 
   for (int cc = 0; cc < nconfs; cc++) {
     double tmpsum = 0.0;

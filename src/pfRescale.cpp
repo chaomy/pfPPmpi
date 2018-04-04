@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 21:34:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-24 12:34:51
+ * @Last Modified time: 2018-04-04 13:35:27
  */
 
 #include "pfHome.h"
@@ -45,6 +45,7 @@ int pfHome::rescaleEMF(arma::mat& in) {
     return 0;
 }
 
+// REWRITE THE FUNCTION BEFORE USE
 int pfHome::rescaleEMF(vector<double>& vv) {  // check if rescale
   Func& ff = funcs[EMF];
   int npts = ff.npts;
@@ -57,7 +58,6 @@ int pfHome::rescaleEMF(vector<double>& vv) {  // check if rescale
     ff.g1.front() = vv[nvars - 4];
     ff.g1.back() = vv[nvars - 2];
 
-    splineNe(ff, gradRight[EMF]);  // update splines
     double ndelt = (omaxrho - ominrho) / (npts - 1);
 
     /* update y values (to vv) */

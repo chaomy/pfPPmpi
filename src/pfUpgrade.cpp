@@ -2,13 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-11-16 17:13:01
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-13 12:19:22
+ * @Last Modified time: 2018-04-04 13:34:49
  */
 
 #include "pfHome.h"
 
-using std::vector;
-
+// REWIRTE THE FUNCTION BEFORE USE 
 // id are PHI, RHO, F
 void pfHome::upgrade(int id) {
   int cc = 0;
@@ -21,8 +20,6 @@ void pfHome::upgrade(int id) {
   funcs[MEAMG].g1.front() = ini[cc++];
   funcs[EMF].g1.back() = ini[cc++];
   funcs[MEAMG].g1.back() = ini[cc++];
-
-  for (int i = 0; i < nfuncs; i++) splineNe(funcs[i], gradRight[i]);
 
   Func& fnc = funcs[id];
 

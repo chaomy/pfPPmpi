@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-17 12:49:59
+ * @Last Modified time: 2018-04-04 13:31:44
  */
 
 #include "pfHome.h"
@@ -17,7 +17,6 @@ pfHome::pfHome(int argc, char* argv[])
       mfrc(3),
       hil({5.0, 2.0, 0.0, 1.0, 1.0}),
       lol({-1.0, -30.0, -10.0, -0.5, -0.5}),
-      gradRight(5, 0),
       nelt(1),
       Ec_meam(MXEL, vector<double>(MXEL, 1.55)),
       re_meam(MXEL, vector<double>(MXEL, 3.2)),
@@ -99,7 +98,6 @@ pfHome::pfHome(int argc, char* argv[])
     sparams["meampar"] = string("meam.param");
 
     lorho = 0.4, hirho = 1.0;
-    gradRight[EMF] = 1, gradRight[MEAMG] = 1;
     parseArgs(argc, argv);
     pfInit();
   }
@@ -118,6 +116,12 @@ pfHome::pfHome(int argc, char* argv[])
   lmpdrv = new pfLMPdrv(argc, argv, this);
   assignConfigs(2);
   (cmm.barrier)();  //  important!
+
+  if (cmm.rank() == 2)
+    for (auto cc : configs) {
+      cout << "cnf weigh " << cc.weigh << endl;
+      if (cc.weigh > 100) exit(1);
+    }
   // temporarily close these functionalities
   // optdrv = new pfOptimizer(this);
 };

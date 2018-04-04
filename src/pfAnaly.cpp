@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-02 00:16:52
+ * @Last Modified time: 2018-04-04 13:43:25
  */
 
 #include "pfHome.h"
@@ -10,9 +10,7 @@
 using std::setw;
 
 void pfHome::resample() {
-  /* rule of thumb :
-   * add phi(r), rho(r), meamf(r) first , then consider g(cos)
-   */
+  /* rule of thumb : add phi(r), rho(r), meamf(r) first , then g(cos) */
   for (auto kk : {0, 1, 2, 3, 4}) {
     int npts = funcs[kk].npts;
     // double ri = ricut - 0.01;

@@ -2,13 +2,10 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-04 02:02:42
+ * @Last Modified time: 2018-04-04 14:23:05
  */
 
 #include "pfHome.h"
-
-using std::cout;
-using std::endl;
 
 void pfHome::bcdata() {
   /* params */

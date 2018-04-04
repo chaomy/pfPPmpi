@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-29 01:56:41
+ * @Last Modified time: 2018-04-04 14:22:05
  */
 
 #include "pfHome.h"
@@ -28,7 +28,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
     double efrc = 0.0, eengy = 0.0;
-    error["frc"] = 0.0, error["punish"] = 0.0;
+    error["frc"] = 0.0, error["engy"] = 0.0, error["punish"] = 0.0;
     double omax = -1e10, omin = 1e10;
 
     // to inference covarance of third derivative
@@ -55,9 +55,6 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     double rs = 0;
     double Mf = dparams["fbndq"], Me = dparams["ebndq"];
     // double Bf = dparams["fbndl"], Be = dparams["ebndl"];
-    // double OutE = Me * (2 * Be - Me);
-    // double OutF = Mf * (2 * Bf - Mf);
-
     for (int i : locls) {
       Config &cnf = configs[i];
       forceMEAMS(cnf);
@@ -66,12 +63,11 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
           atm.fitfrc[it] =
               atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
           rs = fabs(atm.fitfrc[it] * atm.fweigh[it]);
-          efrc += (rs < Mf ? square11(rs) : Mf * (2 * rs - Mf));
+          efrc += cnf.weigh * (rs < Mf ? square11(rs) : Mf * (2 * rs - Mf));
         }
       }
       rs = fabs(cnf.fitengy - cnf.engy);
       eengy += cnf.weigh * (rs < Me ? square11(rs) : Me * (2 * rs - Me));
-      efrc *= cnf.weigh;
       omax = cnf.rhomx > omax ? cnf.rhomx : omax;
       omin = cnf.rhomi < omin ? cnf.rhomi : omin;
     }

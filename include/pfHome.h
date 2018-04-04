@@ -127,7 +127,6 @@ class pfHome {
   vector<double> lob;
   vector<double> deb;  // hib - lob
   vector<int> optidx;  // functions that to be optimized
-  vector<int> gradRight;
 
  public:
   pfHome(int argc, char* argv[]);
@@ -187,7 +186,6 @@ class pfHome {
   double errFunctGrad(const vector<double>& x, vector<double>& g);
   double forceEAM(vector<Func>& ffs, int tag);
   double forceADP(const vector<double>& vv, int tag);
-  // double forceMEAMS(const vector<double>& vv);
   double forceEAM(const arma::mat& vv);
   double forceEAM(const arma::mat& vv, int tg);
   double forceMEAMS(const arma::mat& vv);
@@ -304,7 +302,7 @@ class pfHome {
   Config addmono(const Config&, const double& dl);
   Config addstrain(Config cc, const vector<vector<double>>& str);
 
-  // analysize
+  // analysize 
   void deleteAtoms();
   void cutoffNeighs();
   void loopBwth();
@@ -396,7 +394,6 @@ class pfHome {
   void meam_force(Config& cc);
 
   // debug
-  void testSpline();
   friend class pfOptimizer;
 };
 
@@ -499,7 +496,7 @@ inline double pfHome::dfcut(const double xi, double& dfc) {
 }
 
 //-----------------------------------------------------------------------------
-// Derivative of Cikj w.r.t. rij
+// Derivative of Cikj w.r.t. rij 
 //     Inputs: rij,rij2,rik2,rjk2
 //
 inline double pfHome::dCfunc(const double rij2, const double rik2,

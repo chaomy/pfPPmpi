@@ -2,14 +2,15 @@
  * @Author: chaomy
  * @Date:   2018-01-20 16:53:38
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 02:44:49
+ * @Last Modified time: 2018-04-04 14:17:53
  */
 
 #include "pfHome.h"
 
 void pfHome::readConfig() {    /* read atomic force file */
   double eb = -3.09477080931;  // Energy per atom shift -3.09477080931
-  double eperf = -6.9950724562545;
+  // double eperf = -6.9950724562545;
+  double eperf = -7.01;
   configs.clear();  // clear
   pfUtil pfu;
   char tmp[MAXLEN];
@@ -19,11 +20,11 @@ void pfHome::readConfig() {    /* read atomic force file */
   int cnt = 0;
   string buff;
   vector<string> segs;
-  Config cnf;
 
+  Config cnf;
   while (getline(ifs, buff)) {
     segs.clear();
-    if (!cnf.atoms.empty()) cnf.atoms.clear();
+    cnf.atoms.clear();
     pfu.split(buff, " ", segs);
     if (!segs[0].compare("#N")) {
       sscanf(buff.c_str(), "%s %d %s", tmp, &cnf.natoms, tmp);
@@ -62,10 +63,11 @@ void pfHome::readConfig() {    /* read atomic force file */
         cnf.atoms.push_back(atom);
       }
       tln += cnf.natoms;
-      cnf.cfgid = cnt++; 
-      cnf.weigh = std::exp(-abs((cnf.engy - eperf) / dparams["bwidth"]));
-      cout << "cnf weigh" << cnf.weigh << endl;
-      configs.push_back(cnf);  
+      cnf.cfgid = cnt++;
+      cnf.weigh =
+          cnf.weigh * std::exp(-abs(cnf.engy - eperf) / dparams["bwidth"]);
+      cout << "cnf.weigh " << cnf.weigh << endl;
+      configs.push_back(cnf);
     }  // #F
   }    // while
 
