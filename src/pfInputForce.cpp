@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-20 16:53:38
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 15:36:21
+ * @Last Modified time: 2018-04-04 16:20:04
  */
 
 #include "pfHome.h"
@@ -66,7 +66,6 @@ void pfHome::readConfig() {    /* read atomic force file */
       cnf.cfgid = cnt++;
       cnf.weigh =
           cnf.weigh * std::exp(-fabs(cnf.engy - eperf) / dparams["bwidth"]);
-      cout << "cnf.weigh " << cnf.weigh << endl;
       configs.push_back(cnf);
     }  // #F
   }    // while
