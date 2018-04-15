@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-29 10:50:10
+ * @Last Modified time: 2018-04-15 16:08:54
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -71,7 +71,9 @@ double pfHome::cmaes(arma::mat& iterate) {
   ofstream of1("err.txt", std::ofstream::out);
 
   // Population size.
-  int lambda = (4 + std::round(3 * std::log(iterate.n_elem))) * 10;
+  // int lambda = (4 + std::round(3 * std::log(iterate.n_elem))) * 10;
+  // Let's increase the population size to see what may happen
+  int lambda = (4 + std::round(3 * std::log(iterate.n_elem))) * 15;
   arma::mat best(iterate);
 
   // Parent weights.
@@ -211,10 +213,10 @@ double pfHome::cmaes(arma::mat& iterate) {
     }
 
     // for meams
-    cout << "CMA-ES: i = " << i << std::setprecision(12) << " " << overallobj << " " << error["frc"]
-         << " " << error["engy"] << " " << error["strs"] << " "
-         << error["punish"] << " cs " << sigma(idx1) << " " << ominrho << " "
-         << omaxrho << " " << funcs[EMF].xx.front() << " "
+    cout << "CMA-ES: i = " << i << std::setprecision(12) << " " << overallobj
+         << " " << error["frc"] << " " << error["engy"] << " " << error["strs"]
+         << " " << error["punish"] << " cs " << sigma(idx1) << " " << ominrho
+         << " " << omaxrho << " " << funcs[EMF].xx.front() << " "
          << funcs[EMF].xx.back() << endl;
 
     if (iterate.n_rows > iterate.n_cols) {  // Update Step Size.

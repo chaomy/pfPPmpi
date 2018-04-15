@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 14:22:05
+ * @Last Modified time: 2018-04-08 22:34:34
  */
 
 #include "pfHome.h"
@@ -219,15 +219,4 @@ void pfHome::forceMEAMS(Config &cnf) {  // It's benchmark one
 //         500 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
 //   error["phy"] += error["gsf"];
 //   error["phy"] *= phyweigh;
-// }
-
-// int ls[] = {PHI, RHO, MEAMF};
-// for (int it : ls) {
-//   double invrg = 1. / square11(funcs[it].rng);
-//   double tm = 0.0;
-//   for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
-//     tm += (square11(funcs[it].s.m_b[i]) +
-//            0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1]);
-//   tm += square11(funcs[it].s.m_b.back());
-//   epsh += tm * invrg;
 // }

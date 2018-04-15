@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 13:43:25
+ * @Last Modified time: 2018-04-07 17:34:22
  */
 
 #include "pfHome.h"
@@ -17,9 +17,9 @@ void pfHome::resample() {
     double ri = funcs[PHI].xx[0];
     double ro = 0.0;
     if (kk == PHI)
-      ro = 5.21;
+      ro = 5.25;
     else if (kk == RHO || kk == MEAMF)
-      ro = 5.21;
+      ro = 5.25;
     else if (kk == EMF) {
       ri = ominrho - 20.0;
       ro = omaxrho + 20.0;
@@ -34,10 +34,10 @@ void pfHome::resample() {
       }
     } else if (kk == MEAMG) {
       ri = -1.0, ro = 1.0;
-      double phinew, phinewdriv;
+      double phinew, phinewdriv; 
       for (auto ee : funcs[kk].xx) {
-        funcs[kk].s.deriv(ee, phinew, phinewdriv);
-        cout << std::setprecision(16) << ee << " " << phinew - funcs[kk].s(0.0)
+        cout << std::setprecision(16) << ee << " " << phinew -
+        funcs[kk].s(0.0)
              << " " << phinewdriv << endl;
       }
     }
