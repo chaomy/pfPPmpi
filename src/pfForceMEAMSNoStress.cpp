@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-17 20:19:32
+ * @Last Modified time: 2018-04-25 15:46:05
  */
 
 #include "pfHome.h"
@@ -28,23 +28,23 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
     double efrc = 0.0, eengy = 0.0;
-    error["frc"] = 0.0, error["engy"] = 0.0, error["punish"] = 0.0;
+    error["frc"] = 0.0, error["engy"] = 0.0;  // error["punish"] = 0.0;
     double omax = -1e10, omin = 1e10;
 
     // to inference covarance of third derivative
-    int ww = 1;
-    for (int it : smthidx) {
-      vector<double> &vv = funcs[it].s.m_a;
-      double mn = 0.0, cov = 0.0;
-      for (int i = ww + 1; i < vv.size() - ww; i++) {
-        for (int it = -ww; it <= ww; it++) mn += vv[i + it];
-        mn /= (2 * ww + 1);
-        for (int it = -ww; it <= ww; it++) cov += square11(vv[i + it] - mn);
-      }
-      error["punish"] += cov / (2 * ww + 1);
-      error["punish"] += square11(mn);
-    }
-    error["punish"] *= dparams["pweight"];
+    // int ww = 1;
+    // for (int it : smthidx) {
+    //   vector<double> &vv = funcs[it].s.m_a;
+    //   double mn = 0.0, cov = 0.0;
+    //   for (int i = ww + 1; i < vv.size() - ww; i++) {
+    //     for (int it = -ww; it <= ww; it++) mn += vv[i + it];
+    //     mn /= (2 * ww + 1);
+    //     for (int it = -ww; it <= ww; it++) cov += square11(vv[i + it] - mn);
+    //   }
+    //   error["punish"] += cov / (2 * ww + 1);
+    //   error["punish"] += square11(mn);
+    // }
+    // error["punish"] *= dparams["pweight"];
 
     // to decrease third derivative
     // for (int it : smthidx) {
@@ -78,7 +78,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"] + error["engy"] + error["punish"];
+  return error["frc"] + error["engy"];  // + error["punish"];
 }
 
 void pfHome::forceMEAMS(Config &cnf) {  // It's benchmark one
