@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-14 03:58:08
+ * @Last Modified time: 2018-05-04 14:34:39
  */
 
 #include "pfHome.h"
@@ -50,7 +50,8 @@ void pfHome::setSplineVariables() {  // func -> ini
       mx = std::max(ff.yy[j], mx);
       nvars++;
     }
-    double del = 2 * (mx - mn);  // be careful on the delta
+    // double del = 2 * (mx - mn);  // be careful on the delta
+    double del = 0.5 * (mx - mn);
     for (int j : ff.rlxid) {
       lob.push_back(ff.yy[j] - del);
       hib.push_back(ff.yy[j] + del);
