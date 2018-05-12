@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-05-12 14:25:17
+ * @Last Modified time: 2018-05-12 14:31:07
  */
 
 #include "pfHome.h"
@@ -28,7 +28,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
     double efrc = 0.0, eengy = 0.0;
-    error["frc"] = 0.0, error["engy"] = 0.0;  // error["punish"] = 0.0;
+    error["frc"] = 0.0, error["engy"] = 0.0, error["punish"] = 0.0;
     double omax = -1e10, omin = 1e10;
 
     // regulate covarances of second derivatives at small cutoff regimes in radius functions
@@ -71,7 +71,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"] + error["engy"];  // + error["punish"];
+  return error["frc"] + error["engy"] + error["punish"];
 }
 
 void pfHome::forceMEAMS(Config &cnf) {  // It's benchmark one
