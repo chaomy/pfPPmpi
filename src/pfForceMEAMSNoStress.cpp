@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-25 15:46:05
+ * @Last Modified time: 2018-05-12 14:25:17
  */
 
 #include "pfHome.h"
@@ -31,26 +31,19 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     error["frc"] = 0.0, error["engy"] = 0.0;  // error["punish"] = 0.0;
     double omax = -1e10, omin = 1e10;
 
-    // to inference covarance of third derivative
-    // int ww = 1;
-    // for (int it : smthidx) {
-    //   vector<double> &vv = funcs[it].s.m_a;
-    //   double mn = 0.0, cov = 0.0;
-    //   for (int i = ww + 1; i < vv.size() - ww; i++) {
-    //     for (int it = -ww; it <= ww; it++) mn += vv[i + it];
-    //     mn /= (2 * ww + 1);
-    //     for (int it = -ww; it <= ww; it++) cov += square11(vv[i + it] - mn);
-    //   }
-    //   error["punish"] += cov / (2 * ww + 1);
-    //   error["punish"] += square11(mn);
-    // }
-    // error["punish"] *= dparams["pweight"];
-
-    // to decrease third derivative
-    // for (int it : smthidx) {
-    //   vector<double> &vv = funcs[it].s.m_a;
-    //   for (auto ee : vv) error["punish"] += square11(ee);
-    // }
+    // regulate covarances of second derivatives at small cutoff regimes in radius functions
+    int ww = 1;
+    for (int it : smthidx) {
+      vector<double> &vv = funcs[it].s.m_b;
+      double mn = 0.0, cov = 0.0;
+      for (int i = ww + 1; i <= 3; ++i){
+        for (int it = -ww; it <= ww; ++it) mn += vv[i + it];
+        mn /= (2 * ww + 1);
+        for (int it = -ww; it <= ww; ++it) cov += square11(vv[i + it] - mn);
+      }
+      error["punish"] += cov / (2 * ww + 1);
+    }
+    error["punish"] *= dparams["pweight"];
 
     double rs = 0;
     double Mf = dparams["fbndq"], Me = dparams["ebndq"];
