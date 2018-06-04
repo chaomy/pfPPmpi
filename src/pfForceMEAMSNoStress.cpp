@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-05-13 21:48:44
+ * @Last Modified time: 2018-06-04 13:31:41
  */
 
 #include "pfHome.h"
@@ -31,16 +31,15 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     error["frc"] = 0.0, error["engy"] = 0.0, error["punish"] = 0.0;
     double omax = -1e10, omin = 1e10;
 
-    // regulate covarances of second derivatives at small cutoff regimes in
-    // radius functions
+    // regulate covarances of second derivatives radius functions
     int ww = 1;
     for (int it : smthidx) {
       vector<double> &vv = funcs[it].s.m_b;
       double mn = 0.0, cov = 0.0;
-      for (int i = ww + 1; i <= 2; ++i) {
+      for (int i = ww; i < vv.size() - ww; ++i) {
         for (int it = -ww; it <= ww; ++it) mn += vv[i + it];
         mn /= (2 * ww + 1);
-        for (int it = -ww; it <= ww; ++it) cov += square11(vv[i + it] - mn);
+        cov += square11(vv[i] - mn);
       }
       error["punish"] += cov;
     }
@@ -48,7 +47,6 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
 
     double rs = 0;
     double Mf = dparams["fbndq"], Me = dparams["ebndq"];
-    // double Bf = dparams["fbndl"], Be = dparams["ebndl"];
     for (int i : locls) {
       Config &cnf = configs[i];
       forceMEAMS(cnf);
