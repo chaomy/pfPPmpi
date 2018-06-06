@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-04 13:31:41
+ * @Last Modified time: 2018-06-05 21:18:53
  */
 
 #include "pfHome.h"
@@ -31,13 +31,13 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     error["frc"] = 0.0, error["engy"] = 0.0, error["punish"] = 0.0;
     double omax = -1e10, omin = 1e10;
 
-    // regulate covarances of second derivatives radius functions
+    // regulate covarances of the second derivatives radius functions
     int ww = 1;
     for (int it : smthidx) {
       vector<double> &vv = funcs[it].s.m_b;
       double mn = 0.0, cov = 0.0;
-      for (int i = ww; i < vv.size() - ww; ++i) {
-        for (int it = -ww; it <= ww; ++it) mn += vv[i + it];
+      for (int i = ww; i < 2; ++i) {
+        for (int j = -ww; j <= ww; ++j) mn += vv[i + j];
         mn /= (2 * ww + 1);
         cov += square11(vv[i] - mn);
       }
