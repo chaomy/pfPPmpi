@@ -25,6 +25,7 @@
 #include "pfEle.h"
 #include "spline.h"
 
+using std::abs;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -34,7 +35,6 @@ using std::string;
 using std::to_string;
 using std::unordered_map;
 using std::vector;
-using std::abs;
 
 namespace mpi = boost::mpi;
 typedef enum { FCC, BCC, HCP, DAM, DIA, B1, C11, L12, B2 } lattice_t;
@@ -47,8 +47,8 @@ class pfHome {
   mpi::communicator cmmlm;
 
  private:
-  int ftn;  // number of atoms used for fitting
-  int tln;  // total number of atoms
+  int ftn;   // number of atoms used for fitting
+  int tln;   // total number of atoms
   int gcnt;  // count the times of calling force calculation
   int scnt;  // count the times of calling simulated annealing
   int nvars;
@@ -89,7 +89,7 @@ class pfHome {
   vector<double> atwt;
   vector<double> alat;
 
-  /* tests */
+  /* to examine potential */
   Config ubcc;  // primitive bcc
   Config cbcc;  // conventional bcc
   unordered_map<string, vector<Config>> mpcf;
@@ -143,7 +143,6 @@ class pfHome {
   void initTargs();
   void assignConfigs(int tag = 2);
 
-  // void setupMEAMC();  // setup meam params
   void wrapAtomPos(Config& cc);
   void setSplineVariables();
   void initBox(Config& cc);
@@ -295,14 +294,14 @@ class pfHome {
   void lmpCheck(int i, ofstream& of1);
 
   // MPI utilitis
-  void bcdata();
+  void bcdata(); /* broadcast data and parameters */
 
   Config addvolm(const Config&, const double& dl);
   Config addotho(const Config&, const double& dl);
   Config addmono(const Config&, const double& dl);
   Config addstrain(Config cc, const vector<vector<double>>& str);
 
-  // analysize 
+  // use it to tune fitting
   void deleteAtoms();
   void cutoffNeighs();
   void loopBwth();
@@ -393,7 +392,6 @@ class pfHome {
   void meam_dens_final(Config& cc);
   void meam_force(Config& cc);
 
-  // debug
   friend class pfOptimizer;
 };
 
@@ -496,7 +494,7 @@ inline double pfHome::dfcut(const double xi, double& dfc) {
 }
 
 //-----------------------------------------------------------------------------
-// Derivative of Cikj w.r.t. rij 
+// Derivative of Cikj w.r.t. rij
 //     Inputs: rij,rij2,rik2,rjk2
 //
 inline double pfHome::dCfunc(const double rij2, const double rik2,

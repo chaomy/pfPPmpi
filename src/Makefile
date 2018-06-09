@@ -21,7 +21,12 @@ CPPFLAGS	  =  -std=c++11
 LMP_LIB     =  ${SRC}/lammps/src/
 CINCLUDE 	=  -I../include  -I${LMP_LIB}
 LIBS   		=  -L${LMP_LIB} # -L${MPI_HOME}/lib
-CDLINK  	=  ${LIBS} -lm -lnlopt -lmpi -lpthread  -llammps -larmadillo -framework Accelerate -lboost_mpi -lboost_serialization
+CDLINK  	=  ${LIBS} -lm -lnlopt -lmpi -lpthread  -llammps -larmadillo \
+                 -framework Accelerate -lboost_mpi -lboost_serialization
+                 
+# parallel
+PARALLEL = MPI
+CC = ${CC_MPI}
 
 MAKETARGET 	=  pot.exe
 
@@ -91,11 +96,8 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfGPsample.cpp    \
 			   ./pfMain.cpp
 
-# parallel
-PARALLEL = MPI
-CC = ${CC_MPI}
-
 # OPT_FLAGS   += ${${PARALLEL}_FLAGS} ${OPT_${PARALLEL}_FLAGS} -DNDEBUG
+
 ###########################################################################
 # Rules
 ###########################################################################
