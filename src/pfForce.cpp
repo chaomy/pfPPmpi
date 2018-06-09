@@ -2,14 +2,14 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-08 21:15:46
+ * @Last Modified time: 2018-06-08 22:33:06
  */
 
 #include "pfHome.h"
 #include "pfLmpDrv.h"
 #include "pfOptimizer.h"
 
-void pfHome::increAnneal() {
+void pfHome::increAnneal() {  // adding more nodes and run annealing
   scnt = 0;
   int jobl[] = {PHI, PHI, RHO, MEAMF, MEAMG, PHI, RHO, PHI, RHO, MEAMF, MEAMG};
   FILE *fid;

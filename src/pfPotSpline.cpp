@@ -2,42 +2,16 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-05-05 15:07:32
+ * @Last Modified time: 2018-06-08 22:43:03
  */
 
 #include "pfHome.h"
 
-// void pfHome::setSplineVariablesNear() {  // func -> ini
-//   nvars = 0;
-//   ini.clear();
-//   lob.clear();
-//   hib.clear();
-//   deb.clear();
-//   for (Func& ff : funcs) ff.step = ff.xx[1] - ff.xx[0];
-//   for (int i : {0, 1, 2, 3, 4}) {
-//     if (optidx[i] == 0) continue;
-//     Func& ff = funcs[i];
-//     startps.push_back(nvars);
-//     for (int j : ff.rlxid) {
-//       ini.push_back(ff.yy[j]);
-//       double vari =
-//           (fabs(ff.yy[j]) >= 1e-8) ? dparams["ivari"] * fabs(ff.yy[j]) :
-//           0.001;
-//       lob.push_back(ff.yy[j] - vari);
-//       hib.push_back(ff.yy[j] + vari);
-//       deb.push_back(2 * vari);
-//       nvars++;
-//     }
-//     endps.push_back(nvars);
-//   }  // i
-// }
+/* set boundary conditions the lo, hi and delta of the node values */
 
 void pfHome::setSplineVariables() {  // func -> ini
   nvars = 0;
-  ini.clear();
-  lob.clear();
-  hib.clear();
-  deb.clear();
+  ini.clear(), lob.clear(), hib.clear(), deb.clear();
   for (Func& ff : funcs) ff.step = ff.xx[1] - ff.xx[0];
   for (int i : {0, 1, 2, 3, 4}) {
     if (optidx[i] == 0) continue;

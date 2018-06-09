@@ -70,16 +70,19 @@ class pfHome {
   double punish;
   double physic;
 
-  double ominrho;
-  double omaxrho;
-  double oaverho;
+  double ominrho;  // overall min density
+  double omaxrho;  // overall max density
+  double oaverho;  // overall average density
 
   /* parameters */
-  unordered_map<string, double> dparams;
-  unordered_map<string, int> iparams;
-  unordered_map<string, string> sparams;
-  unordered_map<string, vector<double>> meamparms;
-  vector<string> elems;     //  element name
+  unordered_map<string, double> dparams;            // double parameters
+  unordered_map<string, int> iparams;               // integer parameters
+  unordered_map<string, string> sparams;            // string parameters
+  unordered_map<string, vector<double>> meamparms;  // hold MEAMC parameters
+  vector<string> elems;                             //  element name
+
+  /* parameters for MEAMC calculations, calculations follow the routines in
+   * LAMMPS  */
   vector<lattice_t> lattp;  //  FCC, BCC, HCP, DAM, DIA, B1, C11, L12, B2
   vector<int> cnn1;         //  num near neighbors
   vector<double> t0;        //  1
@@ -96,37 +99,37 @@ class pfHome {
   unordered_map<string, vector<Config>> mpcf;
   unordered_map<string, vector<double>> mpvc;
 
-  unordered_map<string, double> targs;
-  unordered_map<string, double> exprs;
-  unordered_map<string, double> weigh;
+  unordered_map<string, double> targs;  // target values
+  unordered_map<string, double> exprs;  // lammps errors
+  unordered_map<string, double> weigh;  // weight of errors
   unordered_map<string, double> error;
 
-  /* map functions */
+  /* mapping functions */
   unordered_map<string, void (pfHome::*)(Config&)> calfrc;
   unordered_map<string, double (pfHome::*)(const arma::mat& vv, int tg)> calobj;
   unordered_map<string, void (pfHome::*)()> write;
   unordered_map<string, Config (pfHome::*)(const double& lat)> build;
   unordered_map<string, void (pfHome::*)()> read;
 
-  vector<Config> configs;
-  vector<Func> funcs;
-  vector<Func> fprec;
+  vector<Config> configs;  // configurations
+  vector<Func> funcs;      // spline functions
+  // vector<Func> fprec;  to be deleted
 
-  vector<int> startps;
-  vector<int> endps;
-  pfLMPdrv* lmpdrv;
-  pfOptimizer* optdrv;
-  Melem mele;
+  vector<int> startps;  // used in annealing method to update functions
+  vector<int> endps;    // used in annealing method to update functions
+  pfLMPdrv* lmpdrv;     // lammps driver
+  pfOptimizer* optdrv;  // optimizer
+  Melem mele;           // element data
 
-  vector<double> mfrc; // min force of each force vectors 
-  vector<double> hil;  // 5 + 1
-  vector<double> lol;  // 5 + 1
-  vector<double> recorderr; // growing variable, record error of each run
-  vector<double> ini;
-  vector<double> hib;
-  vector<double> lob;
-  vector<double> deb;  // hib - lob
-  vector<int> optidx;  // functions that to be optimized
+  vector<double> mfrc;       // min force of each force vectors
+  vector<double> hil;        // 5 + 1  default max values of each function
+  vector<double> lol;        // 5 + 1  default min values of each function
+  vector<double> recorderr;  // growing variable, record error of each run
+  vector<double> ini;        // hold spline node values
+  vector<double> hib;        // hold high bound spline node values
+  vector<double> lob;        // hold low bound spline node values
+  vector<double> deb;        // hib - lob
+  vector<int> optidx;        // functions that to be optimized
 
  public:
   pfHome(int argc, char* argv[]);
@@ -145,17 +148,27 @@ class pfHome {
 
   void wrapAtomPos(Config& cc);
   void setSplineVariables();
+
+  // initialize box
   void initBox(Config& cc);
+
+  // initialize neighbors
   void initNeighs();
   void initNeighs(Config& cc);
   void initNeighsFull();           /* meam */
   void initNeighsFull(Config& cc); /* meam */
+
+  // initialize angles
   void initAngles();
   void initAngles(Config& cc);
   void initAnglesSameCutOff();
+
+  // set neighbors
   void setNeighslot(Neigh& n, Func f, double r);
   void setNeighslotStd(Neigh& n, Func f, double r);
   void updateNeighslot(Neigh& n, Func f, double r, int id);
+
+  // set angles
   void setAngleslot(Angle& a, Func f, double r);
   void setAngleslotStd(Angle& a, Func f, double r);
 
@@ -164,11 +177,15 @@ class pfHome {
   void spltrai(Func& func, double r, double& val, double& grad);
   void splineNe(Func& func, int flag);
   void splineEd(Func& func, int flag);
-  void splintEd(const Func& func, double r, double& val);
+
+  void splintEd(const Func& func, double r, double& val);  // no gradients
   void splintEd(const Func& func, double r, double& val, double& grad);
+
+  void splint(const Func& func, double r, double& val);  // no gradients
   void splint(const Func& func, double r, double& val, double& grad);
-  void splint(const Func& func, double r, double& val);
-  void splint(const Func& func, int k, double b, double step, double& val);
+
+  void splint(const Func& func, int k, double b, double step,
+              double& val);  // no gradients
   void splint(const Func& func, int k, double b, double step, double& val,
               double& grad);
 
@@ -243,7 +260,7 @@ class pfHome {
   double randUniform(const double min, const double max);
 
   void upgrade(int id);  // increase nodes
-  void increAnneal();
+  void increAnneal();    // increasing nodes and run anealling
   void recordStage(int cnt);
 
   // inputs
@@ -301,7 +318,7 @@ class pfHome {
   Config addmono(const Config&, const double& dl);
   Config addstrain(Config cc, const vector<vector<double>>& str);
 
-  // use it to tune fitting
+  // use it to adjust parameters in fitting
   void deleteAtoms();
   void cutoffNeighs();
   void loopBwth();

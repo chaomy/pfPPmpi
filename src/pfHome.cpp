@@ -2,14 +2,14 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-08 20:45:37
+ * @Last Modified time: 2018-06-08 23:05:47
  */
 
 #include "pfHome.h"
 #include "pfLmpDrv.h"
 #include "pfOptimizer.h"
 namespace mpi = boost::mpi;
-#define MXEL 5
+#define MXEL 5  // max number of elements to handle
 
 pfHome::pfHome(int argc, char* argv[])
     : ricut(2.08),
@@ -116,8 +116,7 @@ pfHome::pfHome(int argc, char* argv[])
   lmpdrv = new pfLMPdrv(argc, argv, this);
   assignConfigs(2);
   (cmm.barrier)();  //  important!
-  // temporarily close these functionalities
-  // optdrv = new pfOptimizer(this);
+  // optdrv = new pfOptimizer(this); // temporarily deactivate functionalities
 };
 
 pfHome::~pfHome() {
@@ -136,9 +135,8 @@ void pfHome::assignConfigs(int tag) {
     int del = nconfs / cmm.size();
     locstt = del * cmm.rank();
     locend = del * (cmm.rank() + 1);
-    for (int i = 0; i < nconfs; i++) {
+    for (int i = 0; i < nconfs; i++)
       if (i % cmm.size() == cmm.rank()) locls.push_back(i);
-    }
   }
   if (tag == 2) {  // assign configurations based on number of atoms
     locnatoms = vector<int>(cmm.size(), 0);
