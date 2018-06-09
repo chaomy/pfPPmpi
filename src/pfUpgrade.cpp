@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-16 17:13:01
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 13:34:49
+ * @Last Modified time: 2018-06-08 23:09:09
  */
 
 #include "pfHome.h"
@@ -38,7 +38,6 @@ void pfHome::upgrade(int id) {
   /* update x values */
   for (int i = 0; i < fnc.npts; i++) fnc.xx[i] = fnc.xx.front() + i * delt;
 
-  /* ---------------------------------------------- */
   nvars = 0;
   ini.clear();
   lob.clear();
