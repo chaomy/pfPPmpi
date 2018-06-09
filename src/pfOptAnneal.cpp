@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-23 20:10:54
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-06 20:14:29
+ * @Last Modified time: 2018-06-08 20:48:23
  */
 
 #include "pfHome.h"
@@ -12,8 +12,7 @@
 #define EPS 10
 #define TEMPVAR 0.85
 #define STEPVAR 2.0
-// #define KMAX  500   // 1000
-#define KMAX 100
+#define KMAX 100  // max # of runs  500 or 1000
 #define INVSQRT2PI 0.39894228040143267794
 #define GAUSS(a) (INVSQRT2PI * (exp(-((a) * (a)) / 2.0)))
 #define NEPS 4
@@ -38,7 +37,6 @@ void pfHome::randomizeSpline(vector<double>& vv, const int n,
     double w2 = 1.0 + 3 * width;                // original verison 4.0 * width
     while (ff < nfuncs) {                       //
       if (n >= startps[ff] && n < endps[ff]) {  // update function values
-        chid = ff;
         for (int i = 0; i <= w2; i++) {
           int j = n + i;
           if (j < endps[ff]) vv[j] += GAUSS(double(i) / width) * height;

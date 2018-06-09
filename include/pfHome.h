@@ -49,7 +49,6 @@ class pfHome {
  private:
   int ftn;  // number of atoms used for fitting
   int tln;  // total number of atoms
-  int chid;
   int gcnt;  // count the times of calling force calculation
   int scnt;  // count the times of calling simulated annealing
   int nvars;

@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-04 13:13:01
+ * @Last Modified time: 2018-06-08 20:45:37
  */
 
 #include "pfHome.h"
@@ -102,7 +102,7 @@ pfHome::pfHome(int argc, char* argv[])
     pfInit();
   }
 
-  (cmm.barrier)();  //  important, be careful
+  (cmm.barrier)();
   bcdata();
   if (!sparams["ptype"].compare("MEAMS")) {
     initNeighsFull();
