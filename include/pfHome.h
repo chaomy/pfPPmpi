@@ -45,6 +45,7 @@ class pfHome {
   mpi::environment env;
   mpi::communicator cmm;
   mpi::communicator cmmlm;
+  class pfLMPdrv;
 
  private:
   int ftn;   // number of atoms used for fitting
@@ -113,15 +114,14 @@ class pfHome {
 
   vector<int> startps;
   vector<int> endps;
-  class pfLMPdrv;
   pfLMPdrv* lmpdrv;
   pfOptimizer* optdrv;
   Melem mele;
 
-  vector<double> mfrc;
+  vector<double> mfrc; // min force of each force vectors 
   vector<double> hil;  // 5 + 1
   vector<double> lol;  // 5 + 1
-  vector<double> recorderr;
+  vector<double> recorderr; // growing variable, record error of each run
   vector<double> ini;
   vector<double> hib;
   vector<double> lob;
@@ -224,7 +224,7 @@ class pfHome {
   void shiftEMF(double shift);
   void nloptGlobal();
 
-  // diff evo
+  // Diff evo
   void initPop();
   void diffEvo();
 

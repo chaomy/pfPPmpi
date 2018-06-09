@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-20 07:38:41
+ * @Last Modified time: 2018-06-08 21:15:46
  */
 
 #include "pfHome.h"
@@ -17,8 +17,7 @@ void pfHome::increAnneal() {
     simAnneal();
     upgrade(jobl[i]);
     iparams["kmax"]++;
-    fid = fopen("record.txt", "a");
-    fprintf(fid, "%d %f\n", i, recorderr[i]);
+    fprintf(fid = fopen("record.txt", "a"), "%d %f\n", i, recorderr[i]);
     fclose(fid);
   }
 }

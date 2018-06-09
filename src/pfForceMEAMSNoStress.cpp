@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-05 21:21:10
+ * @Last Modified time: 2018-06-08 22:25:36
  */
 
 #include "pfHome.h"
@@ -31,7 +31,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     error["frc"] = 0.0, error["engy"] = 0.0, error["punish"] = 0.0;
     double omax = -1e10, omin = 1e10;
 
-    // regulate covarances of the second derivatives radius functions
+    // regulate covarances of second derivatives radius functions
     int ww = 1;
     for (int it : smthidx) {
       vector<double> &vv = funcs[it].s.m_b;
@@ -73,7 +73,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
   return error["frc"] + error["engy"] + error["punish"];
 }
 
-void pfHome::forceMEAMS(Config &cnf) {  // It's benchmark one
+void pfHome::forceMEAMS(Config &cnf) {  // main routine
   cnf.phiengy = cnf.emfengy = 0.0;
   cnf.rhomi = 1e10, cnf.rhomx = -1e10;
   for (pfAtom &atm : cnf.atoms) { /* loop over atoms to reset values */
@@ -169,7 +169,6 @@ void pfHome::forceMEAMS(Config &cnf) {  // It's benchmark one
   for (pfAtom &atm : cnf.atoms) /* eambedding forces */
     for (Neigh &ngb : atm.neighsFull) {
       // if (ngb.r < funcs[RHO].xx.back()) {
-
       double emf = ngb.rhog * (atm.gradF + cnf.atoms[ngb.aid].gradF);
       for (int it : {X, Y, Z}) atm.rhofrc[it] += ngb.dist2r[it] * emf;
       // }  // cutoff(rho)
@@ -177,7 +176,7 @@ void pfHome::forceMEAMS(Config &cnf) {  // It's benchmark one
   cnf.fitengy = (cnf.phiengy / 2. + cnf.emfengy) / cnf.natoms;
 }
 
-// close fiting physical
+// This is for fiting physical parameters
 // error["phy"] = 0.0;
 // if (iparams["runlmp"]) {
 //   (this->*write[sparams["ptype"]])();

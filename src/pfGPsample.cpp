@@ -2,13 +2,15 @@
  * @Author: chaomy
  * @Date:   2018-02-12 21:51:52
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-12 23:26:37
+ * @Last Modified time: 2018-06-08 21:17:00
  */
 
 #include "pfHome.h"
 #include "pfLmpDrv.h"
 using std::cout;
 using std::endl;
+
+/* This function has not been finished yet */
 
 void pfHome::GPsample() {
   ofstream of1("err.txt", std::ofstream::out);
