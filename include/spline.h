@@ -98,8 +98,8 @@ class spline {
                   bool cubic_spline = true);
   double operator()(double x) const;
   double deriv(int order, double x) const;
-  void deriv(int idx, double h, double& val, double& dev);
-  void deriv(double x, double& val, double& dev);
+  void deriv(const int& idx, const double& h, double& val, double& dev);
+  void deriv(const double& x, double& val, double& dev);
   friend class pfHome;
 };
 
@@ -368,7 +368,7 @@ double spline::operator()(double x) const {
   return interpol;
 }
 
-void spline::deriv(int idx, double h, double& val, double& dev) {
+void spline::deriv(const int& idx, const double& h, double& val, double& dev) {
   size_t n = m_x.size();
   if (idx == -1) {
     val = (m_b0 * h + m_c0) * h + m_y[0];
@@ -382,7 +382,7 @@ void spline::deriv(int idx, double h, double& val, double& dev) {
   }
 }
 
-void spline::deriv(double x, double& val, double& dev) {
+void spline::deriv(const double& x, double& val, double& dev) {
   size_t n = m_x.size();
   // find the closest point m_x[idx] < x, idx=0 even if x<m_x[0]
   std::vector<double>::const_iterator it;
