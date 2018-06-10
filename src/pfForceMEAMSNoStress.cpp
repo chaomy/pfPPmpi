@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-10 01:50:34
+ * @Last Modified time: 2018-06-10 02:03:55
  */
 
 #include "pfHome.h"
@@ -45,6 +45,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     }
     error["punish"] *= dparams["pweight"];
 
+    // update errors using robust loss function, (linear + quadratic)
     double rs = 0;
     double Mf = dparams["fbndq"], Me = dparams["ebndq"];
     for (int i : locls) {
@@ -168,10 +169,8 @@ void pfHome::forceMEAMS(Config &cnf) {  // main routine
   }                             // atm
   for (pfAtom &atm : cnf.atoms) /* eambedding forces */
     for (Neigh &ngb : atm.neighsFull) {
-      // if (ngb.r < funcs[RHO].xx.back()) {
       double emf = ngb.rhog * (atm.gradF + cnf.atoms[ngb.aid].gradF);
-      for (int it : {X, Y, Z}) atm.rhofrc[it] += ngb.dist2r[it] * emf;
-      // }  // cutoff(rho)
+      for (const int &it : {X, Y, Z}) atm.rhofrc[it] += ngb.dist2r[it] * emf;
     }  // nn
   cnf.fitengy = (cnf.phiengy / 2. + cnf.emfengy) / cnf.natoms;
 }

@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-17 14:00:51
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-19 10:21:24
+ * @Last Modified time: 2018-06-10 02:06:21
  */
 
 #include "pfHome.h"
@@ -25,7 +25,7 @@ void pfHome::readMEAMS() {
   for (int i = 16; i < segs.size(); i++) smthidx.push_back(stoi(segs[i]));
   for (int i : {0, 1, 2, 3, 4})
     if (optidx[i] == 1) cout << "to be optimized : " << i << endl;
-  for (int i : smthidx) cout << "smth idx " << i << endl;
+  for (int i : smthidx) cout << "smth idx " << i << endl; /* smoothing */
 
   getline(fid, buff);  // read head line 2
   int cnt = nfuncs = 5;

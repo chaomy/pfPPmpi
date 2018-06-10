@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-30 14:13:52
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-13 12:21:11
+ * @Last Modified time: 2018-06-10 02:04:46
  */
 
 #include "pfHome.h"
@@ -16,6 +16,8 @@
 using std::cout;
 using std::endl;
 using std::vector;
+
+/* differetial evolutionary agorithm */
 
 void pfHome::diffEvo() {
   int a = 0, b = 0, c = 0, cn = 0;
