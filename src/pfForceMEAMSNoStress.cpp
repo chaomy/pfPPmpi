@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-09 17:13:02
+ * @Last Modified time: 2018-06-10 01:50:34
  */
 
 #include "pfHome.h"
@@ -36,7 +36,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
     for (int it : smthidx) {
       vector<double> &vv = funcs[it].s.m_b;
       double mn = 0.0, cov = 0.0;
-      for (int i = ww; i < 2; ++i) {
+      for (int i = vv.size() - 1; i > vv.size() - 2; --i) {
         for (int j = -ww; j <= ww; ++j) mn += vv[i + j];
         mn /= (2 * ww + 1);
         cov += square11(vv[i] - mn);
