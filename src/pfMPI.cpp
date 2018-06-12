@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 14:23:05
+ * @Last Modified time: 2018-06-12 17:22:22
  */
 
 #include "pfHome.h"
@@ -72,9 +72,10 @@ void pfHome::bcdata() {
     vector<bool> odmp({true, false});
 
     for (Func& ff : funcs) {
-      double al = (ff.bl == 1) ? ff.g1.front() : ff.g2.front();
-      double bl = (ff.br == 1) ? ff.g1.back() : ff.g2.back();
-      ff.s.set_boundary(bdmp[ff.bl - 1], al, bdmp[ff.br - 1], bl, true);
+      double al = (ff.bl == 1) ? ff.g1.front() : ff.g2.front();  // left bound
+      double bl = (ff.br == 1) ? ff.g1.back() : ff.g2.back();    // right bound
+      ff.s.set_boundary(bdmp[ff.bl - 1], al, bdmp[ff.br - 1], bl,
+                        odmp[ff.br - 1]);
     }
 
     if (1 == 2) {  // boundary
