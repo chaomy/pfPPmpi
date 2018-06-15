@@ -2,9 +2,10 @@
  * @Author: chaomy
  * @Date:   2017-12-17 11:13:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-18 13:01:27
+ * @Last Modified time: 2018-06-14 23:39:07
  */
 
+#include "pfForce.h"
 #include "pfHome.h"
 
 #define C11A (1. / 9.)
@@ -13,6 +14,7 @@
 #define C12B (1. / 6.)
 
 void pfHome::calElas(int npts) {
+  pfForce fcdrv(*this);
   Config c1(buildbccPrim(exprs["lat"]));
   double delta = 0.01;
   double lo = -delta * npts;
@@ -22,7 +24,7 @@ void pfHome::calElas(int npts) {
     double dl = lo + delta * i;
 
     Config cc = addotho(c1, dl);
-    (this->*calfrc[sparams["ptype"]])(cc);
+    (fcdrv.*calfrc[sparams["ptype"]])(cc);
     ostr << dl << " " << cc.atoms[0].crho << " " << cc.fitengy << " "
          << 0.5 * cc.phiengy / cc.natoms << " " << cc.emfengy / cc.natoms
          << endl;
@@ -32,6 +34,7 @@ void pfHome::calElas(int npts) {
 }
 
 void pfHome::calElas() {
+  pfForce fcdrv(*this);
   vector<double> dv({-3e-3, -9e-4, -3e-4, 3e-4, 9e-4, 3e-3});
 
   for (string kk : {"c11", "c12", "c44"}) mpcf[kk].clear();
@@ -41,9 +44,9 @@ void pfHome::calElas() {
     mpcf["c44"].push_back(addmono(ubcc, dl));
   }
 
-  for (auto& ee : mpcf["c11"]) (this->*calfrc[sparams["ptype"]])(ee);
-  for (auto& ee : mpcf["c12"]) (this->*calfrc[sparams["ptype"]])(ee);
-  for (auto& ee : mpcf["c44"]) (this->*calfrc[sparams["ptype"]])(ee);
+  for (auto& ee : mpcf["c11"]) (fcdrv.*calfrc[sparams["ptype"]])(ee);
+  for (auto& ee : mpcf["c12"]) (fcdrv.*calfrc[sparams["ptype"]])(ee);
+  for (auto& ee : mpcf["c44"]) (fcdrv.*calfrc[sparams["ptype"]])(ee);
 
   vector<double> tm(3, 0);
   // double vol = 0.5 * exprs["lat"] * exprs["lat"] * exprs["lat"];

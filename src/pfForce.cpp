@@ -2,10 +2,10 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-08 22:33:06
+ * @Last Modified time: 2018-06-14 23:33:16
  */
 
-#include "pfHome.h"
+#include "pfForce.h"
 #include "pfLmpDrv.h"
 #include "pfOptimizer.h"
 
@@ -80,12 +80,13 @@ void pfHome::run(int argc, char *argv[]) {
 }
 
 void pfHome::calErr() {  // make potential
+  pfForce fcdrv(*this);
   arma::mat mm(nvars, 1, arma::fill::randu);
   for (int i = 0; i < nvars; i++) mm[i] = ini[i];
-  (this->*calobj[sparams["ptype"]])(mm, 1);
+  (fcdrv.*calobj[sparams["ptype"]])(mm, 1);
   if (cmm.rank() == PFROOT) {
-    double err = (this->*calobj[sparams["ptype"]])(mm, 1);
-    (this->*calobj[sparams["ptype"]])(mm, EXT);
+    double err = (fcdrv.*calobj[sparams["ptype"]])(mm, 1);
+    (fcdrv.*calobj[sparams["ptype"]])(mm, EXT);
     (this->*write[sparams["ptype"]])();
 
     ofstream of("err.txt", std::ofstream::out);
@@ -130,8 +131,6 @@ void pfHome::nloptGlobal() {
 }
 
 void pfHome::doShift() {
-  cout << "before err = " << forceMEAMS(ini) << endl;
-
   sparams["tmpfile"] = "dummy.tmp.0";
   writePot(ini);
 
@@ -146,16 +145,15 @@ void pfHome::doShift() {
 
   sparams["tmpfile"] = "dummy.tmp.1";
   writePot(ini);
-
-  cout << "after err = " << forceMEAMS(ini) << endl;
 }
 
 double pfHome::errFunct(const vector<double> &x) {
+  pfForce fcdrv(*this);
   double err = 0.0;
   int pfreq = 500;
   if (sparams["ptype"] == "EAM") {
     gcnt++;
-    err = forceEAM(x);
+    err = (fcdrv.*calobj[sparams["ptype"]])(x, 1);
     if (gcnt % pfreq == 0) printf("cnt %d err = %f \n", gcnt++, err);
   }
   return err;

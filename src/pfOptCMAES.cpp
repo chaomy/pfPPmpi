@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-05-12 14:32:17
+ * @Last Modified time: 2018-06-14 23:33:39
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -11,6 +11,7 @@
  *
  */
 
+#include "pfForce.h"
 #include "pfHome.h"
 #include "pfLmpDrv.h"
 
@@ -26,13 +27,14 @@ double pfHome::testFunc(arma::mat& vc) {
 }
 
 void pfHome::cntcmaes() {
+  pfForce fcdrv(*this);
   arma::mat iterate =
       5.0 + dparams["istep"] *
                 (arma::mat(nvars, 1, arma::fill::randu) - 0.5);  // to [0, 10]
-  (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
+  (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), 1);
   if (cmm.rank() == PFROOT) {
     cmaes(iterate);
-    (this->*calobj[sparams["ptype"]])(decodev(iterate), EXT);
+    (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), EXT);
   }
 }
 
@@ -40,11 +42,12 @@ void pfHome::loopcmaes() {
   // start from scratch
   // arma::mat iterate(nvars, 1, arma::fill::randu);
   // iterate *= 10;
+  pfForce fcdrv(*this);
   double cr = 1e30, op = 1e30;
   arma::mat iterate =
       5.0 + dparams["istep"] *
                 (arma::mat(nvars, 1, arma::fill::randu) - 0.5);  // to [0, 10]
-  (this->*calobj[sparams["ptype"]])(decodev(iterate), 1);
+  (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), 1);
   for (int i = 0; i < iparams["kmax"]; i++) {
     if (cmm.rank() == PFROOT) {
       if ((cr = cmaes(iterate)) < op) {
@@ -61,10 +64,11 @@ void pfHome::loopcmaes() {
                               (arma::mat(nvars, 1, arma::fill::randu) - 0.5);
     }
   }
-  (this->*calobj[sparams["ptype"]])(decodev(iterate), EXT);
+  (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), EXT);
 }
 
 double pfHome::cmaes(arma::mat& iterate) {
+  pfForce fcdrv(*this);
   int maxIt = iparams["maxstep"], lastid = 1;
   double tolerance = dparams["ftol"];
   double sigmatol = dparams["xtol"];
@@ -128,7 +132,7 @@ double pfHome::cmaes(arma::mat& iterate) {
 
   // Calculate the first objective function.
   double currentobj =
-      (this->*calobj[sparams["ptype"]])(decodev(mps.slice(0)), 1);
+      (fcdrv.*calobj[sparams["ptype"]])(decodev(mps.slice(0)), 1);
   double overallobj = currentobj;
   int saven = 2;
   vector<double> besttol(saven, 1e30);
@@ -170,7 +174,7 @@ double pfHome::cmaes(arma::mat& iterate) {
       }
       pps.slice(idx(j)) = mps.slice(idx0) + sigma(idx0) * pStep.slice(idx(j));
       pobj(idx(j)) =
-          (this->*calobj[sparams["ptype"]])(decodev(pps.slice(idx(j))), 1);
+          (fcdrv.*calobj[sparams["ptype"]])(decodev(pps.slice(idx(j))), 1);
     }
 
     idx = sort_index(pobj);  // Sort population.
@@ -180,7 +184,7 @@ double pfHome::cmaes(arma::mat& iterate) {
 
     mps.slice(idx1) = mps.slice(idx0) + sigma(idx0) * step;
 
-    currentobj = (this->*calobj[sparams["ptype"]])(decodev(mps.slice(idx1)), 1);
+    currentobj = (fcdrv.*calobj[sparams["ptype"]])(decodev(mps.slice(idx1)), 1);
 
     if (currentobj < overallobj) {  // Update best parameters.
       overallobj = currentobj;

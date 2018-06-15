@@ -2,16 +2,16 @@
  * @Author: chaomy
  * @Date:   2018-01-29 23:45:39
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-05 14:44:33
+ * @Last Modified time: 2018-06-15 01:46:12
  */
 
-#include "pfHome.h"
+#include "pfMEAMC.h"
 
 using std::ofstream;
 using std::setprecision;
 using std::setw;
 
-void pfHome::meam_dens_setup(Config& cc) {
+void pfHome::pfForce::pfMEAMC::meam_dens_setup(Config& cc) {
   int natoms = cc.natoms;
 
   rho = vector<double>(natoms, 0);
@@ -34,12 +34,12 @@ void pfHome::meam_dens_setup(Config& cc) {
   tsq_ave = vector<vector<double>>(natoms, vector<double>(3, 0));
 }
 
-void pfHome::meam_dens_init(Config& cc) {
+void pfHome::pfForce::pfMEAMC::meam_dens_init(Config& cc) {
   getscreen(cc);
   calc_rho1(cc);
 }
 
-void pfHome::getscreen(Config& cc) {
+void pfHome::pfForce::pfMEAMC::getscreen(Config& cc) {
   double sij, rnorm, fc, dfc;
   vector<double> rjk(3, 0);
   double rjk2;
@@ -170,7 +170,7 @@ void pfHome::getscreen(Config& cc) {
   }
 }
 
-void pfHome::calc_rho1(Config& cc) {
+void pfHome::pfForce::pfMEAMC::calc_rho1(Config& cc) {
   int m, n, p, elti, eltj, nv2, nv3;
   double sij;
   double ai, aj, rhoa0j, rhoa1j, rhoa2j, rhoa3j, A1j, A2j, A3j;
@@ -274,7 +274,7 @@ void pfHome::calc_rho1(Config& cc) {
   }
 }
 
-void pfHome::meam_dens_final(Config& cc) {
+void pfHome::pfForce::pfMEAMC::meam_dens_final(Config& cc) {
   int elti, m;
   double rhob, G, dG, Gbar, dGbar, gam, shp[3], Z;
   double B, denom, rho_bkgd;

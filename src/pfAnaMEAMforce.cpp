@@ -2,12 +2,12 @@
  * @Author: chaomy
  * @Date:   2018-02-02 15:13:57
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-02 23:29:28
+ * @Last Modified time: 2018-06-15 00:17:15
  */
 
-#include "pfHome.h"
+#include "pfMEAMC.h"
 
-void pfHome::meam_force(Config& cc) {
+void pfHome::pfForce::pfMEAMC::meam_force(Config& cc) {
   int kk, m, n, p, q;
   int nv2, nv3, elti, eltj, eltk, ind;
   double delij[3], rij2, rij, rij3;

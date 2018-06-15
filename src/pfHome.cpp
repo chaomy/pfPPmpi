@@ -2,82 +2,39 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-08 23:05:47
+ * @Last Modified time: 2018-06-15 01:39:04
  */
 
 #include "pfHome.h"
+#include "pfForce.h"
 #include "pfLmpDrv.h"
+#include "pfMEAMC.h"
 #include "pfOptimizer.h"
 namespace mpi = boost::mpi;
-#define MXEL 5  // max number of elements to handle
 
 pfHome::pfHome(int argc, char* argv[])
     : ricut(2.08),
       rocut(6.00),
       mfrc(3),
       hil({5.0, 2.0, 0.0, 1.0, 1.0}),
-      lol({-1.0, -30.0, -10.0, -0.5, -0.5}),
-      nelt(1),
-      Ec_meam(MXEL, vector<double>(MXEL, 1.55)),
-      re_meam(MXEL, vector<double>(MXEL, 3.2)),
-      Omega_meam(MXEL),
-      Z_meam(MXEL),
-      A_meam(MXEL),
-      alpha_meam(MXEL, vector<double>(MXEL)),
-      rho0_meam(MXEL),
-      delta_meam(MXEL, vector<double>(MXEL, 0.0)),
-      beta0_meam(MXEL),
-      beta1_meam(MXEL),
-      beta2_meam(MXEL),
-      beta3_meam(MXEL),
-      t0_meam(MXEL),
-      t1_meam(MXEL),
-      t2_meam(MXEL),
-      t3_meam(MXEL),
-      rho_ref_meam(MXEL),
-      ibar_meam(MXEL),
-      ielt_meam(MXEL),
-      lattce_meam(MXEL, vector<lattice_t>(MXEL)),
-      nn2_meam(MXEL, vector<int>(MXEL, 1)),
-      zbl_meam(MXEL, vector<int>(MXEL, 0)),
-      eltind(MXEL, vector<int>(MXEL)),
-      attrac_meam(MXEL, vector<double>(MXEL, 0.0)),
-      repuls_meam(MXEL, vector<double>(MXEL, 0.0)),
-      Cmin_meam(MXEL, vector<vector<double>>(MXEL, vector<double>(MXEL, 0.49))),
-      Cmax_meam(MXEL, vector<vector<double>>(MXEL, vector<double>(MXEL, 2.8))),
-      ebound_meam(MXEL,
-                  vector<double>(MXEL, pow(2.8, 2) / (4.0 * (2.8 - 1.0)))),
-      rc_meam(4.8),
-      delr_meam(0.1),
-      gsmooth_factor(99.0),
-      augt1(0),
-      ialloy(1),
-      mix_ref_t(0),
-      emb_lin_neg(0),
-      bkgd_dyn(0),
-      erose_form(2) {
-  calfrc["EAM"] = &pfHome::forceEAM;
-  calfrc["MEAMS"] = &pfHome::forceMEAMS;
-  calfrc["MEAMC"] = &pfHome::forceMEAMC;
+      lol({-1.0, -30.0, -10.0, -0.5, -0.5}) {
+  calfrc["EAM"] = &pfHome::pfForce::forceEAM;
+  calfrc["MEAMS"] = &pfHome::pfForce::forceMEAMS;
+  // calfrc["MEAMC"] = &pfHome::pfForce::pfMEAMC::forceMEAMC;
 
-  calobj["EAM"] = &pfHome::forceEAM;
-  calobj["MEAMS"] = &pfHome::forceMEAMS;
-  calobj["MEAMC"] = &pfHome::forceMEAMC;
+  calobj["EAM"] = &pfHome::pfForce::forceEAM;
+  calobj["MEAMS"] = &pfHome::pfForce::forceMEAMS;
+  // calobj["MEAMC"] = &pfHome::pfForce::pfMEAMC::forceMEAMC;
 
   write["EAM"] = &pfHome::writeLMPS;
   write["TMP"] = &pfHome::writePot;
   write["MEAMS"] = &pfHome::writeMEAMS;
-  write["MEAMC"] = &pfHome::writeMEAMC;
 
   read["EAMS"] = &pfHome::readPot;
   read["MEAMS"] = &pfHome::readMEAMS;
-  read["MEAMC"] = &pfHome::readMEAMC;
 
   build["bcc"] = &pfHome::buildbccPrim;
   build["fcc"] = &pfHome::buildfccPrim;
-
-  latticemp = vector<string>(
-      {"fcc", "bcc", "hcp", "dim", "dia", "b1", "c11", "l12", "b2"});
 
   if (cmm.rank() == PFROOT) {
     ftn = tln = 0;

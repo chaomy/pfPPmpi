@@ -2,10 +2,10 @@
  * @Author: chaomy
  * @Date:   2017-12-30 14:13:52
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-10 02:04:46
+ * @Last Modified time: 2018-06-14 23:24:32
  */
 
-#include "pfHome.h"
+#include "pfForce.h"
 
 #define EVOTH 1e-3
 #define FL 0.1
@@ -13,13 +13,10 @@
 #define TF 0.1
 #define TC 0.1
 
-using std::cout;
-using std::endl;
-using std::vector;
-
 /* differetial evolutionary agorithm */
 
 void pfHome::diffEvo() {
+  pfForce fcdrv(*this);
   int a = 0, b = 0, c = 0, cn = 0;
   double mi = 10e10, mx = 0.0, sm = 0.0;
   double cr = 1e3;
@@ -54,8 +51,8 @@ void pfHome::diffEvo() {
   }
 
   for (int i = 0; i < np; i++) {
-    // cs[i] = forceMEAM(p1[i]);
-    cs[i] = forceEAM(p1[i]);
+    // cs[i] = forceEAM(p1[i]);
+    cs[i] = (fcdrv.*calobj[sparams["ptype"]])(decodev(p1[i]), 1);
     bs = cs[i] < mi ? p1[i] : bs;
     mi = fmin(mi, cs[i]);
     mx = fmax(mx, cs[i]);
@@ -107,8 +104,8 @@ void pfHome::diffEvo() {
         j = (j + 1) % nvars;
       }
 
-      // double cc = forceMEAM(tt);
-      double cc = forceEAM(tt);
+      // double cc = forceEAM(tt);
+      double cc = (fcdrv.*calobj[sparams["ptype"]])(decodev(p1[i]), 1);
 
       if (cc < mi) {
         bs = tt;

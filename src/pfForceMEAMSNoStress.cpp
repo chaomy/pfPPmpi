@@ -2,13 +2,13 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-10 02:03:55
+ * @Last Modified time: 2018-06-14 23:09:25
  */
 
-#include "pfHome.h"
+#include "pfForce.h"
 #include "pfLmpDrv.h"
 
-double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
+double pfHome::pfForce::forceMEAMS(const arma::mat &vv, int tg) {
   while (true) {
     broadcast(cmm, tg, PFROOT);
     if (tg == EXT) break;
@@ -20,7 +20,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
       for (int j : ff.rlxid) ff.yy[j] = vv[cnt++];
     }
 
-    for (int i = 0; i < nfuncs; i++) {  // broadcast functions
+    for (int i = 0; i < funcs.size(); i++) {  // broadcast functions
       broadcast(cmm, funcs[i].xx, PFROOT);
       broadcast(cmm, funcs[i].yy, PFROOT);
     }
@@ -74,7 +74,7 @@ double pfHome::forceMEAMS(const arma::mat &vv, int tg) {
   return error["frc"] + error["engy"] + error["punish"];
 }
 
-void pfHome::forceMEAMS(Config &cnf) {  // main routine
+void pfHome::pfForce::forceMEAMS(Config &cnf) {  // main routine
   cnf.phiengy = cnf.emfengy = 0.0;
   cnf.rhomi = 1e10, cnf.rhomx = -1e10;
   for (pfAtom &atm : cnf.atoms) { /* loop over atoms to reset values */

@@ -2,17 +2,19 @@
  * @Author: chaomy
  * @Date:   2017-12-19 16:23:55
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-06 20:18:02
+ * @Last Modified time: 2018-06-14 23:40:03
  */
 
+#include "pfForce.h"
 #include "pfHome.h"
 
 void pfHome::calSurf() {
+  pfForce fcdrv(*this);
   double la = exprs["lat"];
   printf("la = %f\n", la);
   Config s1 = buildsur100(la, "sur");
   writePOSCAR(s1);
-  (this->*calfrc[sparams["ptype"]])(s1);
+  (fcdrv.*calfrc[sparams["ptype"]])(s1);
   printf("%f\n", (s1.fitengy - ubcc.fitengy) * 0.5 * s1.natoms / (la * la));
   // printf("surf100 = %f\n", (s1.fitengy - ubcc.fitengy * s1.natoms) /
   //                              (exprs["lat"] * exprs["lat"]));

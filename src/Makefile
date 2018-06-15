@@ -34,7 +34,6 @@ MAKETARGET 	=  pot.exe
 POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfPotSpline.cpp  \
 			   ./pfForceEAM.cpp   \
-			   ./pfForceADP.cpp   \
 			   ./pfForceMEAMS.cpp  \
 			   ./pfForceMEAMSNoStress.cpp \
 			   ./pfForceMEAMSNoForce.cpp \
@@ -95,6 +94,7 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfMathSpecial.cpp \
 			   ./pfGPsample.cpp    \
 			   ./pfMain.cpp
+			   #./pfForceADP.cpp   \
 
 # OPT_FLAGS   += ${${PARALLEL}_FLAGS} ${OPT_${PARALLEL}_FLAGS} -DNDEBUG
 

@@ -2,10 +2,10 @@
  * @Author: chaomy
  * @Date:   2017-10-23 20:10:54
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-08 21:09:17
+ * @Last Modified time: 2018-06-14 23:30:56
  */
 
-#include "pfHome.h"
+#include "pfForce.h"
 #include "pfLmpDrv.h"
 
 // #define EPS 0.1
@@ -19,11 +19,6 @@
 #define NSTEP 3  // 20
 #define NTEMP (3 * 40)
 #define RESFREQ 10
-
-using std::cout;
-using std::endl;
-using std::string;
-using std::vector;
 
 void pfHome::randomizeSpline(vector<double>& vv, const int n,
                              const vector<double>& v) {
@@ -64,9 +59,10 @@ void pfHome::randomize(vector<double>& vv, const int n,
 }
 
 void pfHome::simAnneal() {
+  pfForce fcdrv(*this);
   int loopcnt = 0, loopagain = 1;
   double T = dparams["temp"];
-  double err = (this->*calobj[sparams["ptype"]])(ini, 1);
+  double err = (fcdrv.*calobj[sparams["ptype"]])(ini, 1);
   double correntobj = err, overallobj = err;
   vector<double> v(nvars, dparams["istep"]);
   vector<int> naccs(nvars, 0);
@@ -80,7 +76,7 @@ void pfHome::simAnneal() {
         for (int h = 0; h < nvars; h++) {
           tmpvv = ini;
           randomize(tmpvv, h, v);
-          correntobj = (this->*calobj[sparams["ptype"]])(decodestdv(tmpvv), 1);
+          correntobj = (fcdrv.*calobj[sparams["ptype"]])(decodestdv(tmpvv), 1);
 
           if (correntobj <= err) {
             ini = tmpvv;
@@ -153,10 +149,11 @@ void pfHome::simAnneal() {
 }
 
 void pfHome::simAnnealSpline() {
+  pfForce fcdrv(*this);
   int loopcnt = 0;
   int loopagain = 1;
   double T = dparams["temp"];
-  double err = forceMEAMS(ini);
+  double err = (fcdrv.*calobj[sparams["ptype"]])(decodestdv(ini), 1);
   double correntobj = err, overallobj = err;
 
   vector<double> v(nvars, dparams["istep"]);
@@ -171,7 +168,7 @@ void pfHome::simAnnealSpline() {
         for (int h = 0; h < nvars; h++) {
           tmpvv = ini;
           randomize(tmpvv, h, v);
-          correntobj = forceMEAMS(tmpvv);
+          correntobj = (fcdrv.*calobj[sparams["ptype"]])(decodestdv(tmpvv), 1);
 
           if (correntobj <= err) {
             ini = tmpvv;
@@ -211,7 +208,7 @@ void pfHome::simAnnealSpline() {
         updaterhoMEAM(ini);
         if (rescaleEMF(ini) == 1) {
           printf("before rescale = %f\n", err);
-          err = forceMEAMS(ini);
+          err = (fcdrv.*calobj[sparams["ptype"]])(decodestdv(ini), 1);
           printf("min = %f ; max = %f ; ave = %f \n", ominrho, omaxrho,
                  oaverho);
           printf("after rescale = %f\n", err);

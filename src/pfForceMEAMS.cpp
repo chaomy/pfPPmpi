@@ -2,13 +2,13 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-20 07:44:12
+ * @Last Modified time: 2018-06-14 23:07:24
  */
 
-#include "pfHome.h"
+#include "pfForce.h"
 #include "pfLmpDrv.h"
 
-double pfHome::forceMEAMSStressPunish(const arma::mat &vv, int tg) {
+double pfHome::pfForce::forceMEAMSStressPunish(const arma::mat &vv, int tg) {
   while (true) {
     broadcast(cmm, tg, PFROOT);
     if (tg == EXT) break;
@@ -20,7 +20,7 @@ double pfHome::forceMEAMSStressPunish(const arma::mat &vv, int tg) {
       for (int j : ff.rlxid) ff.yy[j] = vv[cnt++];
     }
 
-    for (int i = 0; i < nfuncs; i++) {  // broadcast functions
+    for (int i = 0; i < funcs.size(); i++) {  // broadcast functions
       broadcast(cmm, funcs[i].xx, PFROOT);
       broadcast(cmm, funcs[i].yy, PFROOT);
     }
@@ -75,7 +75,7 @@ double pfHome::forceMEAMSStressPunish(const arma::mat &vv, int tg) {
   return error["frc"] + error["engy"] + error["strs"] + error["punish"];
 }
 
-double pfHome::forceMEAMSStress(const arma::mat &vv, int tg) {
+double pfHome::pfForce::forceMEAMSStress(const arma::mat &vv, int tg) {
   while (true) {
     broadcast(cmm, tg, PFROOT);
     if (tg == EXT) break;
@@ -87,7 +87,7 @@ double pfHome::forceMEAMSStress(const arma::mat &vv, int tg) {
       for (int j : ff.rlxid) ff.yy[j] = vv[cnt++];
     }
 
-    for (int i = 0; i < nfuncs; i++) {  // broadcast functions
+    for (int i = 0; i < funcs.size(); i++) {  // broadcast functions
       broadcast(cmm, funcs[i].xx, PFROOT);
       broadcast(cmm, funcs[i].yy, PFROOT);
     }
@@ -126,19 +126,12 @@ double pfHome::forceMEAMSStress(const arma::mat &vv, int tg) {
   return error["frc"] + error["engy"] + error["strs"];
 }
 
-// double pfHome::forceMEAMS(const vector<double> &vv) {
-//   int cnt = 0;
-//   for (Func &ff : funcs)  // left examples of how to use it
-//     for (int j = 0; j < ff.npts; j++) ff.yy[j] = vv[cnt++];
-//   return error["frc"];
-// }
-
-double pfHome::forceMEAMS(const arma::mat &vv) {
+double pfHome::pfForce::forceMEAMS(const arma::mat &vv) {
   error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
   omaxrho = -1e10, ominrho = 1e10;
 
   int cnt = 0;
-  for (int i = 0; i < nfuncs; i++) {
+  for (int i = 0; i < funcs.size(); i++) {
     Func &ff = funcs[i];
     if (i == PHI || i == RHO || i == MEAMF) {
       for (int j = 0; j < ff.npts - 1; j++) ff.yy[j] = vv[cnt++];
@@ -174,7 +167,7 @@ double pfHome::forceMEAMS(const arma::mat &vv) {
   return error["frc"] + error["punish"];  // + error["shift"];
 }
 
-void pfHome::forceMEAMSStress(Config &cnf) {
+void pfHome::pfForce::forceMEAMSStress(Config &cnf) {
   cnf.phiengy = cnf.emfengy = 0.0;
   cnf.rhomi = 1e10, cnf.rhomx = -1e10;
   for (auto &ee : cnf.fitstrs) ee = 0.0;

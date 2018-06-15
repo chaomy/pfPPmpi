@@ -2,17 +2,17 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 13:32:49
+ * @Last Modified time: 2018-06-14 23:12:24
  */
 
-#include "pfHome.h"
+#include "pfForce.h"
 
-double pfHome::forceADP(const vector<double>& vv, int tag) {
+double pfHome::pfForce::forceADP(const vector<double>& vv, int tag) {
   vector<Func>& ffs = funcs;
   // vv to funcs
-  // This part hasn't been updated yet ! REWRITE BEFORE USE 
+  // This part hasn't been updated yet ! REWRITE BEFORE USE
   int cnt = 0;
-  for (int i = 0; i < nfuncs; i++) {
+  for (int i = 0; i < funcs.size(); i++) {
     for (int j = 0; j < ffs[i].npts; j++) ffs[i].yy[j] = vv[cnt++];
     ffs[i].g1.front() = vv[cnt++];
     ffs[i].g1.back() = vv[cnt++];
@@ -21,7 +21,7 @@ double pfHome::forceADP(const vector<double>& vv, int tag) {
   FILE* ptfile = fopen("force.adp.loc", "w");
 
   double err = 0.0;
-  for (int cc = 0; cc < nconfs; cc++) {
+  for (int cc = 0; cc < configs.size(); cc++) {
     Config& cnf = configs[cc];
     double fitengy = 0.0;
 

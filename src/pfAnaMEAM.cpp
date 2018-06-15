@@ -2,20 +2,19 @@
  * @Author: chaomy
  * @Date:   2018-01-29 22:10:28
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-06 19:02:18
+ * @Last Modified time: 2018-06-15 01:50:21
  */
 
-#include "pfHome.h"
+#include "pfMEAMC.h"
 #include "pfLmpDrv.h"
 
-double pfHome::forceMEAMC(const arma::mat& vv, int tg) {
+double pfHome::pfForce::pfMEAMC::forceMEAMC(const arma::mat& vv, int tg) {
   while (true) {
     broadcast(cmm, tg, PFROOT);
     if (tg == EXT) break;
 
-    for (int i = 0; i < nvars; i++) ini[i] = vv[i];
+    for (int i = 0; i < ini.size(); i++) ini[i] = vv[i];
     broadcast(cmm, ini, PFROOT);
-
     meam_setup_global(ini);
     meam_setup_done();
     double efrc = 0.0;
@@ -37,7 +36,7 @@ double pfHome::forceMEAMC(const arma::mat& vv, int tg) {
   return error["frc"];
 }
 
-void pfHome::forceMEAMC(Config& cc) {
+void pfHome::pfForce::pfMEAMC::forceMEAMC(Config& cc) {
   cc.fitengy = 0.0;
   for (pfAtom& atm : cc.atoms) {
     atm.eng = 0.0;

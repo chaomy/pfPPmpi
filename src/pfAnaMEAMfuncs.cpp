@@ -2,11 +2,11 @@
  * @Author: chaomy
  * @Date:   2018-01-30 15:35:58
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-30 22:01:36
+ * @Last Modified time: 2018-06-15 00:18:46
  */
 
 #include "math_special.h"
-#include "pfHome.h"
+#include "pfMEAMC.h"
 
 //-----------------------------------------------------------------------------
 // Compute G(gamma) based on selection flag ibar:
@@ -17,7 +17,8 @@
 //   4 => G = sqrt(1+gamma)
 //  -5 => G = +-sqrt(abs(1+gamma))
 //
-double pfHome::G_gam(const double gamma, const int ibar, int& errorflag) const {
+double pfHome::pfForce::pfMEAMC::G_gam(const double gamma, const int ibar,
+                                       int& errorflag) const {
   double gsmooth_switchpoint;
 
   switch (ibar) {
@@ -58,7 +59,8 @@ double pfHome::G_gam(const double gamma, const int ibar, int& errorflag) const {
 //   4 => G = sqrt(1+gamma)
 //  -5 => G = +-sqrt(abs(1+gamma))
 //
-double pfHome::dG_gam(const double gamma, const int ibar, double& dG) const {
+double pfHome::pfForce::pfMEAMC::dG_gam(const double gamma, const int ibar,
+                                        double& dG) const {
   double gsmooth_switchpoint;
   double G;
 
@@ -106,7 +108,8 @@ double pfHome::dG_gam(const double gamma, const int ibar, double& dG) const {
 //-----------------------------------------------------------------------------
 // Compute ZBL potential
 //
-double pfHome::zbl(const double r, const int z1, const int z2) {
+double pfHome::pfForce::pfMEAMC::zbl(const double r, const int z1,
+                                     const int z2) {
   int i;
   const double c[] = {0.028171, 0.28022, 0.50986, 0.18175};
   const double d[] = {0.20162, 0.40290, 0.94229, 3.1998};
@@ -127,9 +130,10 @@ double pfHome::zbl(const double r, const int z1, const int z2) {
 //-----------------------------------------------------------------------------
 // Compute Rose energy function, I.16
 //
-double pfHome::erose(const double r, const double re, const double alpha,
-                     const double Ec, const double repuls, const double attrac,
-                     const int form) {
+double pfHome::pfForce::pfMEAMC::erose(const double r, const double re,
+                                       const double alpha, const double Ec,
+                                       const double repuls, const double attrac,
+                                       const int form) {
   double astar, a3;
   double result = 0.0;
 
@@ -157,7 +161,8 @@ double pfHome::erose(const double r, const double re, const double alpha,
 //-----------------------------------------------------------------------------
 // Shape factors for various configurations
 //
-void pfHome::get_shpfcn(const lattice_t latt, double (&s)[3]) {
+void pfHome::pfForce::pfMEAMC::get_shpfcn(const lattice_t latt,
+                                          double (&s)[3]) {
   switch (latt) {
     case FCC:
     case BCC:
@@ -194,7 +199,7 @@ void pfHome::get_shpfcn(const lattice_t latt, double (&s)[3]) {
 //-----------------------------------------------------------------------------
 // Number of neighbors for the reference structure
 //
-int pfHome::get_Zij(const lattice_t latt) {
+int pfHome::pfForce::pfMEAMC::get_Zij(const lattice_t latt) {
   switch (latt) {
     case FCC:
       return 12;
@@ -224,8 +229,9 @@ int pfHome::get_Zij(const lattice_t latt) {
 //   a = distance ratio R1/R2
 //   S = second neighbor screening function
 //
-int pfHome::get_Zij2(const lattice_t latt, const double cmin, const double cmax,
-                     double& a, double& S) {
+int pfHome::pfForce::pfMEAMC::get_Zij2(const lattice_t latt, const double cmin,
+                                       const double cmax, double& a,
+                                       double& S) {
   double C, x, sijk;
   int Zij2 = 0, numscr = 0;
 

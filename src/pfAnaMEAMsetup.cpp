@@ -2,12 +2,12 @@
  * @Author: chaomy
  * @Date:   2018-01-30 13:42:16
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-06 18:53:10
+ * @Last Modified time: 2018-06-15 01:10:06
  */
 
-#include "pfHome.h"
+#include "pfMEAMC.h"
 
-void pfHome::meam_setup_global(const arma::mat& vv) {
+void pfHome::pfForce::pfMEAMC::meam_setup_global(const arma::mat& vv) {
   int cn = 0;
   for (int i = 0; i < nelt; i++) {
     alpha_meam[i][i] = vv[cn++];
@@ -26,7 +26,7 @@ void pfHome::meam_setup_global(const arma::mat& vv) {
   }
 }
 
-void pfHome::meam_setup_global(const vector<double>& vv) {
+void pfHome::pfForce::pfMEAMC::meam_setup_global(const vector<double>& vv) {
   int cn = 0;
   for (int i = 0; i < nelt; i++) {
     alpha_meam[i][i] = vv[cn++];
@@ -45,7 +45,7 @@ void pfHome::meam_setup_global(const vector<double>& vv) {
   }
 }
 
-void pfHome::meam_setup_globalfixed() {  //  those are fixed
+void pfHome::pfForce::pfMEAMC::meam_setup_globalfixed() {  //  those are fixed
   lattp = vector<lattice_t>({BCC});
   for (int i = 0; i < nelt; i++) {
     cout << "rho0 = " << (rho0_meam[i] = rozero[i]) << endl;
@@ -74,7 +74,8 @@ void pfHome::meam_setup_globalfixed() {  //  those are fixed
   for (int i = 0; i < lob.size(); i++) deb.push_back(hib[i] - lob[i]);
 }
 
-void pfHome::meam_setup_global() {  // for benchmark, and reference
+void pfHome::pfForce::pfMEAMC::meam_setup_global() {  // for benchmark, and
+                                                      // reference
   elems = vector<string>({"Mg"});
   lattp = vector<lattice_t>({HCP});
   cnn1 = vector<int>({12});
@@ -115,7 +116,7 @@ void pfHome::meam_setup_global() {  // for benchmark, and reference
   }
 }
 
-void pfHome::meam_setup_done() {
+void pfHome::pfForce::pfMEAMC::meam_setup_done() {
   cutforce = rc_meam;
   cutforcesq = cutforce * cutforce;
 
@@ -168,7 +169,7 @@ void pfHome::meam_setup_done() {
   compute_pair_meam();
 }
 
-void pfHome::alloyparams() {
+void pfHome::pfForce::pfMEAMC::alloyparams() {
   int i, j, k;
   double eb;
 
@@ -238,7 +239,7 @@ void pfHome::alloyparams() {
 //----------------------------------------------------------------------c
 // Compute MEAM pair potential for distance r, element types a and b
 //
-double pfHome::phi_meam(double r, int a, int b) {
+double pfHome::pfForce::pfMEAMC::phi_meam(double r, int a, int b) {
   /*unused:double a1,a2,a12;*/
   double t11av, t21av, t31av, t12av, t22av, t32av;
   double G1, G2, s1[3], s2[3], rho0_1, rho0_2;
@@ -428,7 +429,7 @@ double pfHome::phi_meam(double r, int a, int b) {
   return phi_m;
 }
 
-void pfHome::compute_reference_density() {
+void pfHome::pfForce::pfMEAMC::compute_reference_density() {
   int a, Z, Z2, errorflag;
   double gam, Gbar, shp[3];
   double rho0, rho0_2nn, arat, scrn;
@@ -466,7 +467,7 @@ void pfHome::compute_reference_density() {
 
 //----------------------------------------------------------------------
 // Compute background density for reference structure of each element
-void pfHome::compute_pair_meam() {
+void pfHome::pfForce::pfMEAMC::compute_pair_meam() {
   double r /*ununsed:, temp*/;
   int j, a, b, nv2;
   double astar, frac, phizbl;
@@ -608,10 +609,10 @@ void pfHome::compute_pair_meam() {
 
 //------------------------------------------------------------------------------c
 // Average weighting factors for the reference structure
-void pfHome::get_tavref(double* t11av, double* t21av, double* t31av,
-                        double* t12av, double* t22av, double* t32av, double t11,
-                        double t21, double t31, double t12, double t22,
-                        double t32, double r, int a, int b, lattice_t latt) {
+void pfHome::pfForce::pfMEAMC::get_tavref(
+    double* t11av, double* t21av, double* t31av, double* t12av, double* t22av,
+    double* t32av, double t11, double t21, double t31, double t12, double t22,
+    double t32, double r, int a, int b, lattice_t latt) {
   double rhoa01, rhoa02, a1, a2, rho01; /*,rho02*/
 
   //     For ialloy = 2, no averaging is done
@@ -653,7 +654,8 @@ void pfHome::get_tavref(double* t11av, double* t21av, double* t31av,
 }
 
 //------------------------------------------------------------------------------c
-void pfHome::get_sijk(double C, int i, int j, int k, double* sijk) {
+void pfHome::pfForce::pfMEAMC::get_sijk(double C, int i, int j, int k,
+                                        double* sijk) {
   double x =
       (C - Cmin_meam[i][j][k]) / (Cmax_meam[i][j][k] - Cmin_meam[i][j][k]);
   *sijk = fcut(x);
@@ -661,9 +663,11 @@ void pfHome::get_sijk(double C, int i, int j, int k, double* sijk) {
 
 //------------------------------------------------------------------------------c
 // Calculate density functions, assuming reference configuration
-void pfHome::get_densref(double r, int a, int b, double* rho01, double* rho11,
-                         double* rho21, double* rho31, double* rho02,
-                         double* rho12, double* rho22, double* rho32) {
+void pfHome::pfForce::pfMEAMC::get_densref(double r, int a, int b,
+                                           double* rho01, double* rho11,
+                                           double* rho21, double* rho31,
+                                           double* rho02, double* rho12,
+                                           double* rho22, double* rho32) {
   double a1, a2;
   double s[3];
   lattice_t lat;
@@ -784,7 +788,7 @@ void pfHome::get_densref(double r, int a, int b, double* rho01, double* rho11,
   }
 }
 
-void pfHome::interpolate_meam(int ind) {
+void pfHome::pfForce::pfMEAMC::interpolate_meam(int ind) {
   int j;
   double drar;
 
@@ -827,7 +831,7 @@ void pfHome::interpolate_meam(int ind) {
 //---------------------------------------------------------------------
 // Compute Rose energy function, I.16
 //
-double pfHome::compute_phi(double rij, int elti, int eltj) {
+double pfHome::pfForce::pfMEAMC::compute_phi(double rij, int elti, int eltj) {
   double pp;
   int ind, kk;
 

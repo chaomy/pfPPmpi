@@ -2,12 +2,14 @@
  * @Author: chaomy
  * @Date:   2017-12-16 16:00:09
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-05 03:05:08
+ * @Last Modified time: 2018-06-14 23:41:25
  */
 
+#include "pfForce.h"
 #include "pfHome.h"
 
 void pfHome::calLat(string kk, int npts) {
+  pfForce fcdrv(*this);
   double la = (kk == "bcc") ? 3.30 : 4.20;
   double del = 1.5;
   double dl = del / npts;
@@ -18,7 +20,7 @@ void pfHome::calLat(string kk, int npts) {
     double latt = lo + i * dl;
     // Config cc(buildbccPrim(latt));
     Config cc((this->*build[kk])(latt));
-    (this->*calfrc[sparams["ptype"]])(cc);
+    (fcdrv.*calfrc[sparams["ptype"]])(cc);
     ostr << latt << " " << cc.atoms[0].crho << " " << cc.fitengy << " "
          << 0.5 * cc.phiengy / cc.natoms << " " << cc.emfengy / cc.natoms
          << endl;
@@ -27,12 +29,13 @@ void pfHome::calLat(string kk, int npts) {
 }
 
 void pfHome::calLat(string kk) {
+  pfForce fcdrv(*this);
   double la = 3.30, me = 1e3;
   for (double dl : {3e-2, 9e-3, 3e-3, 9e-4, 3e-4}) {
     if (!kk.compare("bcc")) buildbcc(kk, la, dl);
     for (int ii = 0; ii < mpvc[kk].size(); ii++) {
       Config& cc = mpcf[kk][ii];
-      (this->*calfrc[sparams["ptype"]])(cc);
+      (fcdrv.*calfrc[sparams["ptype"]])(cc);
       if (cc.fitengy < me) {
         me = cc.fitengy;
         la = mpvc[kk][ii];
@@ -42,7 +45,7 @@ void pfHome::calLat(string kk) {
   if (!kk.compare("bcc")) ubcc = buildbccPrim(la);
   exprs["lat"] = la;
   error["lat"] = weigh["lat"] * square11(la - targs["lat"]);
-  (this->*calfrc[sparams["ptype"]])(ubcc);
+  (fcdrv.*calfrc[sparams["ptype"]])(ubcc);
 }
 
 void pfHome::buildbcc(const string& kk, const double& gs, const double& dl) {

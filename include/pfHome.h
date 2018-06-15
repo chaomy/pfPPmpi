@@ -37,7 +37,6 @@ using std::unordered_map;
 using std::vector;
 
 namespace mpi = boost::mpi;
-typedef enum { FCC, BCC, HCP, DAM, DIA, B1, C11, L12, B2 } lattice_t;
 
 class pfOptimizer;
 class pfHome {
@@ -46,6 +45,7 @@ class pfHome {
   mpi::communicator cmm;
   mpi::communicator cmmlm;
   class pfLMPdrv;
+  class pfForce;
 
  private:
   int ftn;   // number of atoms used for fitting
@@ -55,8 +55,7 @@ class pfHome {
   int nvars;
   int nfuncs;
   int nconfs;
-  int locstt;
-  int locend;
+  int locstt, locend;
   vector<int> locnatoms;
   vector<int> locls;
   vector<int> smthidx;
@@ -81,18 +80,6 @@ class pfHome {
   unordered_map<string, vector<double>> meamparms;  // hold MEAMC parameters
   vector<string> elems;                             //  element name
 
-  /* parameters for MEAMC calculations, calculations follow the routines in
-   * LAMMPS  */
-  vector<lattice_t> lattp;  //  FCC, BCC, HCP, DAM, DIA, B1, C11, L12, B2
-  vector<int> cnn1;         //  num near neighbors
-  vector<double> t0;        //  1
-  vector<int> ielement;     //  1
-  vector<int> ibar;         //  3
-  vector<double> rozero;
-  vector<string> latticemp;
-  vector<double> atwt;
-  vector<double> alat;
-
   /* to examine potential */
   Config ubcc;  // primitive bcc
   Config cbcc;  // conventional bcc
@@ -102,11 +89,13 @@ class pfHome {
   unordered_map<string, double> targs;  // target values
   unordered_map<string, double> exprs;  // lammps errors
   unordered_map<string, double> weigh;  // weight of errors
-  unordered_map<string, double> error;
+  unordered_map<string, double> error;  // errors
 
   /* mapping functions */
-  unordered_map<string, void (pfHome::*)(Config&)> calfrc;
-  unordered_map<string, double (pfHome::*)(const arma::mat& vv, int tg)> calobj;
+  unordered_map<string, void (pfHome::pfForce::*)(Config&)> calfrc;
+  unordered_map<string,
+                double (pfHome::pfForce::*)(const arma::mat& vv, int tg)>
+      calobj;
   unordered_map<string, void (pfHome::*)()> write;
   unordered_map<string, Config (pfHome::*)(const double& lat)> build;
   unordered_map<string, void (pfHome::*)()> read;
@@ -200,21 +189,6 @@ class pfHome {
   void resample();
   double errFunct(const vector<double>& x);
   double errFunctGrad(const vector<double>& x, vector<double>& g);
-  double forceEAM(vector<Func>& ffs, int tag);
-  double forceADP(const vector<double>& vv, int tag);
-  double forceEAM(const arma::mat& vv);
-  double forceEAM(const arma::mat& vv, int tg);
-  double forceMEAMS(const arma::mat& vv);
-  double forceMEAMS(const arma::mat& vv, int tg);
-  double forceMEAMSNoForce(const arma::mat& vv, int tg);
-  double forceMEAMSStress(const arma::mat& vv, int tg);
-  double forceMEAMSStressPunish(const arma::mat& vv, int tg);
-  double forceMEAMC(const arma::mat& vv, int tg);
-  void forceMEAMC(Config& cc);
-  void forceMEAMS(Config& cc);
-  void forceMEAMSNoForce(Config& cc);
-  void forceMEAMSStress(Config& cc);
-  void forceEAM(Config& cc);
   void stressMEAM(Config& cc);
 
   // optimization
@@ -280,7 +254,6 @@ class pfHome {
   void writeLMPS(const vector<double>& vv);
   void writePOSCAR(const Config& cc, string fnm = "POSCAR.vasp");
   void writeMEAMS();
-  void writeMEAMC();
   void writeRadDist();
   void writeAngDist();
   void writeFrcDist();
@@ -324,90 +297,6 @@ class pfHome {
   void loopBwth();
   void forceDis();
   void analyLoss();
-
-  // MEAM
- private:
-  int nelt;
-  double cutforce, cutforcesq;
-  vector<vector<double>> Ec_meam, re_meam;
-  vector<double> Omega_meam, Z_meam, A_meam;
-  vector<vector<double>> alpha_meam;
-  vector<double> rho0_meam;
-  vector<vector<double>> delta_meam;
-  vector<double> beta0_meam, beta1_meam, beta2_meam, beta3_meam;
-  vector<double> t0_meam, t1_meam, t2_meam, t3_meam, rho_ref_meam;
-  vector<int> ibar_meam, ielt_meam;
-  vector<vector<lattice_t>> lattce_meam;
-  vector<vector<int>> nn2_meam, zbl_meam, eltind;
-  vector<vector<double>> attrac_meam, repuls_meam;
-  vector<vector<vector<double>>> Cmin_meam, Cmax_meam;
-  vector<vector<double>> ebound_meam;
-
-  vector<vector<double>> phir, phirar, phirar1, phirar2, phirar3, phirar4,
-      phirar5, phirar6;
-  double rc_meam, delr_meam, gsmooth_factor;
-  int augt1, ialloy, mix_ref_t, emb_lin_neg, bkgd_dyn, erose_form;
-  int vind2D[3][3], vind3D[3][3][3];
-  int v2D[6], v3D[10];
-
-  int nr, nrar;
-  double dr, rdrar;
-
- public:
-  int errorflag;
-  vector<double> rho, rho0, rho1, rho2, rho3, frhop;
-  vector<double> gamma, dgamma1, dgamma2, dgamma3, arho2b;
-  vector<vector<double>> arho1, arho2, arho3, arho3b, t_ave, tsq_ave;
-
- private:
-  static double fcut(const double xi);
-  static double dfcut(const double xi, double& dfc);
-  static double dCfunc(const double rij2, const double rik2, const double rjk2);
-  static void dCfunc2(const double rij2, const double rik2, const double rjk2,
-                      double& dCikj1, double& dCikj2);
-
-  double G_gam(const double gamma, const int ibar, int& errorflag) const;
-  double dG_gam(const double gamma, const int ibar, double& dG) const;
-  static double zbl(const double r, const int z1, const int z2);
-  static double erose(const double r, const double re, const double alpha,
-                      const double Ec, const double repuls, const double attrac,
-                      const int form);
-
-  static void get_shpfcn(const lattice_t latt, double (&s)[3]);
-  static int get_Zij(const lattice_t latt);
-  static int get_Zij2(const lattice_t latt, const double cmin,
-                      const double cmax, double& a, double& S);
-
- protected:
-  void meam_checkindex(int, int, int, int*, int*);
-  void getscreen(Config& cc);
-  void calc_rho1(Config& cc);
-  void alloyparams();
-  void compute_pair_meam();
-  void compute_pair_meam(int debug);
-  double phi_meam(double, int, int);
-  void compute_reference_density();
-  void get_tavref(double*, double*, double*, double*, double*, double*, double,
-                  double, double, double, double, double, double, int, int,
-                  lattice_t);
-  void get_sijk(double, int, int, int, double*);
-  void get_densref(double, int, int, double*, double*, double*, double*,
-                   double*, double*, double*, double*);
-  void interpolate_meam(int);
-  double compute_phi(double, int, int);
-
-  void meam_setup_global();
-  void meam_setup_globalfixed();
-  void meam_setup_global(const vector<double>& vv);
-  void meam_setup_global(const arma::mat& vv);
-  void meam_setup_param(int which, double value, int nindex,
-                        int* index /*index(3)*/, int* errorflag);
-
-  void meam_setup_done();
-  void meam_dens_setup(Config& cc);
-  void meam_dens_init(Config& cc);
-  void meam_dens_final(Config& cc);
-  void meam_force(Config& cc);
 
   friend class pfOptimizer;
 };
@@ -473,81 +362,6 @@ class pfUtil {
   void split(const string& s, const char* delim, vector<string>& v);
   friend class pfHome;
 };
-
-/* cutoff function (16) */
-inline double pfHome::fcut(const double xi) {
-  double a;
-  if (xi >= 1.0)
-    return 1.0;
-  else if (xi <= 0.0)
-    return 0.0;
-  else {
-    a = 1.0 - xi;
-    a *= a;
-    a *= a;
-    a = 1.0 - a;
-    return a * a;
-  }
-}
-
-/* cutoff function and its derivative (16) */
-inline double pfHome::dfcut(const double xi, double& dfc) {
-  double a, a3, a4, a1m4;
-  if (xi >= 1.0) {
-    dfc = 0.0;
-    return 1.0;
-  } else if (xi <= 0.0) {
-    dfc = 0.0;
-    return 0.0;
-  } else {
-    a = 1.0 - xi;
-    a3 = a * a * a;
-    a4 = a * a3;
-    a1m4 = 1.0 - a4;
-
-    dfc = 8 * a1m4 * a3;
-    return a1m4 * a1m4;
-  }
-}
-
-//-----------------------------------------------------------------------------
-// Derivative of Cikj w.r.t. rij
-//     Inputs: rij,rij2,rik2,rjk2
-//
-inline double pfHome::dCfunc(const double rij2, const double rik2,
-                             const double rjk2) {
-  double rij4, a, asq, b, denom;
-
-  rij4 = rij2 * rij2;
-  a = rik2 - rjk2;
-  b = rik2 + rjk2;
-  asq = a * a;
-  denom = rij4 - asq;
-  denom = denom * denom;
-  return -4 * (-2 * rij2 * asq + rij4 * b + asq * b) / denom;
-}
-
-//-----------------------------------------------------------------------------
-// Derivative of Cikj w.r.t. rik and rjk
-//     Inputs: rij,rij2,rik2,rjk2
-//
-inline void pfHome::dCfunc2(const double rij2, const double rik2,
-                            const double rjk2, double& dCikj1, double& dCikj2) {
-  double rij4, rik4, rjk4, a, denom;
-
-  rij4 = rij2 * rij2;
-  rik4 = rik2 * rik2;
-  rjk4 = rjk2 * rjk2;
-  a = rik2 - rjk2;
-  denom = rij4 - a * a;
-  denom = denom * denom;
-  dCikj1 = 4 * rij2 *
-           (rij4 + rik4 + 2 * rik2 * rjk2 - 3 * rjk4 - 2 * rij2 * a) / denom;
-  dCikj2 = 4 * rij2 *
-           (rij4 - 3 * rik4 + 2 * rik2 * rjk2 + rjk4 + 2 * rij2 * a) / denom;
-}
-
-static inline bool iszero(const double f) { return fabs(f) < 1e-20; }
 
 template <typename TYPE>
 static inline void setall2d(vector<vector<TYPE>>& vv, const TYPE val) {

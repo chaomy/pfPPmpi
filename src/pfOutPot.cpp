@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 18:46:14
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-12 16:53:50
+ * @Last Modified time: 2018-06-15 01:37:08
  */
 
 #include "pfHome.h"
@@ -108,37 +108,6 @@ void pfHome::writePot() {
       fprintf(fid, "%.16e %.16e\n", funcs[i].xx[j], funcs[i].yy[j]);
     fprintf(fid, "\n");
   }
-  fclose(fid);
-}
-
-void pfHome::writeMEAMC() {
-  FILE* fid = fopen(sparams["meamlib"].c_str(), "w");
-  fprintf(fid, "# elt lat z ielement atwt \n");
-  fprintf(fid, "# alpha b0 b1 b2 b3 alat esub asub \n");
-  fprintf(fid, "# t0 t1 t2 t3 rozero ibar\n");
-  for (int i = 0; i < 1; i++) {
-    fprintf(fid, "%s %s %d  %d %.4f \n", elems[i].c_str(),
-            latticemp[lattp[i]].c_str(), cnn1[i], ielement[i], atwt[i]);
-    fprintf(fid, "%.12f %.3f %.3f %.3f %.3f %.12f %.3f %.3f\n",
-            alpha_meam[i][i], beta0_meam[i], beta1_meam[i], beta2_meam[i],
-            beta3_meam[i], alat[i], Ec_meam[i][i], A_meam[i]);
-    fprintf(fid, "%.1f %.2f %.2f %.2f %2.f %d\n", t0_meam[i], t1_meam[i],
-            t2_meam[i], t3_meam[i], rho0_meam[i], ibar_meam[i]);
-  }
-  fclose(fid);
-
-  fid = fopen("meam.param", "w");
-  fprintf(fid, "rc = %f\n", rc_meam);
-  fprintf(fid, "delr = %f\n", delr_meam);
-  fprintf(fid, "augt1 = %d\n", augt1);
-  fprintf(fid, "erose_form = %d\n", erose_form);
-  fprintf(fid, "ialloy = %d\n", ialloy);
-  fprintf(fid, "zbl(1,1) = %d\n", zbl_meam[0][0]);
-  fprintf(fid, "nn2(1,1) = %d\n", nn2_meam[0][0]);
-  fprintf(fid, "attrac(1,1) = %f\n", attrac_meam[0][0]);
-  fprintf(fid, "repuls(1,1) = %f\n", repuls_meam[0][0]);
-  fprintf(fid, "Cmin(1,1,1) = %f\n", Cmin_meam[0][0][0]);
-  fprintf(fid, "Cmax(1,1,1) = %f\n", Cmax_meam[0][0][0]);
   fclose(fid);
 }
 
