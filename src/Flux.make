@@ -30,7 +30,6 @@ MAKETARGET 	=  pfmpi
 POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfPotSpline.cpp  \
 			   ./pfForceEAM.cpp   \
-			   ./pfForceADP.cpp   \
 			   ./pfForceMEAMS.cpp  \
 			   ./pfForceMEAMSNoStress.cpp \
 			   ./pfForceMEAMSNoForce.cpp \
@@ -92,6 +91,7 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfGPsample.cpp    \
 			   ./pfMain.cpp
 
+			   # ./pfForceADP.cpp   \
 			   # ./pfForceMEAMtb.cpp  \
 
 # parallel
