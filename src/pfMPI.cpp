@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 02:21:24
+ * @Last Modified time: 2018-06-14 20:42:48
  */
 
 #include "pfHome.h"
@@ -67,7 +67,7 @@ void pfHome::bcdata() {
 
     vector<tk::spline::bd_type> bdmp(
         {tk::spline::first_deriv, tk::spline::second_deriv});
-    vector<bool> odmp({false, false});  // set 1 and 2 both to be enforce linear
+    vector<bool> odmp({true, true});  // set 1 and 2 both to be enforce linear
 
     for (Func& ff : funcs) {
       double al = (ff.bl == 1) ? ff.g1.front() : ff.g2.front();  // left bound
