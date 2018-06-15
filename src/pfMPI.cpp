@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 20:43:11
+ * @Last Modified time: 2018-06-14 20:45:17
  */
 
 #include "pfHome.h"
@@ -75,37 +75,5 @@ void pfHome::bcdata() {
       ff.s.set_boundary(bdmp[ff.bl - 1], al, bdmp[ff.br - 1], bl,
                         odmp[ff.br - 1]);
     }
-
-    if (1 == 2) {  // boundary
-      funcs[MEAMF].s.set_boundary(
-          bdmp[funcs[MEAMF].bl - 1], funcs[MEAMF].g1.front(),
-          bdmp[funcs[MEAMF].br - 1], funcs[MEAMF].g1.back(), true);
-      // funcs[MEAMF].s.set_boundary(tk::spline::second_deriv, 0.0,
-      //                             tk::spline::first_deriv, 0.0, true);
-      // funcs[MEAMG].s.set_boundary(tk::spline::second_deriv, 0.0,
-      //                             tk::spline::second_deriv, 0.0, true);
-      // funcs[MEAMF].s.set_boundary(
-      //     tk::spline::first_deriv, funcs[MEAMF].g1.front(),
-      //     tk::spline::first_deriv, funcs[MEAMF].g1.back(), true);
-      funcs[MEAMG].s.set_boundary(
-          tk::spline::first_deriv, funcs[MEAMG].g1.front(),
-          tk::spline::first_deriv, funcs[MEAMG].g1.back(), true);
-
-      funcs[PHI].s.set_boundary(tk::spline::first_deriv, funcs[PHI].g1.front(),
-                                tk::spline::first_deriv, funcs[PHI].g1.back(),
-                                true);
-      funcs[RHO].s.set_boundary(tk::spline::first_deriv, funcs[RHO].g1.front(),
-                                tk::spline::first_deriv, funcs[RHO].g1.back(),
-                                true);
-      funcs[EMF].s.set_boundary(tk::spline::first_deriv, funcs[EMF].g1.front(),
-                                tk::spline::first_deriv, funcs[EMF].g1.back(),
-                                true);
-    }
-    // funcs[PHI].s.set_boundary(tk::spline::second_deriv, 0.0,
-    //                           tk::spline::first_deriv, 0.0, true);
-    // funcs[RHO].s.set_boundary(tk::spline::second_deriv, 0.0,
-    //                           tk::spline::first_deriv, 0.0, true);
-    // funcs[EMF].s.set_boundary(tk::spline::second_deriv, 0.0,
-    //                           tk::spline::second_deriv, 0.0, true);
   }
 }
