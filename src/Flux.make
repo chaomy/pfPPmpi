@@ -24,7 +24,7 @@ CINCLUDE 	=  -I../include  -I${HOME}/install/include  -I${MPI_HOME}/include  -I$
 LIBS   		=  -L${HOME}/install/lib  -L${MPI_HOME}/lib -L${LMP_LIB} -L${BOOST_LIB} 
 CDLINK  	=  ${LIBS} -lm -lnlopt -lmpi -lpthread -llammps -DARMA_DONT_USE_WRAPPER -lblas -llapack -lboost_mpi-mt -lboost_serialization-mt -lboost_serialization-mt
 
-MAKETARGET 	=  pfmpi 
+MAKETARGET 	=  pfmpi.dev  
 
 # The source files
 POTFITSRC 	=  ./pfConfig.cpp     \
