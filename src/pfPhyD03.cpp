@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-16 13:35:16
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 22:18:55
+ * @Last Modified time: 2018-06-16 17:00:52
  */
 
 #include "pfConf.h"
@@ -16,7 +16,6 @@ void pfHome::pfConf::buildD03(const string& kk, const double& gs,
     cc = buildD03(lo + i * dl);
     char buff[10];
     sprintf(buff, "poscar.%03d", i);
-    hm.writePOSCAR(cc, string(buff));
   }
 }
 

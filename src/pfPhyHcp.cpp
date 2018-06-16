@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-16 22:11:52
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 21:23:38
+ * @Last Modified time: 2018-06-16 16:57:29
  */
 
 #include "pfConf.h"
@@ -49,6 +49,5 @@ Config pfHome::pfConf::buildhcp(const double& la, const double& lc) {
   initBox(cc);
   initNeighsFull(cc);
   initAngles(cc);
-  hm.writePOSCAR(cc);
   return cc;
 }

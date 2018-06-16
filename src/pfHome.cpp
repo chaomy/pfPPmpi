@@ -2,11 +2,12 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-16 00:07:44
+ * @Last Modified time: 2018-06-16 17:01:51
  */
 
 #include "pfConf.h"
 #include "pfForce.h"
+#include "pfIO.h"
 #include "pfLmpDrv.h"
 #include "pfMEAMC.h"
 #include "pfOptimizer.h"
@@ -28,23 +29,24 @@ pfHome::pfHome(int argc, char* argv[])
   calobj["MEAMS"] = &pfHome::pfForce::forceMEAMS;
   // calobj["MEAMC"] = &pfHome::pfForce::pfMEAMC::forceMEAMC;
 
-  write["EAM"] = &pfHome::writeLMPS;
-  write["TMP"] = &pfHome::writePot;
-  write["MEAMS"] = &pfHome::writeMEAMS;
+  write["EAM"] = &pfHome::pfIO::writeLMPS;
+  write["TMP"] = &pfHome::pfIO::writePot;
+  write["MEAMS"] = &pfHome::pfIO::writeMEAMS;
 
-  read["EAMS"] = &pfHome::readPot;
-  read["MEAMS"] = &pfHome::readMEAMS;
+  read["EAMS"] = &pfHome::pfIO::readPot;
+  read["MEAMS"] = &pfHome::pfIO::readMEAMS;
 
   pfPhy phdrv(*this);
   pfConf cdrv(*this);
   pfForce fcdrv(*this);
+  pfIO io(*this);
 
   if (cmm.rank() == PFROOT) {
     ftn = tln = 0;
     for (int ii : {0, 1, 2}) mfrc[ii] = 0.0;
     iparams["atomicNum"] = 40;
     dparams["mass"] = 92.906400;
-    outMkdir(sparams["lmpdir"] = string("dirlmp"));
+    io.outMkdir(sparams["lmpdir"] = string("dirlmp"));
     // sparams["tmpdir"] = string("dirtmp");
     // outMkdir(sparams["tmpdir"]);
 
@@ -59,7 +61,7 @@ pfHome::pfHome(int argc, char* argv[])
 
     lorho = 0.4, hirho = 1.0;
     parseArgs(argc, argv);
-    pfInit();
+    pfInit(io);
   }
 
   (cmm.barrier)();
@@ -78,7 +80,7 @@ pfHome::pfHome(int argc, char* argv[])
   (cmm.barrier)();  //  important!
   // optdrv = new pfOptimizer(this); // temporarily deactivate functionalities
 
-  run(argc, argv, fcdrv, cdrv, phdrv);
+  run(argc, argv, fcdrv, cdrv, phdrv, io);
 };
 
 pfHome::~pfHome() {
@@ -119,9 +121,9 @@ void pfHome::assignConfigs(int tag) {
        << endl;
 }
 
-void pfHome::pfInit() {
-  initParam();
+void pfHome::pfInit(pfIO& io) {
+  initParam(io);
   initTargs();
-  readConfig();
-  (this->*read[sparams["ptype"]])();
+  io.readConfig();
+  (io.*read[sparams["ptype"]])();
 }

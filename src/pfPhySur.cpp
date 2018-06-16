@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-19 16:23:55
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 22:59:04
+ * @Last Modified time: 2018-06-16 17:00:30
  */
 
 #include "pfConf.h"
@@ -13,7 +13,6 @@ void pfHome::pfPhy::calSurf(pfForce& fcdrv, pfConf& cfdrv) {
   double la = exprs["lat"];
   printf("la = %f\n", la);
   Config s1 = cfdrv.buildsur100(la, "sur");
-  hm.writePOSCAR(s1);
   (fcdrv.*calfrc[sparams["ptype"]])(s1);
   printf("%f\n",
          (s1.fitengy - cfdrv.ubcc.fitengy) * 0.5 * s1.natoms / (la * la));

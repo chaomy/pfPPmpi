@@ -2,14 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-20 07:53:13
+ * @Last Modified time: 2018-06-16 16:36:29
  */
 
-#include "pfHome.h"
+#include "pfIO.h"
 
-using std::ifstream;
-
-void pfHome::initParam() {
+void pfHome::initParam(pfIO& io) {
   sparams["spline"] = string("nat");
   sparams["elem"] = string("Nb");
   sparams["ptype"] = string("MEAMC");
@@ -37,14 +35,12 @@ void pfHome::initParam() {
   iparams["lmpfreq"] = 50;
   iparams["kmax"] = 1000;  // number of outer loop in simulated annealing
   iparams["runlmp"] = 0;
-  readParam();
+  io.readParam();
   sparams["lmpfile"] = string("lmp.") + sparams["ptype"];
 }
 
-void pfHome::readParam() {
+void pfHome::pfIO::readParam() {
   ifstream fid;
-  pfUtil pfu;
-
   fid.open(sparams["parfile"].c_str());
   if (!fid.is_open()) cerr << " error opening " + sparams["parfile"] << endl;
   vector<string> segs(1, " ");
@@ -52,7 +48,6 @@ void pfHome::readParam() {
 
   while (getline(fid, buff)) {
     segs.clear();
-    pfu.split(buff, " ", segs);
     cout << segs[0] << " " << segs[1] << endl;
     if (!segs[0].compare("alg"))
       sparams[segs[0]] = segs[1];
@@ -83,7 +78,7 @@ void pfHome::readParam() {
 }
 
 /**** parse the command line ****/
-void pfHome::parseArgs(int argc, char *argv[]) {
+void pfHome::parseArgs(int argc, char* argv[]) {
   for (int i = 0; i < argc; i++) {
     if (!strcmp(argv[i], "--p") || !strcmp(argv[i], "-p"))
       sparams["parfile"] = string(argv[++i]);

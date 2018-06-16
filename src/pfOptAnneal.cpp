@@ -2,10 +2,11 @@
  * @Author: chaomy
  * @Date:   2017-10-23 20:10:54
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 22:44:07
+ * @Last Modified time: 2018-06-16 16:39:20
  */
 
 #include "pfForce.h"
+#include "pfIO.h"
 #include "pfLmpDrv.h"
 
 // #define EPS 0.1
@@ -58,7 +59,7 @@ void pfHome::randomize(vector<double>& vv, const int n,
   }
 }
 
-void pfHome::simAnneal(pfForce& fcdrv) {
+void pfHome::simAnneal(pfForce& fcdrv, pfIO& io) {
   int loopcnt = 0, loopagain = 1;
   double T = dparams["temp"];
   double err = (fcdrv.*calobj[sparams["ptype"]])(ini, 1);
@@ -84,7 +85,7 @@ void pfHome::simAnneal(pfForce& fcdrv) {
             if (correntobj < overallobj) {
               optvv = tmpvv;
               overallobj = correntobj;
-              (this->*write[sparams["ptype"]])();
+              (io.*write[sparams["ptype"]])();
             }
           } else if (randUniform() < (exp((err - correntobj) / T))) {
             ini = tmpvv;
@@ -147,8 +148,7 @@ void pfHome::simAnneal(pfForce& fcdrv) {
   errold.clear();
 }
 
-void pfHome::simAnnealSpline() {
-  pfForce fcdrv(*this);
+void pfHome::simAnnealSpline(pfForce& fcdrv, pfIO& io) {
   int loopcnt = 0;
   int loopagain = 1;
   double T = dparams["temp"];
@@ -176,7 +176,7 @@ void pfHome::simAnnealSpline() {
             if (correntobj < overallobj) {
               optvv = tmpvv;
               overallobj = correntobj;
-              writePot(optvv);
+              io.writePot(optvv);
             }
           } else if (randUniform() < (exp((err - correntobj) / T))) {
             ini = tmpvv;

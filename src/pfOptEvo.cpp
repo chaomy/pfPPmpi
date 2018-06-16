@@ -2,10 +2,11 @@
  * @Author: chaomy
  * @Date:   2017-12-30 14:13:52
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 23:24:32
+ * @Last Modified time: 2018-06-16 16:16:09
  */
 
 #include "pfForce.h"
+#include "pfIO.h"
 
 #define EVOTH 1e-3
 #define FL 0.1
@@ -15,8 +16,7 @@
 
 /* differetial evolutionary agorithm */
 
-void pfHome::diffEvo() {
-  pfForce fcdrv(*this);
+void pfHome::diffEvo(pfForce& fcdrv, pfIO& io) {
   int a = 0, b = 0, c = 0, cn = 0;
   double mi = 10e10, mx = 0.0, sm = 0.0;
   double cr = 1e3;
@@ -109,7 +109,7 @@ void pfHome::diffEvo() {
 
       if (cc < mi) {
         bs = tt;
-        writePot(bs);
+        io.writePot(bs);
         mi = cc;
       }
 

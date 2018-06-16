@@ -2,16 +2,16 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 21:44:17
+ * @Last Modified time: 2018-06-16 16:59:34
  */
 
 #include "pfConf.h"
-#include "pfHome.h"
+#include "pfIO.h"
 
 using std::setw;
 
 /* resample spline nodes */
-void pfHome::resample() {
+void pfHome::resample(pfIO& io) {
   /* rule of thumb : add phi(r), rho(r), meamf(r) first , then g(cos) */
   for (auto kk : {0, 1, 2, 3, 4}) {
     int npts = funcs[kk].npts;
@@ -49,7 +49,7 @@ void pfHome::resample() {
     }
   }
   for (Func& ff : funcs) ff.s.set_points(ff.xx, ff.yy);
-  (this->*write[sparams["ptype"]])();
+  (io.*write[sparams["ptype"]])();
 }
 
 /* measure points and erors in those regimes */
@@ -99,7 +99,7 @@ void pfHome::analyLoss() {
   cout << setw(10) << "Ferr " << qFer << " " << lFer << " " << cFer << endl;
 }
 
-void pfHome::writeRadDist() {
+void pfHome::pfIO::writeRadDist() {
   ofstream of("radius.txt", std::ofstream::out);
   for (auto& cc : configs)
     for (auto& atm : cc.atoms)
@@ -110,7 +110,7 @@ void pfHome::writeRadDist() {
   of.close();
 }
 
-void pfHome::writeAngDist() {
+void pfHome::pfIO::writeAngDist() {
   ofstream of("angle.txt", std::ofstream::out);
   for (auto& cc : configs) {
     for (auto& atm : cc.atoms) {
@@ -124,7 +124,7 @@ void pfHome::writeAngDist() {
   of.close();
 }
 
-void pfHome::writeFrcDist() {  // check the behaviors of force fitting
+void pfHome::pfIO::writeFrcDist() {  // check the behaviors of force fitting
   double M = dparams["fwidth"];
   ofstream of("force.txt", std::ofstream::out);
   for (int i : locls) {
@@ -141,7 +141,7 @@ void pfHome::writeFrcDist() {  // check the behaviors of force fitting
   of.close();
 }
 
-void pfHome::writeEngDist() {  // check energy distributions
+void pfHome::pfIO::writeEngDist() {  // check energy distributions
   double M = dparams["ewidth"];
   ofstream of("engy.txt", std::ofstream::out);
   for (auto& cnf : configs) {

@@ -49,6 +49,7 @@ class pfHome {
   class pfForce;
   class pfPhy;
   class pfConf;
+  class pfIO;
 
  private:
   int ftn;   // number of atoms used for fitting
@@ -93,8 +94,8 @@ class pfHome {
   unordered_map<string,
                 double (pfHome::pfForce::*)(const arma::mat& vv, int tg)>
       calobj;
-  unordered_map<string, void (pfHome::*)()> write;
-  unordered_map<string, void (pfHome::*)()> read;
+  unordered_map<string, void (pfHome::pfIO::*)()> write;
+  unordered_map<string, void (pfHome::pfIO::*)()> read;
 
   vector<Config> configs;  // configurations
   vector<Func> funcs;      // spline functions
@@ -125,21 +126,21 @@ class pfHome {
   unordered_map<string, int> giparams() const { return iparams; };
 
   // initialization
-  void pfInit();
+  void pfInit(pfIO& io);
   void parseArgs(int argc, char* argv[]);
-  void initParam();
+  void initParam(pfIO& io);
   void initTargs();
   void assignConfigs(int tag = 2);
   void setSplineVariables();
 
   // force calculation
-  void doShift(pfForce& f);  // make the rho / emf good
-  void run(int argc, char* argv[], pfForce&, pfConf&, pfPhy&);
-  void calErr(pfForce& f);
+  void doShift(pfForce& f, pfIO& i);  // make the rho / emf good
+  void run(int argc, char* argv[], pfForce&, pfConf&, pfPhy&, pfIO&);
+  void calErr(pfForce& f, pfIO& i);
   void calErr(int tm);  // for debugging
   void updaterho(vector<double>& vv);
   void updaterhoMEAM(vector<double>& vv, pfForce& fcdrv);
-  void resample();
+  void resample(pfIO&);
   double errFunct(const vector<double>& x);
   double errFunctGrad(const vector<double>& x, vector<double>& g);
 
@@ -152,8 +153,8 @@ class pfHome {
   vector<double> decodestdv(const arma::mat& vv);
   vector<double> decodestdv(const vector<double>& vv);
   vector<double> encodestdv(const vector<double>& vv);
-  void simAnneal(pfForce& f);
-  void simAnnealSpline();
+  void simAnneal(pfForce& f, pfIO& io);
+  void simAnnealSpline(pfForce& f, pfIO& io);
   void randomize(vector<double>& vv, const int n, const vector<double>& v);
   void randomizeSpline(vector<double>& vv, const int n,
                        const vector<double>& v);
@@ -165,19 +166,19 @@ class pfHome {
   void updateBoundary(const arma::mat& vv);
   void shiftRHO(vector<double>& vv);
   void shiftEMF(double shift);
-  void nloptGlobal();
+  void nloptGlobal(pfIO&);
 
   // Diff evo
   void initPop();
-  void diffEvo();
+  void diffEvo(pfForce& f, pfIO& io);
 
   // Gaussian Process
-  void GPsample();
+  void GPsample(pfIO&);
 
   // CMA-ES
-  void loopcmaes(pfForce& f);
-  void cntcmaes(pfForce& f);
-  double cmaes(arma::mat& iterate, pfForce& f);
+  void loopcmaes(pfForce& f, pfIO& io);
+  void cntcmaes(pfForce& f, pfIO& io);
+  double cmaes(arma::mat& iterate, pfForce& f, pfIO& io);
   double testFunc(arma::mat& coordinates);
 
   // random
@@ -185,34 +186,9 @@ class pfHome {
   double randUniform();
   double randUniform(const double min, const double max);
 
-  void upgrade(int id, pfForce& f, pfConf& c);  // increase nodes
-  void increAnneal(pfForce& f, pfConf& c);      // increasing nodes
-  void recordStage(int cnt);
-
-  // inputs
-  void readConfig();
-  void readPOSCAR();
-  void readPot();
-  void readMEAMC();
-  void readMEAMS();
-  void readMEAMCcnt();
-  void readParam();
-
-  // outputs
-  void writePot();
-  void writePot(const vector<double>& vv);
-  void writePot(const string& s);
-  void writeLMPS();
-  void writeLMPS(const vector<double>& vv);
-  void writePOSCAR(const Config& cc, string fnm = "POSCAR.vasp");
-  void writeMEAMS();
-  void writeRadDist();
-  void writeAngDist();
-  void writeFrcDist();
-  void writeEngDist();
-
-  // utils
-  void outMkdir(string mdir);
+  void upgrade(int id, pfForce& f, pfConf& c);       // increase nodes
+  void increAnneal(pfForce& f, pfConf& c, pfIO& i);  // increasing nodes
+  void recordStage(int cnt, pfIO& io);
 
   // MPI utilitis
   void bcdata(); /* broadcast data and parameters */
@@ -227,6 +203,19 @@ class pfHome {
 
   friend class pfOptimizer;
 };
+
+void inline split(const string& s, const char* delim, vector<string>& v) {
+  // duplicate original string, return a char pointer and free  memories
+  char* dup = strdup(s.c_str());
+  char* token = strtok(dup, delim);
+  while (token != NULL) {
+    v.push_back(string(token));
+    // the call is treated as a subsequent calls to strtok:
+    // the function continues from where it left in previous invocation
+    token = strtok(NULL, delim);
+  }
+  free(dup);
+}
 
 // [0, 10] -> [a, b]  y = a + (b-a) × (1 – cos(π × x / 10)) / 2
 inline arma::mat pfHome::decodev(const arma::mat& vv) {
@@ -283,12 +272,6 @@ inline vector<double> pfHome::encodestdv(const vector<double>& vv) {
     rs[i] = 10 * acos(1. - 2. / deb[i] * (vv[i] - lob[i])) * INVPI;
   return rs;
 }
-
-class pfUtil {
- public:
-  void split(const string& s, const char* delim, vector<string>& v);
-  friend class pfHome;
-};
 
 template <typename TYPE>
 static inline void setall2d(vector<vector<TYPE>>& vv, const TYPE val) {

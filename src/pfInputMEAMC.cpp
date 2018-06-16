@@ -2,23 +2,19 @@
  * @Author: chaomy
  * @Date:   2018-02-06 19:10:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 01:36:20
+ * @Last Modified time: 2018-06-16 16:24:57
  */
 
 #include "pfMEAMC.h"
 
-using std::cerr;
-using std::ifstream;
-
 void pfHome::pfForce::pfMEAMC::readMEAMCcnt() {
   ifstream fid;
-  pfUtil pfu;
   string buff;
   vector<string> segs;
   fid.open(sparams["meamcnt"].c_str());
   if (!fid.is_open()) cerr << "error opening " + sparams["meamcnt"] << endl;
   getline(fid, buff);
-  pfu.split(buff, " ", segs);
+  split(buff, " ", segs);
   if (segs.size() != ini.size()) cerr << "varialbes do not match !" << endl;
   for (int i = 0; i < segs.size(); i++)
     cout << "i = " << i << " " << (ini[i] = stof(segs[i])) << endl;
@@ -27,7 +23,6 @@ void pfHome::pfForce::pfMEAMC::readMEAMCcnt() {
 
 void pfHome::pfForce::pfMEAMC::readMEAMC() {
   ifstream fid;
-  pfUtil pfu;
   fid.open(sparams["potfile"].c_str());
   if (!fid.is_open()) cerr << "error opening " + sparams["potfile"] << endl;
   string buff;
@@ -37,7 +32,7 @@ void pfHome::pfForce::pfMEAMC::readMEAMC() {
   for (int i = 0; i < 3; i++) {
     getline(fid, buff);
     segs.clear();
-    pfu.split(buff, " ", segs);
+    split(buff, " ", segs);
     for (int j = 1; j < segs.size(); j++) tg.push_back(segs[j]);
   }
 
@@ -49,7 +44,7 @@ void pfHome::pfForce::pfMEAMC::readMEAMC() {
   while (getline(fid, buff)) {
     int cn = 0;
     segs.clear();
-    pfu.split(buff, " ", segs);
+    split(buff, " ", segs);
     cout << "buff is " << buff << " " << segs.size() << endl;
     elems.push_back(segs[cn++]);
     if (!segs[cn].compare("fcc"))
@@ -78,13 +73,13 @@ void pfHome::pfForce::pfMEAMC::readMEAMC() {
 
     segs.clear();
     getline(fid, buff);
-    pfu.split(buff, " ", segs);
+    split(buff, " ", segs);
     // alpha b0 b1 b2 b3 esub asub
     for (int i : {0, 1, 2, 3, 4, 6, 7}) ini.push_back(stof(segs[i]));
     alat.push_back(stof(segs[5]));
     segs.clear();
     getline(fid, buff);
-    pfu.split(buff, " ", segs);
+    split(buff, " ", segs);
     //   t1, t2, t3  (t0 = 1)
     for (int i : {1, 2, 3}) ini.push_back(stof(segs[i]));
     t0.push_back(stof(segs[0]));

@@ -2,14 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-12-16 16:21:26
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-16 14:38:49
+ * @Last Modified time: 2018-06-16 16:50:47
  */
 
-#include "pfHome.h"
+#include "pfIO.h"
 
-using std::string;
-
-void pfHome::writePOSCAR(const Config &cc, string fnm) {
+void pfHome::pfIO::writePOSCAR(const Config &cc, string fnm) {
   FILE *fid = fopen(fnm.c_str(), "w");
   fprintf(fid, "%s\n", sparams["elem"].c_str());
   fprintf(fid, "1 \n");

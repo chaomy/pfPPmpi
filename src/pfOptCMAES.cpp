@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-16 00:06:31
+ * @Last Modified time: 2018-06-16 16:26:53
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -26,18 +26,18 @@ double pfHome::testFunc(arma::mat& vc) {
   return pow((vc[0] - 2.0), 2) + pow((vc[1] - 3.0), 2) + pow((vc[2] - 0.01), 2);
 }
 
-void pfHome::cntcmaes(pfForce& fcdrv) {
+void pfHome::cntcmaes(pfForce& fcdrv, pfIO& io) {
   arma::mat iterate =
       5.0 + dparams["istep"] *
                 (arma::mat(nvars, 1, arma::fill::randu) - 0.5);  // to [0, 10]
   (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), 1);
   if (cmm.rank() == PFROOT) {
-    cmaes(iterate, fcdrv);
+    cmaes(iterate, fcdrv, io);
     (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), EXT);
   }
 }
 
-void pfHome::loopcmaes(pfForce& fcdrv) {
+void pfHome::loopcmaes(pfForce& fcdrv, pfIO& io) {
   // start from scratch
   // arma::mat iterate(nvars, 1, arma::fill::randu);
   // iterate *= 10;
@@ -48,7 +48,7 @@ void pfHome::loopcmaes(pfForce& fcdrv) {
   (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), 1);
   for (int i = 0; i < iparams["kmax"]; i++) {
     if (cmm.rank() == PFROOT) {
-      if ((cr = cmaes(iterate, fcdrv)) < op) {
+      if ((cr = cmaes(iterate, fcdrv, io)) < op) {
         op = cr;
         std::rename("meam.lib.best", "meam.lib.best.overall");
         std::rename("err.txt", "err.overall");
@@ -65,7 +65,7 @@ void pfHome::loopcmaes(pfForce& fcdrv) {
   (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), EXT);
 }
 
-double pfHome::cmaes(arma::mat& iterate, pfForce& fcdrv) {
+double pfHome::cmaes(arma::mat& iterate, pfForce& fcdrv, pfIO& io) {
   int maxIt = iparams["maxstep"], lastid = 1;
   double tolerance = dparams["ftol"];
   double sigmatol = dparams["xtol"];
@@ -186,7 +186,7 @@ double pfHome::cmaes(arma::mat& iterate, pfForce& fcdrv) {
     if (currentobj < overallobj) {  // Update best parameters.
       overallobj = currentobj;
       iterate = mps.slice(idx1);
-      (this->*write[sparams["ptype"]])();
+      (io.*write[sparams["ptype"]])();
       if (i % iparams["lmpfreq"] == 0)
         std::rename("lmp.MEAMS",
                     (sparams["lmpdir"] + "/lib." + to_string(i)).c_str());

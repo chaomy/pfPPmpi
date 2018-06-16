@@ -2,17 +2,15 @@
  * @Author: chaomy
  * @Date:   2018-02-12 21:51:52
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 15:28:00
+ * @Last Modified time: 2018-06-16 17:03:50
  */
 
-#include "pfHome.h"
+#include "pfIO.h"
 #include "pfLmpDrv.h"
-using std::cout;
-using std::endl;
 
 /* This function has not been finished yet */
 
-void pfHome::GPsample() {
+void pfHome::GPsample(pfIO& io) {
   ofstream of1("err.txt", std::ofstream::out);
   ofstream of2("par.txt", std::ofstream::out);
   double overallphy = 1e30;
@@ -36,7 +34,7 @@ void pfHome::GPsample() {
 
     for (Func& ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
-    (this->*write[sparams["ptype"]])();
+    (io.*write[sparams["ptype"]])();
     lmpCheck(it, of1);
     if (error["phy"] < overallphy) {
       std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");

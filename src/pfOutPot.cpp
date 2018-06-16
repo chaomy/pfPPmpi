@@ -2,26 +2,26 @@
  * @Author: chaomy
  * @Date:   2017-10-30 18:46:14
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 22:29:08
+ * @Last Modified time: 2018-06-16 16:49:09
  */
 
 #include "pfForce.h"
-#include "pfHome.h"
+#include "pfIO.h"
 
-void pfHome::recordStage(int cnt) {
+void pfHome::recordStage(int cnt, pfIO& io) {
   string copy = sparams["tmpfile"];
   sparams["tmpfile"] = sparams["tmpdir"] + "/" + sparams["tmpfile"];
   sparams["tmpfile"] += ("." + to_string(cnt));
-  writePot();
+  io.writePot();
   sparams["tmpfile"] = copy;
   copy = sparams["lmpfile"];
   sparams["lmpfile"] = sparams["lmpdir"] + "/" + sparams["lmpfile"];
   sparams["lmpfile"] += ("." + to_string(cnt));
-  writeLMPS(ini);
+  io.writeLMPS(ini);
   sparams["lmpfile"] = copy;
 }
 
-void pfHome::writePot(const vector<double>& vv) {
+void pfHome::pfIO::writePot(const vector<double>& vv) {
   FILE* fid = fopen(sparams["tmpfile"].c_str(), "w");
   if (!fid) cerr << "error opening " + sparams["tmpfile"] << endl;
   fprintf(fid, "#F 4 %d\n", nfuncs);
@@ -52,7 +52,7 @@ void pfHome::writePot(const vector<double>& vv) {
   fclose(fid);
 }
 
-void pfHome::writePot(const string& fname) {
+void pfHome::pfIO::writePot(const string& fname) {
   FILE* fid = fopen(fname.c_str(), "w");
   if (!fid) cerr << "error opening " + sparams["tmpfile"] << endl;
 
@@ -82,7 +82,7 @@ void pfHome::writePot(const string& fname) {
   fclose(fid);
 }
 
-void pfHome::writePot() {
+void pfHome::pfIO::writePot() {
   FILE* fid = fopen(sparams["tmpfile"].c_str(), "w");
   if (!fid) cerr << "error opening " + sparams["tmpfile"] << endl;
 
@@ -112,7 +112,7 @@ void pfHome::writePot() {
   fclose(fid);
 }
 
-void pfHome::writeMEAMS() {
+void pfHome::pfIO::writeMEAMS() {
   FILE* fid = fopen(sparams["lmpfile"].c_str(), "w");
   if (!fid) cerr << "error opening " + sparams["lmpfile"] << endl;
   fprintf(fid, "# %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", funcs[0].bl,
@@ -136,7 +136,7 @@ void pfHome::writeMEAMS() {
   fclose(fid);
 }
 
-void pfHome::writeLMPS(const vector<double>& vv) {
+void pfHome::pfIO::writeLMPS(const vector<double>& vv) {
   int cnt = 0;
   for (int i = 0; i < nfuncs; i++) {
     Func& ff = funcs[i];
@@ -149,9 +149,8 @@ void pfHome::writeLMPS(const vector<double>& vv) {
   (!sparams["ptype"].compare("MEAM")) ? writeMEAMS() : writeLMPS();
 }
 
-void pfHome::writeLMPS() {
+void pfHome::pfIO::writeLMPS() {
   FILE* fid = fopen(sparams["lmpfile"].c_str(), "w");
-  pfForce fcdrv(*this);
   if (!fid) cerr << "error opening " + sparams["lmpfile"] << endl;
 
   // header
@@ -182,13 +181,14 @@ void pfHome::writeLMPS() {
   if (sparams["ptype"] == "ADP") {
     r = 0.0;
     for (int i = 0; i < LMPPNTS; i++, r += dr) { /* dipole distortion u(r) */
-      fcdrv.splint(funcs[ADPU], r, val);
+      // fcdrv.splint(funcs[ADPU], r, val);  // comment to avoid compiling it ,
+      // change to new format
       fprintf(fid, "%.16e\n", val);
     }
 
     r = 0.0;
     for (int i = 0; i < LMPPNTS; i++, r += dr) { /* quadrupole distortion */
-      fcdrv.splint(funcs[ADPW], r, val);
+      // fcdrv.splint(funcs[ADPW], r, val);
       fprintf(fid, "%.16e\n", val);
     }
   }  // if ADP

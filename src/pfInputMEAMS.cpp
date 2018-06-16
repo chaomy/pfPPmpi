@@ -2,15 +2,14 @@
  * @Author: chaomy
  * @Date:   2017-12-17 14:00:51
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-11 13:37:05
+ * @Last Modified time: 2018-06-16 16:12:01
  */
 
-#include "pfHome.h"
+#include "pfIO.h"
 
-void pfHome::readMEAMS() {
+void pfHome::pfIO::readMEAMS() {
   funcs.clear();
   ifstream fid;
-  pfUtil pfu;
   fid.open(sparams["potfile"].c_str());
   if (!fid.is_open()) cerr << "error open " << sparams["potfile"] << endl;
 
@@ -18,7 +17,7 @@ void pfHome::readMEAMS() {
   vector<string> segs;
   vector<int> recordbd;
   getline(fid, buff);  // read head line
-  pfu.split(buff, " ", segs);
+  split(buff, " ", segs);
 
   for (int i = 1; i < 11; i++) recordbd.push_back(stoi(segs[i]));
   for (int i : {0, 1, 2, 3, 4}) optidx.push_back(stoi(segs[11 + i]));
@@ -35,7 +34,7 @@ void pfHome::readMEAMS() {
     Func tm;
     // find id of nodes to be relaxed
     getline(fid, buff);
-    pfu.split(buff, " ", segs);
+    split(buff, " ", segs);
     for (auto ee : segs) tm.rlxid.push_back(stoi(ee));
 
     // find how many nodes in total
@@ -63,10 +62,5 @@ void pfHome::readMEAMS() {
   // ricut = funcs[PHI].xx.front();
   // rocut = funcs[PHI].xx.back();
   // rhcut = funcs[RHO].xx.back();
-  // for (auto ff : funcs) {
-  //   cout << "npts = " << ff.npts << endl;
-  //   for (int i = 0; i < ff.npts; i++)
-  //     cout << ff.xx[i] << " " << ff.yy[i] << " " << ff.g2[i] << endl;
-  // }
-  setSplineVariables();
+  hm.setSplineVariables();
 }

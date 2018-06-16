@@ -2,17 +2,16 @@
  * @Author: chaomy
  * @Date:   2018-01-20 16:53:38
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 16:20:04
+ * @Last Modified time: 2018-06-16 16:01:41
  */
 
-#include "pfHome.h"
+#include "pfIO.h"
 
-void pfHome::readConfig() {    /* read atomic force file */
-  double eb = -3.09477080931;  // Energy per atom shift -3.09477080931
+void pfHome::pfIO::readConfig() { /* read atomic force file */
+  double eb = -3.09477080931;     // Energy per atom shift -3.09477080931
   // double eperf = -6.9950724562545;
   double eperf = -7.01;
   configs.clear();  // clear
-  pfUtil pfu;
   char tmp[MAXLEN];
 
   ifstream ifs(sparams["cnffile"].c_str(), std::ifstream::in);
@@ -25,7 +24,7 @@ void pfHome::readConfig() {    /* read atomic force file */
   while (getline(ifs, buff)) {
     segs.clear();
     cnf.atoms.clear();
-    pfu.split(buff, " ", segs);
+    split(buff, " ", segs);
     if (!segs[0].compare("#N")) {
       sscanf(buff.c_str(), "%s %d %s", tmp, &cnf.natoms, tmp);
     } else if (!segs[0].compare("#X")) {

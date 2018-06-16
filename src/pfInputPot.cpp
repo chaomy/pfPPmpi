@@ -2,29 +2,17 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-13 16:17:58
+ * @Last Modified time: 2018-06-16 16:13:55
  */
 
-#include "pfHome.h"
+#include "pfIO.h"
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::ifstream;
-using std::string;
-using std::vector;
+/* read dummy.pot, initially used, replaced by read MEAMS */
 
-/*
-  read dummy.pot, initially I use, and it is replaced by read MEAMS
-*/
-
-void pfHome::readPot() {
+void pfHome::pfIO::readPot() {
   funcs.clear();
   ini.clear();
-
   ifstream fid;
-  pfUtil pfu;
-
   char tmp[MAXLEN];
   fid.open(sparams["potfile"].c_str());
   if (!fid.is_open()) cerr << "error opening " + sparams["potfile"] << endl;
@@ -36,7 +24,7 @@ void pfHome::readPot() {
 
   while (getline(fid, buff)) {
     segs.clear();
-    pfu.split(buff, " ", segs);
+    split(buff, " ", segs);
     if (!segs[0].compare("#F"))
       sscanf(buff.c_str(), "%s %s %d", tmp, tmp, &nfuncs);
     else if (!segs[0].compare("#G"))
@@ -80,5 +68,5 @@ void pfHome::readPot() {
     funcs.push_back(tmp);
   }
   fid.close();
-  setSplineVariables();
+  hm.setSplineVariables();
 }
