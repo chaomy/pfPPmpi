@@ -2,22 +2,22 @@
  * @Author: chaomy
  * @Date:   2017-11-12 02:13:44
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-19 13:32:20
+ * @Last Modified time: 2018-06-15 22:14:54
  */
 
-#include "pfHome.h"
+#include "pfForce.h"
 
-void pfHome::spltra(Func& func, double r, double& val, double& grad) {
+void pfHome::pfForce::spltra(Func& func, double r, double& val, double& grad) {
   grad = func.g1.back();
   val = grad * (r - func.xx.back()) + func.yy.back();
 }
 
-void pfHome::spltrai(Func& func, double r, double& val, double& grad) {
+void pfHome::pfForce::spltrai(Func& func, double r, double& val, double& grad) {
   grad = func.g1.front();
   val = grad * (r - func.xx.front()) + func.yy.front();
 }
 
-void pfHome::splineNe(Func& func, int flag) {
+void pfHome::pfForce::splineNe(Func& func, int flag) {
   double qn = 0.0;
   double un = 0.0;
   int n = func.xx.size();  // size
@@ -61,7 +61,7 @@ void pfHome::splineNe(Func& func, int flag) {
   for (int k = n - 2; k >= 0; k--) y2[k] = y2[k] * y2[k + 1] + u[k];
 }
 
-void pfHome::splineEd(Func& func, int flag) {
+void pfHome::pfForce::splineEd(Func& func, int flag) {
   double qn = 0.0;
   double un = 0.0;
   int n = func.xx.size();
@@ -106,7 +106,7 @@ void pfHome::splineEd(Func& func, int flag) {
   Equal distance
  ****************************************************************/
 
-void pfHome::splintEd(const Func& func, double r, double& val) {
+void pfHome::pfForce::splintEd(const Func& func, double r, double& val) {
   double rr = r - func.xx.front();
   /* indices into potential table */
   int k = (int)(rr * func.invstep);
@@ -121,7 +121,8 @@ void pfHome::splintEd(const Func& func, double r, double& val) {
             (6.0 * func.invstep * func.invstep);
 }
 
-void pfHome::splintEd(const Func& func, double r, double& val, double& grad) {
+void pfHome::pfForce::splintEd(const Func& func, double r, double& val,
+                               double& grad) {
   double rr = r - func.xx.front();
   int k = (int)(rr * func.invstep);
   double b = (rr - k * func.step) * func.invstep;
@@ -141,7 +142,7 @@ void pfHome::splintEd(const Func& func, double r, double& val, double& grad) {
 /****************************************************************
   Non-equal distance
  ****************************************************************/
-void pfHome::splint(const Func& func, double r, double& val) {
+void pfHome::pfForce::splint(const Func& func, double r, double& val) {
   if (r >= func.xx.back()) {  // extropolate right
     double grad = func.g1.back();
     val = func.yy.back() + (r - func.xx.back()) * grad;
@@ -170,7 +171,8 @@ void pfHome::splint(const Func& func, double r, double& val) {
 }
 
 // given x value
-void pfHome::splint(const Func& func, double r, double& val, double& grad) {
+void pfHome::pfForce::splint(const Func& func, double r, double& val,
+                             double& grad) {
   if (r >= func.xx.back()) {  // extropolate right
     grad = func.g1.back();
     val = func.yy.back() + (r - func.xx.back()) * grad;
@@ -202,8 +204,8 @@ void pfHome::splint(const Func& func, double r, double& val, double& grad) {
 }
 
 // given col and shift
-void pfHome::splint(const Func& func, int k, double b, double step, double& val,
-                    double& grad) {
+void pfHome::pfForce::splint(const Func& func, int k, double b, double step,
+                             double& val, double& grad) {
   double a = 1.0 - b;
   double p1 = func.yy[k];
   double d21 = func.g2[k++];
@@ -216,8 +218,8 @@ void pfHome::splint(const Func& func, int k, double b, double step, double& val,
 }
 
 // given col and shift
-void pfHome::splint(const Func& func, int k, double b, double step,
-                    double& val) {
+void pfHome::pfForce::splint(const Func& func, int k, double b, double step,
+                             double& val) {
   double a = 1.0 - b;
   double p1 = func.yy[k];
   double d21 = func.g2[k++];

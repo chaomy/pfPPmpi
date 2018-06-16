@@ -2,14 +2,16 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 01:39:04
+ * @Last Modified time: 2018-06-16 00:07:44
  */
 
-#include "pfHome.h"
+#include "pfConf.h"
 #include "pfForce.h"
 #include "pfLmpDrv.h"
 #include "pfMEAMC.h"
 #include "pfOptimizer.h"
+#include "pfPhy.h"
+
 namespace mpi = boost::mpi;
 
 pfHome::pfHome(int argc, char* argv[])
@@ -33,8 +35,9 @@ pfHome::pfHome(int argc, char* argv[])
   read["EAMS"] = &pfHome::readPot;
   read["MEAMS"] = &pfHome::readMEAMS;
 
-  build["bcc"] = &pfHome::buildbccPrim;
-  build["fcc"] = &pfHome::buildfccPrim;
+  pfPhy phdrv(*this);
+  pfConf cdrv(*this);
+  pfForce fcdrv(*this);
 
   if (cmm.rank() == PFROOT) {
     ftn = tln = 0;
@@ -62,18 +65,20 @@ pfHome::pfHome(int argc, char* argv[])
   (cmm.barrier)();
   bcdata();
   if (!sparams["ptype"].compare("MEAMS")) {
-    initNeighsFull();
-    initAngles();
+    cdrv.initNeighsFull();
+    cdrv.initAngles();
   } else if (!sparams["ptype"].compare("MEAMC")) {
-    initNeighsFull();
+    cdrv.initNeighsFull();
   } else
-    initNeighs();
+    cdrv.initNeighs();
 
   cmmlm = cmm.split(cmm.rank() == PFROOT);  // split group lm to run lammps
-  lmpdrv = new pfLMPdrv(argc, argv, this);
+  lmpdrv = new pfLMPdrv(argc, argv, *this);
   assignConfigs(2);
   (cmm.barrier)();  //  important!
   // optdrv = new pfOptimizer(this); // temporarily deactivate functionalities
+
+  run(argc, argv, fcdrv, cdrv, phdrv);
 };
 
 pfHome::~pfHome() {

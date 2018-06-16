@@ -2,58 +2,61 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 23:33:16
+ * @Last Modified time: 2018-06-16 00:07:12
  */
 
 #include "pfForce.h"
+#include "pfConf.h"
 #include "pfLmpDrv.h"
 #include "pfOptimizer.h"
+#include "pfPhy.h"
 
-void pfHome::increAnneal() {  // adding more nodes and run annealing
+void pfHome::increAnneal(pfForce &fcdrv, pfConf &cfdrv) {
   scnt = 0;
   int jobl[] = {PHI, PHI, RHO, MEAMF, MEAMG, PHI, RHO, PHI, RHO, MEAMF, MEAMG};
   FILE *fid;
   for (int i = 0; i < 10; i++) {
-    simAnneal();
-    upgrade(jobl[i]);
+    simAnneal(fcdrv);
+    upgrade(jobl[i], fcdrv, cfdrv);
     iparams["kmax"]++;
     fprintf(fid = fopen("record.txt", "a"), "%d %f\n", i, recorderr[i]);
     fclose(fid);
   }
 }
 
-void pfHome::run(int argc, char *argv[]) {
+void pfHome::run(int argc, char *argv[], pfForce &fcdrv, pfConf &cfdrv,
+                 pfPhy &phdrv) {
   if (!sparams["opt"].compare("lmp")) {
     if (cmm.rank() == PFROOT) lmpdrv->calPhy();
   } else if (!sparams["opt"].compare("make") ||
              !sparams["opt"].compare("err")) {
-    calErr();
+    calErr(fcdrv);
     resample();
   } else if (!sparams["opt"].compare("gp"))
     GPsample();
   else if (!sparams["opt"].compare("anneal"))
-    simAnneal();
+    simAnneal(fcdrv);
   else if (!sparams["opt"].compare("evo"))
     diffEvo();
   else if (!sparams["opt"].compare("cmaes"))
-    loopcmaes();
+    loopcmaes(fcdrv);
   else if (!sparams["opt"].compare("cnt"))
-    cntcmaes();
+    cntcmaes(fcdrv);
   else if (!sparams["opt"].compare("incre"))
-    increAnneal();
+    increAnneal(fcdrv, cfdrv);
   else if (!sparams["opt"].compare("nlopt"))
     nloptGlobal();
   else if (!sparams["opt"].compare("shift"))
-    doShift();
+    doShift(fcdrv);
   else if (!sparams["opt"].compare("buildD03"))
-    buildD03("d03", 7.400, 0.005);
+    cfdrv.buildD03("d03", 7.400, 0.005);
   else if (!sparams["opt"].compare("anlz")) {
-    calErr();
-    calLat("bcc", 30);
-    calLat("fcc", 30);
+    calErr(fcdrv);
+    phdrv.calLat("bcc", 30, fcdrv, cfdrv);
+    phdrv.calLat("fcc", 30, fcdrv, cfdrv);
     lmpdrv->calLatticeBCC();
-    exprs["lat"] = lmpdrv->exprs["lat"];
-    calElas(25);
+    exprs["lat"] = exprs["lat"];
+    phdrv.calElas(25, fcdrv, cfdrv);
 
     lmpdrv->calLatticeFCC();
     lmpdrv->calLatticeHCP();
@@ -63,12 +66,12 @@ void pfHome::run(int argc, char *argv[]) {
     remove("no");
     remove("log.lammps");
     remove("restart.equil");
-    lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
-    lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
+    exprs["bcc2hcp"] = exprs["ehcp"] - exprs["ebcc"];
+    exprs["bcc2fcc"] = exprs["efcc"] - exprs["ebcc"];
 
     vector<string> aa(
         {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
-    for (auto ee : aa) cout << ee << " " << lmpdrv->exprs[ee] << endl;
+    for (auto ee : aa) cout << ee << " " << exprs[ee] << endl;
 
     for (int j : lmpdrv->gsfpnts)
       cout << std::setprecision(3) << lmpdrv->lgsf["111z110"][j] << " "
@@ -79,8 +82,7 @@ void pfHome::run(int argc, char *argv[]) {
   }
 }
 
-void pfHome::calErr() {  // make potential
-  pfForce fcdrv(*this);
+void pfHome::calErr(pfForce &fcdrv) {  // make potential
   arma::mat mm(nvars, 1, arma::fill::randu);
   for (int i = 0; i < nvars; i++) mm[i] = ini[i];
   (fcdrv.*calobj[sparams["ptype"]])(mm, 1);
@@ -94,7 +96,6 @@ void pfHome::calErr() {  // make potential
        << error["engy"] << " " << error["strs"] << " " << error["punish"]
        << endl;
     of.close();
-
     writeRadDist();
     writeAngDist();
     writeFrcDist();
@@ -130,19 +131,16 @@ void pfHome::nloptGlobal() {
   writePot(ini);
 }
 
-void pfHome::doShift() {
+void pfHome::doShift(pfForce &fcdrv) {
   sparams["tmpfile"] = "dummy.tmp.0";
   writePot(ini);
-
-  updaterhoMEAM(ini);
+  updaterhoMEAM(ini, fcdrv);
   double rho1 = oaverho;
   shiftRHO(ini);
 
-  updaterhoMEAM(ini);
+  updaterhoMEAM(ini, fcdrv);
   double rho2 = oaverho;
-
   shiftEMF(rho2 - rho1);
-
   sparams["tmpfile"] = "dummy.tmp.1";
   writePot(ini);
 }

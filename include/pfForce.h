@@ -52,5 +52,23 @@ class pfHome::pfForce {
   void forceMEAMSNoForce(Config& cc);
   void forceMEAMSStress(Config& cc);
   void forceEAM(Config& cc);
+  void stressMEAM(Config& cc);
+
+  // spline interpolation
+  void spltra(Func& func, double r, double& val, double& grad);
+  void spltrai(Func& func, double r, double& val, double& grad);
+  void splineNe(Func& func, int flag);
+  void splineEd(Func& func, int flag);
+
+  void splintEd(const Func& func, double r, double& val);  // no gradients
+  void splintEd(const Func& func, double r, double& val, double& grad);
+
+  void splint(const Func& func, double r, double& val);  // no gradients
+  void splint(const Func& func, double r, double& val, double& grad);
+
+  void splint(const Func& func, int k, double b, double step,
+              double& val);  // no gradients
+  void splint(const Func& func, int k, double b, double step, double& val,
+              double& grad);
 };
 #endif  // pfForce_H_

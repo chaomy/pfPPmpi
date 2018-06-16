@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:44:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 16:07:08
+ * @Last Modified time: 2018-06-16 00:17:50
  */
 
 #include "pfLmpDrv.h"
@@ -64,8 +64,8 @@ void pfHome::pfLMPdrv::calItenOptLin(const double& dlt, const string& tag) {
   vector<double> coeff(3, 1.);
   vector<double> stsv(6);
 
-  const ItenT& idft = pfhm->mele.itdftm[dlt][tag];
-  double s12 = pfhm->mele.cijm["Nb"].sij[1], egy = 0.0;
+  const ItenT& idft = mele.itdftm[dlt][tag];
+  double s12 = mele.cijm["Nb"].sij[1], egy = 0.0;
   int cc = 0;
 
   /* initialize the perfect cell  */

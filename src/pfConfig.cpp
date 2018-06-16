@@ -2,16 +2,16 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-03-13 16:21:38
+ * @Last Modified time: 2018-06-15 17:22:36
  */
 
-#include "pfHome.h"
+#include "pfConf.h"
 
-void pfHome::initAngles() {
+void pfHome::pfConf::initAngles() {
   for (Config &tmpc : configs) initAngles(tmpc);
 }
 
-void pfHome::initNeighsFull() {
+void pfHome::pfConf::initNeighsFull() {
   ricut = rocut;
   for (Config &tmpc : configs) {
     initBox(tmpc);
@@ -21,7 +21,7 @@ void pfHome::initNeighsFull() {
   if (cmm.rank() == PFROOT) cout << "rin cut = " << ricut << endl;
 }
 
-void pfHome::initBox(Config &tmpc) {
+void pfHome::pfConf::initBox(Config &tmpc) {
   crossProd33(tmpc.bvy, tmpc.bvz, tmpc.tvx);
   crossProd33(tmpc.bvz, tmpc.bvx, tmpc.tvy);
   crossProd33(tmpc.bvx, tmpc.bvy, tmpc.tvz);
@@ -42,7 +42,7 @@ void pfHome::initBox(Config &tmpc) {
   for (int i : {X, Y, Z}) tmpc.scale[i] = (int)ceil(rocut * iheight[i]);
 }
 
-void pfHome::initAngles(Config &tmpc) {
+void pfHome::pfConf::initAngles(Config &tmpc) {
   for (int ii = 0; ii < tmpc.natoms; ii++) {
     pfAtom &atmii = tmpc.atoms[ii];
     atmii.angMat.clear();
@@ -63,7 +63,7 @@ void pfHome::initAngles(Config &tmpc) {
   }    // ii
 }
 
-void pfHome::wrapAtomPos(Config &tmpc) {
+void pfHome::pfConf::wrapAtomPos(Config &tmpc) {
   vector<double> boxsidelo(3), boxsidehi(3), npst(3);
 
   for (int k : {0, 1, 2}) {
@@ -95,7 +95,7 @@ void pfHome::wrapAtomPos(Config &tmpc) {
   }
 }
 
-void pfHome::initNeighsFull(Config &tmpc) {
+void pfHome::pfConf::initNeighsFull(Config &tmpc) {
   vector<double> d0(3);
   vector<double> dij(3);
   for (int ii = 0; ii < tmpc.natoms; ii++) {
@@ -166,7 +166,7 @@ void pfHome::initNeighsFull(Config &tmpc) {
   }  // ii
 }
 
-void pfHome::setNeighslotStd(Neigh &refn, Func func, double r) {
+void pfHome::pfConf::setNeighslotStd(Neigh &refn, Func func, double r) {
   vector<double>::const_iterator it =
       std::lower_bound(func.xx.begin(), func.xx.end(), r);
   int idx = std::max(int(it - func.xx.begin()) - 1, 0);
@@ -179,7 +179,7 @@ void pfHome::setNeighslotStd(Neigh &refn, Func func, double r) {
     refn.slots.push_back(idx);
 }
 
-void pfHome::setAngleslotStd(Angle &refang, Func func, double r) {
+void pfHome::pfConf::setAngleslotStd(Angle &refang, Func func, double r) {
   vector<double>::const_iterator it =
       std::lower_bound(func.xx.begin(), func.xx.end(), r);
   int idx = std::max(int(it - func.xx.begin()) - 1, 0);
@@ -192,7 +192,7 @@ void pfHome::setAngleslotStd(Angle &refang, Func func, double r) {
     refang.slot = idx;
 }
 
-void pfHome::setNeighslot(Neigh &refn, Func func, double r) {
+void pfHome::pfConf::setNeighslot(Neigh &refn, Func func, double r) {
   int lo = 0;
   int hi = func.xx.size() - 1;
   int slot = 0;
@@ -220,7 +220,7 @@ void pfHome::setNeighslot(Neigh &refn, Func func, double r) {
   refn.shifts.push_back(shift);
 }
 
-void pfHome::setAngleslot(Angle &refang, Func func, double r) {
+void pfHome::pfConf::setAngleslot(Angle &refang, Func func, double r) {
   int lo = 0;
   int hi = func.xx.size() - 1;
   int slot = 0;
@@ -247,7 +247,7 @@ void pfHome::setAngleslot(Angle &refang, Func func, double r) {
   refang.shift = shift;
 }
 
-void pfHome::updateNeighslot(Neigh &refn, Func func, double r, int id) {
+void pfHome::pfConf::updateNeighslot(Neigh &refn, Func func, double r, int id) {
   int lo = 0;
   int hi = func.xx.size() - 1;
   int slot = 0;

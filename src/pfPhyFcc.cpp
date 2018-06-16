@@ -2,12 +2,13 @@
  * @Author: chaomy
  * @Date:   2017-12-16 22:11:52
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-18 01:57:14
+ * @Last Modified time: 2018-06-15 21:01:27
  */
 
-#include "pfHome.h"
+#include "pfConf.h"
 
-void pfHome::buildfcc(const string& kk, const double& gs, const double& dl) {
+void pfHome::pfConf::buildfcc(const string& kk, const double& gs,
+                              const double& dl) {
   double l = gs - 5 * dl;
   mpvc[kk].clear();
   mpcf[kk].clear();
@@ -17,7 +18,7 @@ void pfHome::buildfcc(const string& kk, const double& gs, const double& dl) {
   }
 }
 
-Config pfHome::buildfccPrim(const double& lat) {
+Config pfHome::pfConf::buildfccPrim(const double& lat) {
   Config cc;
   double ll = 0.5 * lat;
   cc.bvx[X] = 0., cc.bvx[Y] = ll, cc.bvx[Z] = ll;
@@ -34,7 +35,7 @@ Config pfHome::buildfccPrim(const double& lat) {
   return cc;
 }
 
-Config pfHome::buildfccConv(const double& lat) {
+Config pfHome::pfConf::buildfccConv(const double& lat) {
   Config cc;
   cc.bvx[X] = lat, cc.bvx[Y] = 0.0, cc.bvx[Z] = 0.0;
   cc.bvy[X] = 0.0, cc.bvy[Y] = lat, cc.bvy[Z] = 0.0;

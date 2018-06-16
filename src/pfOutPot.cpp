@@ -2,9 +2,10 @@
  * @Author: chaomy
  * @Date:   2017-10-30 18:46:14
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 01:37:08
+ * @Last Modified time: 2018-06-15 22:29:08
  */
 
+#include "pfForce.h"
 #include "pfHome.h"
 
 void pfHome::recordStage(int cnt) {
@@ -150,6 +151,7 @@ void pfHome::writeLMPS(const vector<double>& vv) {
 
 void pfHome::writeLMPS() {
   FILE* fid = fopen(sparams["lmpfile"].c_str(), "w");
+  pfForce fcdrv(*this);
   if (!fid) cerr << "error opening " + sparams["lmpfile"] << endl;
 
   // header
@@ -180,16 +182,15 @@ void pfHome::writeLMPS() {
   if (sparams["ptype"] == "ADP") {
     r = 0.0;
     for (int i = 0; i < LMPPNTS; i++, r += dr) { /* dipole distortion u(r) */
-      splint(funcs[ADPU], r, val);
+      fcdrv.splint(funcs[ADPU], r, val);
       fprintf(fid, "%.16e\n", val);
     }
 
     r = 0.0;
     for (int i = 0; i < LMPPNTS; i++, r += dr) { /* quadrupole distortion */
-      splint(funcs[ADPW], r, val);
+      fcdrv.splint(funcs[ADPW], r, val);
       fprintf(fid, "%.16e\n", val);
     }
   }  // if ADP
-
   fclose(fid);
 }

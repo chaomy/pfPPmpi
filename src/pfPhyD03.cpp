@@ -2,14 +2,13 @@
  * @Author: chaomy
  * @Date:   2018-01-16 13:35:16
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-29 23:08:18
+ * @Last Modified time: 2018-06-15 22:18:55
  */
 
-#include "pfHome.h"
+#include "pfConf.h"
 
-using std::vector;
-
-void pfHome::buildD03(const string& kk, const double& gs, const double& dl) {
+void pfHome::pfConf::buildD03(const string& kk, const double& gs,
+                              const double& dl) {
   int pn = 10;
   double lo = gs - pn * dl;
   Config cc;
@@ -17,11 +16,11 @@ void pfHome::buildD03(const string& kk, const double& gs, const double& dl) {
     cc = buildD03(lo + i * dl);
     char buff[10];
     sprintf(buff, "poscar.%03d", i);
-    writePOSCAR(cc, string(buff));
+    hm.writePOSCAR(cc, string(buff));
   }
 }
 
-Config pfHome::buildD03(const double& la) {
+Config pfHome::pfConf::buildD03(const double& la) {
   Config cc;
   cc.bvx[X] = la, cc.bvx[Y] = 0.0, cc.bvx[Z] = 0.0;
   cc.bvy[X] = 0.0, cc.bvy[Y] = la, cc.bvy[Z] = 0.0;

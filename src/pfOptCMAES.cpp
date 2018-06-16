@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 23:33:39
+ * @Last Modified time: 2018-06-16 00:06:31
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -26,23 +26,21 @@ double pfHome::testFunc(arma::mat& vc) {
   return pow((vc[0] - 2.0), 2) + pow((vc[1] - 3.0), 2) + pow((vc[2] - 0.01), 2);
 }
 
-void pfHome::cntcmaes() {
-  pfForce fcdrv(*this);
+void pfHome::cntcmaes(pfForce& fcdrv) {
   arma::mat iterate =
       5.0 + dparams["istep"] *
                 (arma::mat(nvars, 1, arma::fill::randu) - 0.5);  // to [0, 10]
   (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), 1);
   if (cmm.rank() == PFROOT) {
-    cmaes(iterate);
+    cmaes(iterate, fcdrv);
     (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), EXT);
   }
 }
 
-void pfHome::loopcmaes() {
+void pfHome::loopcmaes(pfForce& fcdrv) {
   // start from scratch
   // arma::mat iterate(nvars, 1, arma::fill::randu);
   // iterate *= 10;
-  pfForce fcdrv(*this);
   double cr = 1e30, op = 1e30;
   arma::mat iterate =
       5.0 + dparams["istep"] *
@@ -50,7 +48,7 @@ void pfHome::loopcmaes() {
   (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), 1);
   for (int i = 0; i < iparams["kmax"]; i++) {
     if (cmm.rank() == PFROOT) {
-      if ((cr = cmaes(iterate)) < op) {
+      if ((cr = cmaes(iterate, fcdrv)) < op) {
         op = cr;
         std::rename("meam.lib.best", "meam.lib.best.overall");
         std::rename("err.txt", "err.overall");
@@ -67,8 +65,7 @@ void pfHome::loopcmaes() {
   (fcdrv.*calobj[sparams["ptype"]])(decodev(iterate), EXT);
 }
 
-double pfHome::cmaes(arma::mat& iterate) {
-  pfForce fcdrv(*this);
+double pfHome::cmaes(arma::mat& iterate, pfForce& fcdrv) {
   int maxIt = iparams["maxstep"], lastid = 1;
   double tolerance = dparams["ftol"];
   double sigmatol = dparams["xtol"];
@@ -325,8 +322,8 @@ void pfHome::lmpCheck(int i, ofstream& of1) {
   remove("no");
   remove("log.lammps");
   remove("restart.equil");
-  lmpdrv->exprs["bcc2hcp"] = lmpdrv->exprs["ehcp"] - lmpdrv->exprs["ebcc"];
-  lmpdrv->exprs["bcc2fcc"] = lmpdrv->exprs["efcc"] - lmpdrv->exprs["ebcc"];
+  exprs["bcc2hcp"] = exprs["ehcp"] - exprs["ebcc"];
+  exprs["bcc2fcc"] = exprs["efcc"] - exprs["ebcc"];
   vector<string> aa({"lat", "c11", "c12", "c44", "suf110", "suf100", "suf111",
                      "bcc2fcc", "bcc2hcp"});
 
@@ -334,9 +331,7 @@ void pfHome::lmpCheck(int i, ofstream& of1) {
   for (int i = 0; i < aa.size(); i++) {
     string ee(aa[i]);
     error["phy"] +=
-        (lmpdrv->error[ee] =
-             ww[i] * square11((lmpdrv->exprs[ee] - lmpdrv->targs[ee]) /
-                              lmpdrv->targs[ee]));
+        (error[ee] = ww[i] * square11((exprs[ee] - targs[ee]) / targs[ee]));
   }
 
   for (int i : lmpdrv->gsfpnts)
@@ -345,18 +340,15 @@ void pfHome::lmpCheck(int i, ofstream& of1) {
   error["phy"] += error["gsf"];
   error["phy"] *= dparams["pweight"];
 
-  of1 << i << "   " << std::setprecision(4) << lmpdrv->exprs["lat"] << " "
-      << lmpdrv->exprs["c11"] << " " << lmpdrv->exprs["c12"] << " "
-      << lmpdrv->exprs["c44"] << " " << lmpdrv->exprs["suf110"] << " "
-      << lmpdrv->exprs["suf100"] << " " << lmpdrv->exprs["suf111"] << " "
-      << lmpdrv->exprs["bcc2fcc"] << " " << lmpdrv->exprs["bcc2hcp"] << " "
+  of1 << i << "   " << std::setprecision(4) << exprs["lat"] << " "
+      << exprs["c11"] << " " << exprs["c12"] << " " << exprs["c44"] << " "
+      << exprs["suf110"] << " " << exprs["suf100"] << " " << exprs["suf111"]
+      << " " << exprs["bcc2fcc"] << " " << exprs["bcc2hcp"] << " "
       << lmpdrv->lgsf["111z110"][5] << " " << lmpdrv->lgsf["111z211"][5] << "  "
-      << error["phy"] << " " << lmpdrv->error["lat"] << " "
-      << lmpdrv->error["c11"] << " " << lmpdrv->error["c12"] << " "
-      << lmpdrv->error["c44"] << " " << lmpdrv->error["suf110"] << " "
-      << lmpdrv->error["suf100"] << " " << lmpdrv->error["suf111"] << " "
-      << lmpdrv->error["bcc2fcc"] << " " << lmpdrv->error["bcc2hcp"] << " "
-      << error["gsf"] << endl;
+      << error["phy"] << " " << error["lat"] << " " << error["c11"] << " "
+      << error["c12"] << " " << error["c44"] << " " << error["suf110"] << " "
+      << error["suf100"] << " " << error["suf111"] << " " << error["bcc2fcc"]
+      << " " << error["bcc2hcp"] << " " << error["gsf"] << endl;
 }
 
 // for meamc

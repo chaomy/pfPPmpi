@@ -2,14 +2,15 @@
  * @Author: chaomy
  * @Date:   2017-11-16 17:13:01
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-08 23:09:09
+ * @Last Modified time: 2018-06-15 22:33:59
  */
 
-#include "pfHome.h"
+#include "pfConf.h"
+#include "pfForce.h"
 
-// REWIRTE THE FUNCTION BEFORE USE 
+// CHECK THE FUNCTION BEFORE USE
 // id are PHI, RHO, F
-void pfHome::upgrade(int id) {
+void pfHome::upgrade(int id, pfForce& fcdrv, pfConf& cdrv) {
   int cc = 0;
   for (int i = 0; i < nfuncs; i++)
     for (int j = 0; j < funcs[i].npts; j++) funcs[i].yy[j] = ini[cc++];
@@ -33,7 +34,7 @@ void pfHome::upgrade(int id) {
 
   /* update y values */
   for (int i = 0; i < fnc.npts - 1; i++)
-    splint(fnc, fnc.xx.front() + i * delt, fnc.yy[i]);
+    fcdrv.splint(fnc, fnc.xx.front() + i * delt, fnc.yy[i]);
 
   /* update x values */
   for (int i = 0; i < fnc.npts; i++) fnc.xx[i] = fnc.xx.front() + i * delt;
@@ -76,9 +77,9 @@ void pfHome::upgrade(int id) {
         for (int jj = 0; jj < atmii.nneighsFull; jj++) {
           Neigh& ngbj = atmii.neighsFull[jj];
           if (id == PHI || id == RHO)
-            updateNeighslot(ngbj, funcs[id], ngbj.r, id);
+            cdrv.updateNeighslot(ngbj, funcs[id], ngbj.r, id);
           else
-            updateNeighslot(ngbj, funcs[id], ngbj.r, id - 1);
+            cdrv.updateNeighslot(ngbj, funcs[id], ngbj.r, id - 1);
         }  // jj
       }    // ii
     }      // cc
@@ -92,7 +93,7 @@ void pfHome::upgrade(int id) {
         for (int jj = 0; jj < atmii.nneighsFull; jj++) {
           for (int kk = 0; kk < jj; kk++) {
             Angle& tmpang = atmii.angMat[jj][kk];
-            setAngleslot(tmpang, funcs[MEAMG], tmpang.gcos);
+            cdrv.setAngleslot(tmpang, funcs[MEAMG], tmpang.gcos);
           }  // kk
         }    // jj
       }      // ii

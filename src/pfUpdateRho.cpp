@@ -3,12 +3,12 @@
  * @Author: chaomy
  * @Date:   2017-10-30 21:34:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 13:43:39
+ * @Last Modified time: 2018-06-15 22:29:52
  */
 
-#include "pfHome.h"
+#include "pfForce.h"
 
-void pfHome::updaterhoMEAM(vector<double>& vv) {
+void pfHome::updaterhoMEAM(vector<double>& vv, pfForce& fcdrv) {
   oaverho = 0.0;
   omaxrho = -1e3;
   ominrho = 1e3;
@@ -37,23 +37,24 @@ void pfHome::updaterhoMEAM(vector<double>& vv) {
 
         double rho = 0;
         if (ngbj.r >= rhcut)
-          spltra(funcs[RHO], ngbj.r, rho, ngbj.rhog);
+          fcdrv.spltra(funcs[RHO], ngbj.r, rho, ngbj.rhog);
         else
-          splint(funcs[RHO], ngbj.slots[RHO], ngbj.shifts[RHO], ngbj.steps[RHO],
-                 rho, ngbj.rhog);
+          fcdrv.splint(funcs[RHO], ngbj.slots[RHO], ngbj.shifts[RHO],
+                       ngbj.steps[RHO], rho, ngbj.rhog);
 
         atm.rho += rho;
         if (ngbj.r >= rhcut)
-          spltra(funcs[MEAMF], ngbj.r, ngbj.fval, ngbj.fgrad);
+          fcdrv.spltra(funcs[MEAMF], ngbj.r, ngbj.fval, ngbj.fgrad);
         else
-          splint(funcs[MEAMF], ngbj.slots[MEAMF - 1], ngbj.shifts[MEAMF - 1],
-                 ngbj.steps[MEAMF - 1], ngbj.fval, ngbj.fgrad);
+          fcdrv.splint(funcs[MEAMF], ngbj.slots[MEAMF - 1],
+                       ngbj.shifts[MEAMF - 1], ngbj.steps[MEAMF - 1], ngbj.fval,
+                       ngbj.fgrad);
 
         for (int kk = 0; kk < jj; kk++) {
           Neigh& ngbk = atm.neighsFull[kk];
           Angle& agl = atm.angMat[jj][kk];
-          splint(funcs[MEAMG], agl.slot, agl.shift, agl.step, agl.gval,
-                 agl.ggrad);
+          fcdrv.splint(funcs[MEAMG], agl.slot, agl.shift, agl.step, agl.gval,
+                       agl.ggrad);
           atm.rho += ngbk.fval * ngbj.fval * agl.gval;
         }  // kk
       }    // jj

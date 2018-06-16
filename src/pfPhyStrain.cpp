@@ -2,32 +2,32 @@
  * @Author: chaomy
  * @Date:   2017-12-17 00:25:20
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-16 11:35:55
+ * @Last Modified time: 2018-06-15 17:40:25
  */
 
-#include "pfHome.h"
+#include "pfConf.h"
 
-Config pfHome::addvolm(const Config& cc, const double& dl) {
+Config pfHome::pfConf::addvolm(const Config& cc, const double& dl) {
   vector<vector<double>> stmt({{1 + dl, 0, 0}, {0, 1 + dl, 0}, {0, 0, 1 + dl}});
   Config nc = addstrain(cc, stmt);
   return nc;
 }
 
-Config pfHome::addotho(const Config& cc, const double& dl) {
+Config pfHome::pfConf::addotho(const Config& cc, const double& dl) {
   vector<vector<double>> stmt(
       {{1 + dl, 0, 0}, {0, 1 - dl, 0}, {0, 0, 1. / (1 - dl * dl)}});
   Config nc = addstrain(cc, stmt);
   return nc;
 }
 
-Config pfHome::addmono(const Config& cc, const double& dl) {
+Config pfHome::pfConf::addmono(const Config& cc, const double& dl) {
   vector<vector<double>> stmt(
       {{1, dl, 0}, {dl, 1, 0}, {0, 0, 1. / (1 - dl * dl)}});
   Config nc = addstrain(cc, stmt);
   return nc;
 }
 
-Config pfHome::addstrain(Config cc, const vector<vector<double>>& ss) {
+Config pfHome::pfConf::addstrain(Config cc, const vector<vector<double>>& ss) {
   double n1[DIM];
   double n2[DIM];
   double n3[DIM];

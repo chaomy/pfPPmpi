@@ -2,11 +2,11 @@
  * @Author: chaomy
  * @Date:   2017-10-30 21:34:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-04-04 13:35:27
+ * @Last Modified time: 2018-06-15 22:32:03
  */
 
-#include "pfHome.h"
 #define NNEIGH 26
+#include "pfForce.h"
 
 // unfinished
 void pfHome::shiftRHO(vector<double>& vv) {
@@ -46,7 +46,8 @@ int pfHome::rescaleEMF(arma::mat& in) {
 }
 
 // REWRITE THE FUNCTION BEFORE USE
-int pfHome::rescaleEMF(vector<double>& vv) {  // check if rescale
+int pfHome::rescaleEMF(vector<double>& vv,
+                       pfForce& fcdrv) {  // check if rescale
   Func& ff = funcs[EMF];
   int npts = ff.npts;
   double delt = ff.step;
@@ -62,7 +63,7 @@ int pfHome::rescaleEMF(vector<double>& vv) {  // check if rescale
 
     /* update y values (to vv) */
     for (int i = 0; i < npts; i++)
-      splint(ff, ominrho + i * ndelt, vv[startps[EMF] + i]);
+      fcdrv.splint(ff, ominrho + i * ndelt, vv[startps[EMF] + i]);
 
     /* update xx values */
     for (int i = 0; i < npts; i++) ff.xx[i] = ominrho + i * ndelt;

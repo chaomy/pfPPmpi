@@ -2,25 +2,25 @@
  * @Author: chaomy
  * @Date:   2017-12-19 16:23:55
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 23:40:03
+ * @Last Modified time: 2018-06-15 22:59:04
  */
 
+#include "pfConf.h"
 #include "pfForce.h"
-#include "pfHome.h"
+#include "pfPhy.h"
 
-void pfHome::calSurf() {
-  pfForce fcdrv(*this);
+void pfHome::pfPhy::calSurf(pfForce& fcdrv, pfConf& cfdrv) {
   double la = exprs["lat"];
   printf("la = %f\n", la);
-  Config s1 = buildsur100(la, "sur");
-  writePOSCAR(s1);
+  Config s1 = cfdrv.buildsur100(la, "sur");
+  hm.writePOSCAR(s1);
   (fcdrv.*calfrc[sparams["ptype"]])(s1);
-  printf("%f\n", (s1.fitengy - ubcc.fitengy) * 0.5 * s1.natoms / (la * la));
-  // printf("surf100 = %f\n", (s1.fitengy - ubcc.fitengy * s1.natoms) /
-  //                              (exprs["lat"] * exprs["lat"]));
+  printf("%f\n",
+         (s1.fitengy - cfdrv.ubcc.fitengy) * 0.5 * s1.natoms / (la * la));
 }
 
-Config pfHome::buildsur100(const double& lat, const string& tag) { /* 100 */
+Config pfHome::pfConf::buildsur100(const double& lat,
+                                   const string& tag) { /* 100 */
   Config cc;
   int h = 24;
   int l = (!tag.compare("sur")) ? h - 10 : h;
@@ -57,12 +57,12 @@ Config pfHome::buildsur100(const double& lat, const string& tag) { /* 100 */
   return cc;
 }
 
-Config pfHome::buildsur110(const double& lat, const string& tag) {
+Config pfHome::pfConf::buildsur110(const double& lat, const string& tag) {
   Config cc;
   return cc;
 }
 
-Config pfHome::buildsur211(const double& lat, const string& tag) {
+Config pfHome::pfConf::buildsur211(const double& lat, const string& tag) {
   Config cc;
   return cc;
 }

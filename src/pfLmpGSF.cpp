@@ -2,19 +2,18 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:40:55
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-19 19:41:41
+ * @Last Modified time: 2018-06-16 00:16:09
  */
 
 #include "pfLmpDrv.h"
 
 /* gsf curve  [111](110); [111](211); [111](123) serial version */
-using std::vector;
 
 void pfHome::pfLMPdrv::calGSF() {
   char cmds[100][MAXLEN];
 
-  const vector<double>& dft110 = pfhm->mele.gsf[sttag["elem"] + "111z110"];
-  const vector<double>& dft211 = pfhm->mele.gsf[sttag["elem"] + "111z211"];
+  const vector<double>& dft110 = mele.gsf[sparams["elem"] + "111z110"];
+  const vector<double>& dft211 = mele.gsf[sparams["elem"] + "111z211"];
   const int npts = dft110.size();
   const double dlt = 1. / (npts - 1);
 
@@ -67,16 +66,15 @@ void pfHome::pfLMPdrv::calGSF() {
     sprintf(cmds[i++], "group    gtop  region   top");
 
     // --------------------- FORCE FIELDS ---------------------
-    sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
-    if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_style  %s", sparams["pairstyle"].c_str());
+    if (!sparams["ptype"].compare("MEAMC"))
       sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
-              pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
-              pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+              sparams["meamlib"].c_str(), elems[0].c_str(),
+              sparams["meampar"].c_str(), elems[0].c_str());
     else
-      sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
-              sttag["elem"].c_str());
-
-    // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+      sprintf(cmds[i++], "pair_coeff * * %s %s", sparams["lmpfile"].c_str(),
+              sparams["elem"].c_str());
+    sprintf(cmds[i++], "mass  *  %f", dparams["mass"]);
     sprintf(cmds[i++], "neighbor 1.0 bin");
     sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 
@@ -146,15 +144,15 @@ void pfHome::pfLMPdrv::calGSF() {
     sprintf(cmds[i++], "group  gtop  region   top");
 
     // --------------------- FORCE FIELDS ---------------------
-    sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
-    if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_style  %s", sparams["pairstyle"].c_str());
+    if (!sparams["ptype"].compare("MEAMC"))
       sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
-              pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
-              pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+              sparams["meamlib"].c_str(), elems[0].c_str(),
+              sparams["meampar"].c_str(), elems[0].c_str());
     else
-      sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
-              sttag["elem"].c_str());
-    // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+      sprintf(cmds[i++], "pair_coeff * * %s %s", sparams["lmpfile"].c_str(),
+              sparams["elem"].c_str());
+    sprintf(cmds[i++], "mass  *  %f", dparams["mass"]);
     sprintf(cmds[i++], "neighbor 1.0 bin");
     sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 

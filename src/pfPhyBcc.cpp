@@ -2,14 +2,14 @@
  * @Author: chaomy
  * @Date:   2017-12-16 16:00:09
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 23:41:25
+ * @Last Modified time: 2018-06-15 23:14:20
  */
 
+#include "pfConf.h"
 #include "pfForce.h"
-#include "pfHome.h"
+#include "pfPhy.h"
 
-void pfHome::calLat(string kk, int npts) {
-  pfForce fcdrv(*this);
+void pfHome::pfPhy::calLat(string kk, int npts, pfForce& fcdrv, pfConf& cdrv) {
   double la = (kk == "bcc") ? 3.30 : 4.20;
   double del = 1.5;
   double dl = del / npts;
@@ -19,7 +19,7 @@ void pfHome::calLat(string kk, int npts) {
   for (int i = 0; i < 2 * npts + 1; i++) {
     double latt = lo + i * dl;
     // Config cc(buildbccPrim(latt));
-    Config cc((this->*build[kk])(latt));
+    Config cc = (cdrv.*cdrv.build[kk])(latt);
     (fcdrv.*calfrc[sparams["ptype"]])(cc);
     ostr << latt << " " << cc.atoms[0].crho << " " << cc.fitengy << " "
          << 0.5 * cc.phiengy / cc.natoms << " " << cc.emfengy / cc.natoms
@@ -28,13 +28,13 @@ void pfHome::calLat(string kk, int npts) {
   ostr.close();
 }
 
-void pfHome::calLat(string kk) {
-  pfForce fcdrv(*this);
+void pfHome::pfPhy::calLat(string kk, pfForce& fcdrv, pfConf& cdrv) {
   double la = 3.30, me = 1e3;
+  unordered_map<string, vector<double>>& mpvc = cdrv.mpvc;
   for (double dl : {3e-2, 9e-3, 3e-3, 9e-4, 3e-4}) {
-    if (!kk.compare("bcc")) buildbcc(kk, la, dl);
+    if (!kk.compare("bcc")) cdrv.buildbcc(kk, la, dl);
     for (int ii = 0; ii < mpvc[kk].size(); ii++) {
-      Config& cc = mpcf[kk][ii];
+      Config& cc = cdrv.mpcf[kk][ii];
       (fcdrv.*calfrc[sparams["ptype"]])(cc);
       if (cc.fitengy < me) {
         me = cc.fitengy;
@@ -42,13 +42,14 @@ void pfHome::calLat(string kk) {
       }
     }
   }
-  if (!kk.compare("bcc")) ubcc = buildbccPrim(la);
+  if (!kk.compare("bcc")) cdrv.ubcc = cdrv.buildbccPrim(la);
   exprs["lat"] = la;
   error["lat"] = weigh["lat"] * square11(la - targs["lat"]);
-  (fcdrv.*calfrc[sparams["ptype"]])(ubcc);
+  (fcdrv.*calfrc[sparams["ptype"]])(cdrv.ubcc);
 }
 
-void pfHome::buildbcc(const string& kk, const double& gs, const double& dl) {
+void pfHome::pfConf::buildbcc(const string& kk, const double& gs,
+                              const double& dl) {
   double l = gs - 3 * dl;
   mpvc[kk].clear();
   mpcf[kk].clear();
@@ -58,7 +59,7 @@ void pfHome::buildbcc(const string& kk, const double& gs, const double& dl) {
   }
 }
 
-Config pfHome::buildbccPrim(const double& lat) {
+Config pfHome::pfConf::buildbccPrim(const double& lat) {
   Config cc;
   double ll = 0.5 * lat;
   cc.bvx[X] = -ll, cc.bvx[Y] = ll, cc.bvx[Z] = ll;
@@ -80,7 +81,7 @@ Config pfHome::buildbccPrim(const double& lat) {
   return cc;
 }
 
-Config pfHome::buildbccConv(const double& lat) {
+Config pfHome::pfConf::buildbccConv(const double& lat) {
   Config cc;  // use 2 x 2 x 2
   cc.bvx[X] = lat, cc.bvx[Y] = 0.0, cc.bvx[Z] = 0.0;
   cc.bvy[X] = 0.0, cc.bvy[Y] = lat, cc.bvy[Z] = 0.0;

@@ -44,8 +44,11 @@ class pfHome {
   mpi::environment env;
   mpi::communicator cmm;
   mpi::communicator cmmlm;
+
   class pfLMPdrv;
   class pfForce;
+  class pfPhy;
+  class pfConf;
 
  private:
   int ftn;   // number of atoms used for fitting
@@ -80,12 +83,6 @@ class pfHome {
   unordered_map<string, vector<double>> meamparms;  // hold MEAMC parameters
   vector<string> elems;                             //  element name
 
-  /* to examine potential */
-  Config ubcc;  // primitive bcc
-  Config cbcc;  // conventional bcc
-  unordered_map<string, vector<Config>> mpcf;
-  unordered_map<string, vector<double>> mpvc;
-
   unordered_map<string, double> targs;  // target values
   unordered_map<string, double> exprs;  // lammps errors
   unordered_map<string, double> weigh;  // weight of errors
@@ -97,7 +94,6 @@ class pfHome {
                 double (pfHome::pfForce::*)(const arma::mat& vv, int tg)>
       calobj;
   unordered_map<string, void (pfHome::*)()> write;
-  unordered_map<string, Config (pfHome::*)(const double& lat)> build;
   unordered_map<string, void (pfHome::*)()> read;
 
   vector<Config> configs;  // configurations
@@ -134,62 +130,18 @@ class pfHome {
   void initParam();
   void initTargs();
   void assignConfigs(int tag = 2);
-
-  void wrapAtomPos(Config& cc);
   void setSplineVariables();
 
-  // initialize box
-  void initBox(Config& cc);
-
-  // initialize neighbors
-  void initNeighs();
-  void initNeighs(Config& cc);
-  void initNeighsFull();           /* meam */
-  void initNeighsFull(Config& cc); /* meam */
-
-  // initialize angles
-  void initAngles();
-  void initAngles(Config& cc);
-  void initAnglesSameCutOff();
-
-  // set neighbors
-  void setNeighslot(Neigh& n, Func f, double r);
-  void setNeighslotStd(Neigh& n, Func f, double r);
-  void updateNeighslot(Neigh& n, Func f, double r, int id);
-
-  // set angles
-  void setAngleslot(Angle& a, Func f, double r);
-  void setAngleslotStd(Angle& a, Func f, double r);
-
-  // spline interpolation
-  void spltra(Func& func, double r, double& val, double& grad);
-  void spltrai(Func& func, double r, double& val, double& grad);
-  void splineNe(Func& func, int flag);
-  void splineEd(Func& func, int flag);
-
-  void splintEd(const Func& func, double r, double& val);  // no gradients
-  void splintEd(const Func& func, double r, double& val, double& grad);
-
-  void splint(const Func& func, double r, double& val);  // no gradients
-  void splint(const Func& func, double r, double& val, double& grad);
-
-  void splint(const Func& func, int k, double b, double step,
-              double& val);  // no gradients
-  void splint(const Func& func, int k, double b, double step, double& val,
-              double& grad);
-
   // force calculation
-  void doShift();  // make the rho / emf good
-  void run();
-  void run(int argc, char* argv[]);
-  void calErr();
+  void doShift(pfForce& f);  // make the rho / emf good
+  void run(int argc, char* argv[], pfForce&, pfConf&, pfPhy&);
+  void calErr(pfForce& f);
   void calErr(int tm);  // for debugging
   void updaterho(vector<double>& vv);
-  void updaterhoMEAM(vector<double>& vv);
+  void updaterhoMEAM(vector<double>& vv, pfForce& fcdrv);
   void resample();
   double errFunct(const vector<double>& x);
   double errFunctGrad(const vector<double>& x, vector<double>& g);
-  void stressMEAM(Config& cc);
 
   // optimization
   double encode(const double& val, const int& idx);
@@ -200,12 +152,12 @@ class pfHome {
   vector<double> decodestdv(const arma::mat& vv);
   vector<double> decodestdv(const vector<double>& vv);
   vector<double> encodestdv(const vector<double>& vv);
-  void simAnneal();
+  void simAnneal(pfForce& f);
   void simAnnealSpline();
   void randomize(vector<double>& vv, const int n, const vector<double>& v);
   void randomizeSpline(vector<double>& vv, const int n,
                        const vector<double>& v);
-  int rescaleEMF(vector<double>& vv);
+  int rescaleEMF(vector<double>& vv, pfForce& fcdrv);
   int rescaleEMF(arma::mat& vv);
   int rescaleRHO(vector<double>& vv);
   bool checkBoundary(const arma::mat& vv);
@@ -223,9 +175,9 @@ class pfHome {
   void GPsample();
 
   // CMA-ES
-  void loopcmaes();
-  void cntcmaes();
-  double cmaes(arma::mat& iterate);
+  void loopcmaes(pfForce& f);
+  void cntcmaes(pfForce& f);
+  double cmaes(arma::mat& iterate, pfForce& f);
   double testFunc(arma::mat& coordinates);
 
   // random
@@ -233,8 +185,8 @@ class pfHome {
   double randUniform();
   double randUniform(const double min, const double max);
 
-  void upgrade(int id);  // increase nodes
-  void increAnneal();    // increasing nodes and run anealling
+  void upgrade(int id, pfForce& f, pfConf& c);  // increase nodes
+  void increAnneal(pfForce& f, pfConf& c);      // increasing nodes
   void recordStage(int cnt);
 
   // inputs
@@ -261,35 +213,9 @@ class pfHome {
 
   // utils
   void outMkdir(string mdir);
-  void buildbcc(const string& kk, const double& gs, const double& dl);
-  void buildfcc(const string& kk, const double& gs, const double& dl);
-  void buildhcp(const string& kk, const double& gs, const double& dl);
-  void buildD03(const string& kk, const double& gs, const double& dl);
-  Config buildbccConv(const double& lat);
-  Config buildfccConv(const double& lat);
-  Config buildbccPrim(const double& lat);
-  Config buildfccPrim(const double& lat);
-  Config buildsur100(const double& lat, const string& tag);
-  Config buildsur110(const double& lat, const string& tag);
-  Config buildsur211(const double& lat, const string& tag);
-  Config buildhcp(const double& la, const double& lc);
-  Config buildD03(const double& lat);
-
-  void calLat(string key);
-  void calLat(string key, int n);
-  void calPV();
-  void calElas();
-  void calElas(int npts);
-  void calSurf();
-  void lmpCheck(int i, ofstream& of1);
 
   // MPI utilitis
   void bcdata(); /* broadcast data and parameters */
-
-  Config addvolm(const Config&, const double& dl);
-  Config addotho(const Config&, const double& dl);
-  Config addmono(const Config&, const double& dl);
-  Config addstrain(Config cc, const vector<vector<double>>& str);
 
   // use it to adjust parameters in fitting
   void deleteAtoms();
@@ -297,6 +223,7 @@ class pfHome {
   void loopBwth();
   void forceDis();
   void analyLoss();
+  void lmpCheck(int i, ofstream& of1);
 
   friend class pfOptimizer;
 };

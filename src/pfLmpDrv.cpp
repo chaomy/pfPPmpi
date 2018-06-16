@@ -2,21 +2,25 @@
  * @Author: chaomy
  * @Date:   2017-11-13 15:58:23
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-23 00:04:09
+ * @Last Modified time: 2018-06-16 00:21:55
  */
 
 #include "pfLmpDrv.h"
 
 using namespace LAMMPS_NS;
-using std::cout;
-using std::endl;
 
-pfHome::pfLMPdrv::pfLMPdrv(int argc, char* argv[])
-    : pfhm(NULL), gsfpnts(vector<int>({0, 3, 4, 5, 6, 7})) {
-  paraInit(argc, argv);
-}
-pfHome::pfLMPdrv::pfLMPdrv(int argc, char* argv[], pfHome* pt)
-    : pfhm(pt), gsfpnts(vector<int>({0, 3, 4, 5, 6, 7})) {
+pfHome::pfLMPdrv::pfLMPdrv(int argc, char* argv[], pfHome& x)
+    : hm(x),
+      dparams(x.dparams),
+      sparams(x.sparams),
+      targs(x.targs),
+      exprs(x.exprs),
+      weigh(x.weigh),
+      error(x.error),
+      elems(x.elems),
+      cmmlm(x.cmmlm),
+      mele(x.mele),
+      gsfpnts(vector<int>({0, 3, 4, 5, 6, 7})) {
   paraInit(argc, argv);
 }
 pfHome::pfLMPdrv::~pfLMPdrv() {
@@ -97,15 +101,6 @@ void pfHome::pfLMPdrv::calPhyErr() {
   }
 }
 
-void pfHome::pfLMPdrv::lmpTargets() {
-  sttag["elem"] = pfhm->gsparams()["elem"];
-  sttag["pairstyle"] = pfhm->gsparams()["pairstyle"];
-  sttag["lmpfile"] = pfhm->gsparams()["lmpfile"];
-  error = pfhm->error;
-  targs = pfhm->targs;
-  weigh = pfhm->weigh;
-}
-
 void pfHome::pfLMPdrv::paraInit(int argc, char* argv[]) {
   label["bcc"] = 1;
   label["fcc"] = 1;
@@ -121,7 +116,6 @@ void pfHome::pfLMPdrv::paraInit(int argc, char* argv[]) {
   // MPI_Init(&argc, &argv);
   // MPI_Comm_rank(MPI_COMM_WORLD, &mrank);
   // MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-  lmpTargets();  // targets
 
   char** lmparg = new char*[3];
   lmparg[0] = NULL;  // placeholder for program name
@@ -129,6 +123,6 @@ void pfHome::pfLMPdrv::paraInit(int argc, char* argv[]) {
   lmparg[2] = (char*)"no";
 
   // lmp = new LAMMPS(3, lmparg, MPI_COMM_WORLD);
-  lmp = new LAMMPS(3, lmparg, pfhm->cmmlm);
+  lmp = new LAMMPS(3, lmparg, cmmlm);
   delete[] lmparg;
 }

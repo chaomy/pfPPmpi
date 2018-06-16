@@ -12,8 +12,6 @@
 #define CLEN 10
 
 using namespace LAMMPS_NS;
-using std::unordered_map;
-using std::vector;
 
 class pfHome::pfLMPdrv {
  private:
@@ -37,7 +35,16 @@ class pfHome::pfLMPdrv {
   MPI_Comm lmp_comm;
   int mrank, nprocs;
   LAMMPS* lmp = NULL;
-  pfHome* pfhm = NULL;
+  pfHome& hm;
+  unordered_map<string, double>& dparams;
+  unordered_map<string, string>& sparams;  // string parameters
+  unordered_map<string, double>& targs;
+  unordered_map<string, double>& exprs;
+  unordered_map<string, double>& weigh;
+  unordered_map<string, double>& error;
+  vector<string>& elems;
+  mpi::communicator& cmmlm;
+  Melem& mele;  // element data
 
   // itensile
   vector<vector<double>> bsm;
@@ -46,16 +53,10 @@ class pfHome::pfLMPdrv {
 
  public:
   vector<int> gsfpnts;
-  unordered_map<string, string> sttag;
-  unordered_map<string, double> targs;
-  unordered_map<string, double> exprs;
-  unordered_map<string, double> weigh;
   unordered_map<string, int> label;
-  unordered_map<string, double> error;
   unordered_map<string, vector<double>> lgsf;  // gsf
   unordered_map<string, vector<double>> lmpv;  // pv
-  pfLMPdrv(int argc, char* argv[]);
-  pfLMPdrv(int argc, char* argv[], pfHome* pt);
+  pfLMPdrv(int argc, char* argv[], pfHome& x);
   ~pfLMPdrv();
 
   void calPhy();
@@ -77,8 +78,6 @@ class pfHome::pfLMPdrv {
   void calItenOptLin(const double& dlt, const string& tag);
   void calItenRun(const string& tag, double& v, vector<double>& stsv);
 
-  void lmpTargets();
-  void paraInit();
   void paraInit(int argc, char* argv[]);
 };
 

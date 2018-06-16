@@ -2,16 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-12-05 10:49:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-01 14:10:03
+ * @Last Modified time: 2018-06-15 17:31:21
  */
 
-#include "pfHome.h"
+#include "pfConf.h"
 
-using std::cout;
-using std::endl;
-using std::vector;
-
-void pfHome::initAnglesSameCutOff() {
+void pfHome::pfConf::initAnglesSameCutOff() {
   for (int cc = 0; cc < nconfs; cc++) {
     Config& tmpc = configs[cc];
 
@@ -40,7 +36,7 @@ void pfHome::initAnglesSameCutOff() {
   }      // cc
 }
 
-void pfHome::initNeighs() {
+void pfHome::pfConf::initNeighs() {
   ricut = rocut;
   ftn = 0;
   for (Config& cc : configs) {
@@ -50,7 +46,7 @@ void pfHome::initNeighs() {
   cout << "ricut = " << ricut << endl;
 }
 
-void pfHome::initNeighs(Config& tmpc) {
+void pfHome::pfConf::initNeighs(Config& tmpc) {
   vector<double> d0(3);
   vector<double> dij(3);
   for (int ii = 0; ii < tmpc.natoms; ii++) {

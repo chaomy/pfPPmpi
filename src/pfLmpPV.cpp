@@ -2,21 +2,20 @@
  * @Author: chaomy
  * @Date:   2017-11-23 07:29:33
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 17:24:13
+ * @Last Modified time: 2018-06-16 00:18:50
  */
 
 #include "pfLmpDrv.h"
 
 using std::pow;
-using std::vector;
 
 void pfHome::pfLMPdrv::calPV() {
-  string ptg(sttag["elem"] + "p");
-  string vtg(sttag["elem"] + "v");
-  string etg(sttag["elem"] + "e");
+  string ptg(sparams["elem"] + "p");
+  string vtg(sparams["elem"] + "v");
+  string etg(sparams["elem"] + "e");
 
-  const vector<double>& pp = pfhm->mele.pvm[ptg];
-  const vector<double>& vv = pfhm->mele.pvm[vtg];
+  const vector<double>& pp = mele.pvm[ptg];
+  const vector<double>& vv = mele.pvm[vtg];
 
   for (int it = 0; it < pp.size(); it++) {
     char cmds[100][MAXLEN];
@@ -41,16 +40,16 @@ void pfHome::pfLMPdrv::calPV() {
     sprintf(cmds[i++], "create_atoms 1 region whole");
 
     // --------------------- FORCE FIELDS ---------------------
-    sprintf(cmds[i++], "pair_style  %s", pfhm->sparams["pairstyle"].c_str());
-    if (!pfhm->sparams["ptype"].compare("MEAMC"))
+    sprintf(cmds[i++], "pair_style  %s", sparams["pairstyle"].c_str());
+    if (!sparams["ptype"].compare("MEAMC"))
       sprintf(cmds[i++], "pair_coeff  *  *  %s %s %s %s",
-              pfhm->sparams["meamlib"].c_str(), pfhm->elems[0].c_str(),
-              pfhm->sparams["meampar"].c_str(), pfhm->elems[0].c_str());
+              sparams["meamlib"].c_str(), elems[0].c_str(),
+              sparams["meampar"].c_str(), elems[0].c_str());
     else
-      sprintf(cmds[i++], "pair_coeff * * %s %s", sttag["lmpfile"].c_str(),
-              sttag["elem"].c_str());
+      sprintf(cmds[i++], "pair_coeff * * %s %s", sparams["lmpfile"].c_str(),
+              sparams["elem"].c_str());
 
-    // sprintf(cmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+    // sprintf(cmds[i++], "mass  *  %f", dparams["mass"]);
     sprintf(cmds[i++], "neighbor 1.0 bin");
     sprintf(cmds[i++], "neigh_modify  every 1  delay  0 check yes");
 

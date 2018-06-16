@@ -2,12 +2,12 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2017-12-19 15:35:59
+ * @Last Modified time: 2018-06-15 22:17:08
  */
 
-#include "pfHome.h"
+#include "pfForce.h"
 
-void pfHome::stressMEAM(Config &cnf) {
+void pfHome::pfForce::stressMEAM(Config &cnf) {
   double tm[3];
   cnf.phiengy = cnf.emfengy = 0.0;
   for (int i : {0, 1, 2, 3, 4, 5}) cnf.strs[i] = 0;
@@ -42,7 +42,7 @@ void pfHome::stressMEAM(Config &cnf) {
       cnf.strs[ZX] += 0.5 * ngbj.dist[Z] * tm[X];
 
       // rho
-      if (ngbj.r >= rhcut)
+      if (ngbj.r >= funcs[RHO].xx.back())
         spltra(funcs[RHO], ngbj.r, ngbj.rho, ngbj.rhog);
       else
         splint(funcs[RHO], ngbj.slots[RHO], ngbj.shifts[RHO], ngbj.steps[RHO],
@@ -50,7 +50,7 @@ void pfHome::stressMEAM(Config &cnf) {
       atm.crho += ngbj.rho;
 
       // partial sum
-      if (ngbj.r >= rhcut)
+      if (ngbj.r >= funcs[RHO].xx.back())
         spltra(funcs[MEAMF], ngbj.r, ngbj.fval, ngbj.fgrad);
       else
         splint(funcs[MEAMF], ngbj.slots[MEAMF - 1], ngbj.shifts[MEAMF - 1],

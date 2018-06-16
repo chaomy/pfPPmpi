@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-10 14:44:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-02-04 16:04:21
+ * @Last Modified time: 2018-06-16 00:18:10
  */
 
 #include "pfLmpDrv.h"
@@ -10,7 +10,8 @@
 using std::string;
 using std::vector;
 
-void pfHome::pfLMPdrv::calItenRun(const string& tag, double& engy, vector<double>& stsv) {
+void pfHome::pfLMPdrv::calItenRun(const string& tag, double& engy,
+                                  vector<double>& stsv) {
   char lmpcmds[100][MAXLEN];
   int i = 0;
 
@@ -46,10 +47,10 @@ void pfHome::pfLMPdrv::calItenRun(const string& tag, double& engy, vector<double
   sprintf(lmpcmds[i++], "create_atoms  1   region   box");
 
   // --------------------- FORCE FIELDS ---------------------
-  sprintf(lmpcmds[i++], "pair_style  %s", sttag["pairstyle"].c_str());
-  sprintf(lmpcmds[i++], "pair_coeff  *  *  %s %s", sttag["lmpfile"].c_str(),
-          sttag["elem"].c_str());
-  sprintf(lmpcmds[i++], "mass  *  %f", pfhm->gdparams()["mass"]);
+  sprintf(lmpcmds[i++], "pair_style  %s", sparams["pairstyle"].c_str());
+  sprintf(lmpcmds[i++], "pair_coeff  *  *  %s %s", sparams["lmpfile"].c_str(),
+          sparams["elem"].c_str());
+  sprintf(lmpcmds[i++], "mass  *  %f", dparams["mass"]);
   sprintf(lmpcmds[i++], "neighbor 1.0 bin");
   sprintf(lmpcmds[i++], "neigh_modify  every 1  delay  0 check yes");
 

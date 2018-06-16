@@ -2,9 +2,10 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-08 21:13:14
+ * @Last Modified time: 2018-06-15 21:44:17
  */
 
+#include "pfConf.h"
 #include "pfHome.h"
 
 using std::setw;
@@ -204,13 +205,13 @@ void pfHome::deleteAtoms() { /* delete some atoms (Better Not)*/
 void pfHome::cutoffNeighs() { /* for chossing a cutoff */
   FILE* fid = fopen("cutoff.txt", "w");
   rocut = 4.60;
-
+  pfConf cdrv(*this);
   /* loop over cutoff */
   while (rocut < 6.40) {
     for (Config& tmpc : configs)
       for (pfAtom& atm : tmpc.atoms) atm.neighsFull.clear();
 
-    initNeighsFull();
+    cdrv.initNeighsFull();
     fprintf(fid, "%0.3f ", rocut);
     for (Config& tmpc : configs) {
       int aven = 0;

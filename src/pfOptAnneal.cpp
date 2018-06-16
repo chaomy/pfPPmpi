@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-23 20:10:54
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 23:30:56
+ * @Last Modified time: 2018-06-15 22:44:07
  */
 
 #include "pfForce.h"
@@ -58,8 +58,7 @@ void pfHome::randomize(vector<double>& vv, const int n,
   }
 }
 
-void pfHome::simAnneal() {
-  pfForce fcdrv(*this);
+void pfHome::simAnneal(pfForce& fcdrv) {
   int loopcnt = 0, loopagain = 1;
   double T = dparams["temp"];
   double err = (fcdrv.*calobj[sparams["ptype"]])(ini, 1);
@@ -205,8 +204,8 @@ void pfHome::simAnnealSpline() {
       fflush(stdout);
 
       if (iparams["resfreq"] > 0 && (m + 1) % iparams["resfreq"] == 0) {
-        updaterhoMEAM(ini);
-        if (rescaleEMF(ini) == 1) {
+        updaterhoMEAM(ini, fcdrv);
+        if (rescaleEMF(ini, fcdrv) == 1) {
           printf("before rescale = %f\n", err);
           err = (fcdrv.*calobj[sparams["ptype"]])(decodestdv(ini), 1);
           printf("min = %f ; max = %f ; ave = %f \n", ominrho, omaxrho,
@@ -214,7 +213,7 @@ void pfHome::simAnnealSpline() {
           printf("after rescale = %f\n", err);
         }
       } else if ((m + 1) % 20 == 0)
-        updaterhoMEAM(ini);
+        updaterhoMEAM(ini, fcdrv);
 
       // if (iparams["lmpfreq"] > 0 && (m + 1) % iparams["lmpfreq"] == 0){
       //   writeLMPS(optvv);

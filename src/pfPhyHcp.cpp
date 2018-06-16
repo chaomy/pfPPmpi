@@ -2,14 +2,15 @@
  * @Author: chaomy
  * @Date:   2017-12-16 22:11:52
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-01-18 13:40:19
+ * @Last Modified time: 2018-06-15 21:23:38
  */
 
-#include "pfHome.h"
+#include "pfConf.h"
 
 #define SQ3B2 0.8660254037844386
 
-void pfHome::buildhcp(const string& kk, const double& gs, const double& dl) {
+void pfHome::pfConf::buildhcp(const string& kk, const double& gs,
+                              const double& dl) {
   double l = gs - 5 * dl;
   mpvc[kk].clear();
   mpcf[kk].clear();
@@ -21,7 +22,7 @@ void pfHome::buildhcp(const string& kk, const double& gs, const double& dl) {
   }
 }
 
-Config pfHome::buildhcp(const double& la, const double& lc) {
+Config pfHome::pfConf::buildhcp(const double& la, const double& lc) {
   Config cc;
   cc.bvx[X] = la, cc.bvx[Y] = 0.0, cc.bvx[Z] = 0.0;
   cc.bvy[X] = -0.5 * la, cc.bvy[Y] = SQ3B2 * la, cc.bvy[Z] = 0.0;
@@ -48,6 +49,6 @@ Config pfHome::buildhcp(const double& la, const double& lc) {
   initBox(cc);
   initNeighsFull(cc);
   initAngles(cc);
-  writePOSCAR(cc);
+  hm.writePOSCAR(cc);
   return cc;
 }
