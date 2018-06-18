@@ -29,7 +29,7 @@ class pfHome::pfForce::pfMEAMC {
   vector<double>& ini;
   vector<string>& elems;
   vector<double>& lob;
-  vector<double>& hib;  // hold high bound spline node values
+  vector<double>& hib;      // hold high bound spline node values
   vector<double>& deb;      // hib - lob
   vector<Config>& configs;  // configurations
   unordered_map<string, double>& dparams;

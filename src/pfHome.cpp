@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-16 17:01:51
+ * @Last Modified time: 2018-06-18 16:40:28
  */
 
 #include "pfConf.h"
@@ -35,6 +35,8 @@ pfHome::pfHome(int argc, char* argv[])
 
   read["EAMS"] = &pfHome::pfIO::readPot;
   read["MEAMS"] = &pfHome::pfIO::readMEAMS;
+
+  cout << "hello ?" << endl;
 
   pfPhy phdrv(*this);
   pfConf cdrv(*this);
