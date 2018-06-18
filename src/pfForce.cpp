@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-16 17:04:55
+ * @Last Modified time: 2018-06-18 17:31:39
  */
 
 #include "pfForce.h"
@@ -27,13 +27,7 @@ void pfHome::increAnneal(pfForce &fcdrv, pfConf &cfdrv, pfIO &io) {
 
 void pfHome::run(int argc, char *argv[], pfForce &fcdrv, pfConf &cfdrv,
                  pfPhy &phdrv, pfIO &io) {
-  if (!sparams["opt"].compare("lmp")) {
-    if (cmm.rank() == PFROOT) lmpdrv->calPhy();
-  } else if (!sparams["opt"].compare("make") ||
-             !sparams["opt"].compare("err")) {
-    calErr(fcdrv, io);
-    resample(io);
-  } else if (!sparams["opt"].compare("gp"))
+  if (!sparams["opt"].compare("gp"))
     GPsample(io);
   else if (!sparams["opt"].compare("anneal"))
     simAnneal(fcdrv, io);
@@ -55,31 +49,15 @@ void pfHome::run(int argc, char *argv[], pfForce &fcdrv, pfConf &cfdrv,
     calErr(fcdrv, io);
     phdrv.calLat("bcc", 30, fcdrv, cfdrv);
     phdrv.calLat("fcc", 30, fcdrv, cfdrv);
-    lmpdrv->calLatticeBCC();
     exprs["lat"] = exprs["lat"];
     phdrv.calElas(25, fcdrv, cfdrv);
 
-    lmpdrv->calLatticeFCC();
-    lmpdrv->calLatticeHCP();
-    lmpdrv->calSurfaceUrlx();
-    lmpdrv->calGSFUrlx();
-
-    remove("no");
-    remove("log.lammps");
-    remove("restart.equil");
     exprs["bcc2hcp"] = exprs["ehcp"] - exprs["ebcc"];
     exprs["bcc2fcc"] = exprs["efcc"] - exprs["ebcc"];
 
     vector<string> aa(
         {"lat", "bcc2fcc", "bcc2hcp", "suf110", "suf100", "suf111"});
     for (auto ee : aa) cout << ee << " " << exprs[ee] << endl;
-
-    for (int j : lmpdrv->gsfpnts)
-      cout << std::setprecision(3) << lmpdrv->lgsf["111z110"][j] << " "
-           << lmpdrv->lgsf["111e110"][j] << endl;
-    for (int j : lmpdrv->gsfpnts)
-      cout << std::setprecision(3) << lmpdrv->lgsf["111z211"][j] << " "
-           << lmpdrv->lgsf["111e211"][j] << endl;
   }
 }
 

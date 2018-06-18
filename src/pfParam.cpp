@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-16 16:36:29
+ * @Last Modified time: 2018-06-18 17:54:22
  */
 
 #include "pfIO.h"
@@ -10,10 +10,10 @@
 void pfHome::initParam(pfIO& io) {
   sparams["spline"] = string("nat");
   sparams["elem"] = string("Nb");
-  sparams["ptype"] = string("MEAMC");
+  sparams["ptype"] = string("MEAMS");
   sparams["pairstyle"] = string("meam/spline");
   sparams["alg"] = string("LN_SBPLX");
-  sparams["opt"] = string("nlopt");
+  sparams["opt"] = string("cmaes");
 
   dparams["temp"] = 0.01;
   dparams["istep"] = 0.3;
@@ -40,39 +40,21 @@ void pfHome::initParam(pfIO& io) {
 }
 
 void pfHome::pfIO::readParam() {
-  ifstream fid;
-  fid.open(sparams["parfile"].c_str());
-  if (!fid.is_open()) cerr << " error opening " + sparams["parfile"] << endl;
-  vector<string> segs(1, " ");
+  ifstream fid(sparams["parfile"], std::ifstream::in);
+  vector<string> segs;
   string buff;
 
   while (getline(fid, buff)) {
     segs.clear();
+    split(buff, " ", segs);
     cout << segs[0] << " " << segs[1] << endl;
-    if (!segs[0].compare("alg"))
+    if (sparams.find(segs[0]) != sparams.end()) {
       sparams[segs[0]] = segs[1];
-    else if (!segs[0].compare("elem"))
-      sparams[segs[0]] = segs[1];
-    else if (!segs[0].compare("opt"))
-      sparams[segs[0]] = segs[1];
-    else if (!segs[0].compare("ptype"))
-      sparams[segs[0]] = segs[1];
-    else if (!segs[0].compare("pairstyle"))
-      sparams[segs[0]] = segs[1];
-    else if (!segs[0].compare("spline"))
-      sparams[segs[0]] = segs[1];
-    else if (!segs[0].compare("maxstep"))
+    } else if (iparams.find(segs[0]) != iparams.end()) {
       iparams[segs[0]] = stoi(segs[1]);
-    else if (!segs[0].compare("resfreq"))
-      iparams[segs[0]] = stoi(segs[1]);
-    else if (!segs[0].compare("lmpfreq"))
-      iparams[segs[0]] = stoi(segs[1]);
-    else if (!segs[0].compare("runlmp"))
-      iparams[segs[0]] = stoi(segs[1]);
-    else if (!segs[0].compare("kmax"))
-      iparams[segs[0]] = stoi(segs[1]);
-    else
+    } else if (dparams.find(segs[0]) != dparams.end()) {
       dparams[segs[0]] = stof(segs[1]);
+    }
   }
   fid.close();
 }

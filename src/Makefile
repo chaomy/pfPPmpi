@@ -21,8 +21,7 @@ CPPFLAGS	  =  -std=c++11
 LMP_LIB     =  ${SRC}/lammps/src/
 CINCLUDE 	=  -I../include  -I${LMP_LIB}
 LIBS   		=  -L${LMP_LIB} # -L${MPI_HOME}/lib
-CDLINK  	=  ${LIBS} -lm -lnlopt -lmpi -lpthread  -llammps -larmadillo \
-                 -framework Accelerate -lboost_mpi -lboost_serialization
+CDLINK  	=  ${LIBS} -lm -lnlopt -lmpi -lpthread  -larmadillo -framework Accelerate -lboost_mpi -lboost_serialization
                  
 # parallel
 PARALLEL = MPI
@@ -58,19 +57,6 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfParam.cpp \
 			   ./pfUpgrade.cpp \
 			   ./pfNeighbors.cpp \
-			   ./pfLmpDrv.cpp \
-			   ./pfLmpBCC.cpp \
-			   ./pfLmpFCC.cpp \
-			   ./pfLmpHCP.cpp \
-			   ./pfLmpEla.cpp \
-			   ./pfLmpSuf.cpp \
-			   ./pfLmpSufUrlx.cpp \
-			   ./pfLmpGSF.cpp \
-			   ./pfLmpGSFUrlx.cpp \
-			   ./pfLmpPV.cpp \
-			   ./pfLmpVac.cpp \
-			   ./pfLmpItenOpt.cpp \
-			   ./pfLmpItenRun.cpp \
 			   ./pfEle.cpp 	\
 			   ./pfElePV.cpp \
 			   ./pfEleGSF.cpp \
@@ -94,6 +80,22 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfMathSpecial.cpp \
 			   ./pfGPsample.cpp    \
 			   ./pfMain.cpp
+
+			   # use lammps lib
+			   #./pfLmpDrv.cpp \
+			   ./pfLmpBCC.cpp \
+			   ./pfLmpFCC.cpp \
+			   ./pfLmpHCP.cpp \
+			   ./pfLmpEla.cpp \
+			   ./pfLmpSuf.cpp \
+			   ./pfLmpSufUrlx.cpp \
+			   ./pfLmpGSF.cpp \
+			   ./pfLmpGSFUrlx.cpp \
+			   ./pfLmpPV.cpp \
+			   ./pfLmpVac.cpp \
+			   ./pfLmpItenOpt.cpp \
+			   ./pfLmpItenRun.cpp \
+
 			   #./pfForceADP.cpp   \
 
 # OPT_FLAGS   += ${${PARALLEL}_FLAGS} ${OPT_${PARALLEL}_FLAGS} -DNDEBUG
@@ -106,7 +108,7 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 OBJECTS := $(subst .cpp,.o,${POTFITSRC})
 
 %.o: %.cpp
-	${CC} -c  $<  ${CINCLUDE}  ${OPTFLAGS}  ${CPPFLAGS}  # ${LIBS}
+	${CC} -c  $<  ${CINCLUDE}  ${OPTFLAGS}  ${CPPFLAGS} # ${LIBS}
 
 ${MAKETARGET}:$(OBJECTS)
 

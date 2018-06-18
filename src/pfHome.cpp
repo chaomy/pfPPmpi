@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-01-15 00:24:43
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-18 16:40:28
+ * @Last Modified time: 2018-06-18 17:35:21
  */
 
 #include "pfConf.h"
@@ -36,8 +36,6 @@ pfHome::pfHome(int argc, char* argv[])
   read["EAMS"] = &pfHome::pfIO::readPot;
   read["MEAMS"] = &pfHome::pfIO::readMEAMS;
 
-  cout << "hello ?" << endl;
-
   pfPhy phdrv(*this);
   pfConf cdrv(*this);
   pfForce fcdrv(*this);
@@ -48,9 +46,8 @@ pfHome::pfHome(int argc, char* argv[])
     for (int ii : {0, 1, 2}) mfrc[ii] = 0.0;
     iparams["atomicNum"] = 40;
     dparams["mass"] = 92.906400;
-    io.outMkdir(sparams["lmpdir"] = string("dirlmp"));
-    // sparams["tmpdir"] = string("dirtmp");
-    // outMkdir(sparams["tmpdir"]);
+    sparams["tmpdir"] = string("dirtmp");
+    io.outMkdir(sparams["tmpdir"]);
 
     sparams["tmpfile"] = string("pf.tmp");
     sparams["parfile"] = string("pf.par");
@@ -77,7 +74,7 @@ pfHome::pfHome(int argc, char* argv[])
     cdrv.initNeighs();
 
   cmmlm = cmm.split(cmm.rank() == PFROOT);  // split group lm to run lammps
-  lmpdrv = new pfLMPdrv(argc, argv, *this);
+  // lmpdrv = new pfLMPdrv(argc, argv, *this);
   assignConfigs(2);
   (cmm.barrier)();  //  important!
   // optdrv = new pfOptimizer(this); // temporarily deactivate functionalities
@@ -92,7 +89,7 @@ pfHome::~pfHome() {
   hib.clear();
   configs.clear();
   startps.clear();
-  if (lmpdrv) delete lmpdrv;
+  // if (lmpdrv) delete lmpdrv;
   // if (optdrv) delete optdrv;
 }
 
