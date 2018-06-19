@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-18 17:33:29
+ * @Last Modified time: 2018-06-19 01:41:32
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -20,7 +20,6 @@ using arma::linspace;
 using arma::mat;
 using arma::randu;
 using arma::vec;
-using std::to_string;
 
 double pfHome::testFunc(arma::mat& vc) {
   return pow((vc[0] - 2.0), 2) + pow((vc[1] - 3.0), 2) + pow((vc[2] - 0.01), 2);
@@ -37,8 +36,7 @@ void pfHome::cntcmaes(pfForce& fcdrv, pfIO& io) {
   }
 }
 
-void pfHome::loopcmaes(pfForce& fcdrv, pfIO& io) {
-  // start from scratch
+void pfHome::loopcmaes(pfForce& fcdrv, pfIO& io) {  // start from scratch
   // arma::mat iterate(nvars, 1, arma::fill::randu);
   // iterate *= 10;
   double cr = 1e30, op = 1e30;
@@ -69,11 +67,9 @@ double pfHome::cmaes(arma::mat& iterate, pfForce& fcdrv, pfIO& io) {
   int maxIt = iparams["maxstep"], lastid = 1;
   double tolerance = dparams["ftol"];
   double sigmatol = dparams["xtol"];
-  ofstream of1("err.txt", std::ofstream::out);
 
   // Population size.
   // int lambda = (4 + std::round(3 * std::log(iterate.n_elem))) * 10;
-  // Let's increase the population size to see what may happen
   int lambda = (4 + std::round(3 * std::log(iterate.n_elem))) * 15;
   arma::mat best(iterate);
 
@@ -187,27 +183,9 @@ double pfHome::cmaes(arma::mat& iterate, pfForce& fcdrv, pfIO& io) {
       overallobj = currentobj;
       iterate = mps.slice(idx1);
       (io.*write[sparams["ptype"]])();
-      // if (i % iparams["lmpfreq"] == 0) {
-      // lmpCheck(i, of1);
-      // for (int kk = 0; kk < besttol.size(); kk++) {
-      //   if (error["phy"] + currentobj < besttol[kk]) {
-      //     int tmpid = kk;
-      //     for (kk = besttol.size() - 1; kk > tmpid; kk--) {
-      //       besttol[kk] = besttol[kk - 1];
-      //       bestphy[kk] = bestphy[kk - 1];
-      //       std::rename(bestfiles[kk - 1].c_str(), bestfiles[kk].c_str());
-      //     }
-      //     besttol[tmpid] = error["phy"] + currentobj;
-      //     bestphy[tmpid] = error["phy"];
-      //     std::rename(sparams["lmpfile"].c_str(),
-      //     bestfiles[tmpid].c_str()); if (tmpid == 0) best = iterate; break;
-      //   }
-      // }
-      // for (int kk = 0; kk < besttol.size(); kk++)
-      //   of1 << besttol[kk] << " " << bestphy[kk] << " ";
-      // of1 << endl;
-      // }
-      // lastid = i;
+      if (i % iparams["lmpfreq"] == 0)
+        std::rename("lmp.MEAMS",
+                    (sparams["lmpdir"] + "/lib." + to_string(i)).c_str());
     }
 
     // for meams
@@ -299,7 +277,6 @@ double pfHome::cmaes(arma::mat& iterate, pfForce& fcdrv, pfIO& io) {
     // if (i % iparams["resfreq"] == 1) checkupdateBoundary(iterate);
     lastobj = overallobj;
   }
-  of1.close();
 
   iterate = best;  // give that has best phy constants to iterate
   return overallobj;
@@ -349,6 +326,29 @@ double pfHome::cmaes(arma::mat& iterate, pfForce& fcdrv, pfIO& io) {
 //       << error["suf100"] << " " << error["suf111"] << " " << error["bcc2fcc"]
 //       << " " << error["bcc2hcp"] << " " << error["gsf"] << endl;
 // }
+
+// for pick up several good candidates
+// if (i % iparams["lmpfreq"] == 0) {
+// lmpCheck(i, of1);
+// for (int kk = 0; kk < besttol.size(); kk++) {
+//   if (error["phy"] + currentobj < besttol[kk]) {
+//     int tmpid = kk;
+//     for (kk = besttol.size() - 1; kk > tmpid; kk--) {
+//       besttol[kk] = besttol[kk - 1];
+//       bestphy[kk] = bestphy[kk - 1];
+//       std::rename(bestfiles[kk - 1].c_str(), bestfiles[kk].c_str());
+//     }
+//     besttol[tmpid] = error["phy"] + currentobj;
+//     bestphy[tmpid] = error["phy"];
+//     std::rename(sparams["lmpfile"].c_str(),
+//     bestfiles[tmpid].c_str()); if (tmpid == 0) best = iterate; break;
+//   }
+// }
+// for (int kk = 0; kk < besttol.size(); kk++)
+//   of1 << besttol[kk] << " " << bestphy[kk] << " ";
+// of1 << endl;
+// }
+// lastid = i;
 
 // for meamc
 // if (i == 1) {

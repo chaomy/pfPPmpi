@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-18 17:31:39
+ * @Last Modified time: 2018-06-18 18:25:26
  */
 
 #include "pfForce.h"
@@ -15,13 +15,10 @@
 void pfHome::increAnneal(pfForce &fcdrv, pfConf &cfdrv, pfIO &io) {
   scnt = 0;
   int jobl[] = {PHI, PHI, RHO, MEAMF, MEAMG, PHI, RHO, PHI, RHO, MEAMF, MEAMG};
-  FILE *fid;
   for (int i = 0; i < 10; i++) {
     simAnneal(fcdrv, io);
     upgrade(jobl[i], fcdrv, cfdrv);
     iparams["kmax"]++;
-    fprintf(fid = fopen("record.txt", "a"), "%d %f\n", i, recorderr[i]);
-    fclose(fid);
   }
 }
 
@@ -45,7 +42,10 @@ void pfHome::run(int argc, char *argv[], pfForce &fcdrv, pfConf &cfdrv,
     doShift(fcdrv, io);
   else if (!sparams["opt"].compare("buildD03"))
     cfdrv.buildD03("d03", 7.400, 0.005);
-  else if (!sparams["opt"].compare("anlz")) {
+  else if (!sparams["opt"].compare("make")) {
+    calErr(fcdrv, io);
+    resample(io);
+  } else if (!sparams["opt"].compare("anlz")) {
     calErr(fcdrv, io);
     phdrv.calLat("bcc", 30, fcdrv, cfdrv);
     phdrv.calLat("fcc", 30, fcdrv, cfdrv);
@@ -94,7 +94,7 @@ void pfHome::calErr(pfForce &fcdrv, pfIO &io) {  // make potential
   //        << -0.1 * tmp.stsv[2] << " " << -0.1 * tmp.stsv[1] << " "
   //        << tmp.stsv[3] << " " << tmp.stsv[4] << " " << tmp.stsv[5] << endl;
   // }
-  // check the encoding
+  // check encoding
   // arma::mat v1 = encodev(mm);
   // arma::mat v2 = decodev(v1);
   // if (cmm.rank() == PFROOT)

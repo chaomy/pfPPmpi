@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-16 16:59:34
+ * @Last Modified time: 2018-06-18 18:33:51
  */
 
 #include "pfConf.h"
@@ -38,6 +38,7 @@ void pfHome::resample(pfIO& io) {
       ri = -1.0, ro = 1.0;
       double phinew, phinewdriv;
       for (auto ee : funcs[kk].xx) {
+        funcs[kk].s.deriv(ee, phinew, phinewdriv);
         cout << std::setprecision(16) << ee << " " << phinew - funcs[kk].s(0.0)
              << " " << phinewdriv << endl;
       }

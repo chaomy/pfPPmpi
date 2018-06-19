@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 23:09:25
+ * @Last Modified time: 2018-06-19 01:50:57
  */
 
 #include "pfForce.h"
@@ -14,10 +14,10 @@ double pfHome::pfForce::forceMEAMS(const arma::mat &vv, int tg) {
     if (tg == EXT) break;
 
     int cnt = 0;
-    for (int i : {0, 1, 2, 3, 4}) {
+    for (const int &i : {0, 1, 2, 3, 4}) {
       if (optidx[i] == 0) continue;
       Func &ff = funcs[i];
-      for (int j : ff.rlxid) ff.yy[j] = vv[cnt++];
+      for (const int &j : ff.rlxid) ff.yy[j] = vv[cnt++];
     }
 
     for (int i = 0; i < funcs.size(); i++) {  // broadcast functions
@@ -33,10 +33,10 @@ double pfHome::pfForce::forceMEAMS(const arma::mat &vv, int tg) {
 
     // regulate covarances of second derivatives radius functions
     int ww = 1;
-    for (int it : smthidx) {
+    for (const int &it : smthidx) {
       vector<double> &vv = funcs[it].s.m_b;
       double mn = 0.0, cov = 0.0;
-      for (int i = vv.size() - 1; i > vv.size() - 2; --i) {
+      for (int i = ww; i < ww + 1; ++i) {
         for (int j = -ww; j <= ww; ++j) mn += vv[i + j];
         mn /= (2 * ww + 1);
         cov += square11(vv[i] - mn);
@@ -48,11 +48,11 @@ double pfHome::pfForce::forceMEAMS(const arma::mat &vv, int tg) {
     // update errors using robust loss function, (linear + quadratic)
     double rs = 0;
     double Mf = dparams["fbndq"], Me = dparams["ebndq"];
-    for (int i : locls) {
+    for (const int &i : locls) {
       Config &cnf = configs[i];
       forceMEAMS(cnf);
       for (pfAtom &atm : cnf.atoms) {
-        for (int it : {X, Y, Z}) {
+        for (const int &it : {X, Y, Z}) {
           atm.fitfrc[it] =
               atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
           rs = fabs(atm.fitfrc[it] * atm.fweigh[it]);
@@ -79,7 +79,7 @@ void pfHome::pfForce::forceMEAMS(Config &cnf) {  // main routine
   cnf.rhomi = 1e10, cnf.rhomx = -1e10;
   for (pfAtom &atm : cnf.atoms) { /* loop over atoms to reset values */
     atm.crho = 0.0;
-    for (int it : {X, Y, Z})
+    for (const int &it : {X, Y, Z})
       atm.phifrc[it] = atm.rhofrc[it] = atm.trifrc[it] = 0.0;
   }  // ii
   double e0 = funcs[EMF].s(0.0);
@@ -91,7 +91,8 @@ void pfHome::pfForce::forceMEAMS(Config &cnf) {  // main routine
       funcs[PHI].s.deriv(ngbj.slots[PHI], ngbj.shifts[PHI], ngbj.phi,
                          ngbj.phig);
       cnf.phiengy += ngbj.phi;
-      for (int it : {X, Y, Z}) atm.phifrc[it] += ngbj.dist2r[it] * ngbj.phig;
+      for (const int &it : {X, Y, Z})
+        atm.phifrc[it] += ngbj.dist2r[it] * ngbj.phig;
 
       // rho
       funcs[RHO].s.deriv(ngbj.slots[RHO], ngbj.shifts[RHO], ngbj.rho,
@@ -150,7 +151,7 @@ void pfHome::pfForce::forceMEAMS(Config &cnf) {  // main routine
 
         double fj[3], fk[3];
 
-        for (int it : {X, Y, Z}) {
+        for (const int &it : {X, Y, Z}) {
           fj[it] = ngbj.dist2r[it] * fij - ngbk.dist2r[it] * prefactor_ij;
           forces_j[it] += fj[it];
 
@@ -159,13 +160,13 @@ void pfHome::pfForce::forceMEAMS(Config &cnf) {  // main routine
           cnf.atoms[ngbk.aid].trifrc[it] += fk[it];
         }
       }  // loop over kk
-      for (int it : {X, Y, Z}) {
+      for (const int &it : {X, Y, Z}) {
         atm.trifrc[it] -= forces_j[it];
         cnf.atoms[ngbj.aid].trifrc[it] += forces_j[it];
       }
 
     }  // loop over jj
-    for (int it : {X, Y, Z}) atm.trifrc[it] += forces_i[it];
+    for (const int &it : {X, Y, Z}) atm.trifrc[it] += forces_i[it];
   }                             // atm
   for (pfAtom &atm : cnf.atoms) /* eambedding forces */
     for (Neigh &ngb : atm.neighsFull) {
@@ -175,7 +176,7 @@ void pfHome::pfForce::forceMEAMS(Config &cnf) {  // main routine
   cnf.fitengy = (cnf.phiengy / 2. + cnf.emfengy) / cnf.natoms;
 }
 
-// This is for fiting physical parameters
+// For fiting physical parameters
 // error["phy"] = 0.0;
 // if (iparams["runlmp"]) {
 //   (this->*write[sparams["ptype"]])();

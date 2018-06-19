@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:11:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 01:45:06
+ * @Last Modified time: 2018-06-18 18:13:38
  */
 
 #include "pfHome.h"
@@ -18,6 +18,7 @@ void pfHome::bcdata() {
   broadcast(cmm, nconfs, PFROOT);
   broadcast(cmm, configs, PFROOT);
 
+  /* funcs */
   broadcast(cmm, nfuncs, PFROOT);
   broadcast(cmm, ini, PFROOT);
   broadcast(cmm, optidx, PFROOT);
