@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-19 01:53:21
+ * @Last Modified time: 2018-06-19 01:59:51
  */
 
 #include "pfForce.h"
@@ -34,9 +34,10 @@ double pfHome::pfForce::forceMEAMS(const arma::mat &vv, int tg) {
     // regulate covarances of second derivatives radius functions
     int ww = 1;
     for (const int &it : smthidx) {
-      vector<double> &vv = funcs[it].s.m_b;
-      double mn = 0.0, cov = 0.0;
-      for (int i = ww + 1; i < ww + 2; ++i) {
+      vector<double> &vv = funcs[it].s.m_b;  // second order
+      double cov = 0.0;
+      for (int i = ww; i < ww + 1; ++i) {
+        double mn = 0.0;
         for (int j = -ww; j <= ww; ++j) mn += vv[i + j];
         mn /= (2 * ww + 1);
         cov += square11(vv[i] - mn);
