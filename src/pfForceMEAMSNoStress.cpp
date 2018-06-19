@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-19 01:50:57
+ * @Last Modified time: 2018-06-19 01:53:21
  */
 
 #include "pfForce.h"
@@ -36,7 +36,7 @@ double pfHome::pfForce::forceMEAMS(const arma::mat &vv, int tg) {
     for (const int &it : smthidx) {
       vector<double> &vv = funcs[it].s.m_b;
       double mn = 0.0, cov = 0.0;
-      for (int i = ww; i < ww + 1; ++i) {
+      for (int i = ww + 1; i < ww + 2; ++i) {
         for (int j = -ww; j <= ww; ++j) mn += vv[i + j];
         mn /= (2 * ww + 1);
         cov += square11(vv[i] - mn);

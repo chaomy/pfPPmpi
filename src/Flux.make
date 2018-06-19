@@ -54,19 +54,6 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfParam.cpp \
 			   ./pfUpgrade.cpp \
 			   ./pfNeighbors.cpp \
-			   ./pfLmpDrv.cpp \
-			   ./pfLmpBCC.cpp \
-			   ./pfLmpFCC.cpp \
-			   ./pfLmpHCP.cpp \
-			   ./pfLmpEla.cpp \
-			   ./pfLmpSuf.cpp \
-			   ./pfLmpSufUrlx.cpp \
-			   ./pfLmpGSF.cpp \
-			   ./pfLmpGSFUrlx.cpp \
-			   ./pfLmpPV.cpp \
-			   ./pfLmpVac.cpp \
-			   ./pfLmpItenOpt.cpp \
-			   ./pfLmpItenRun.cpp \
 			   ./pfEle.cpp 	\
 			   ./pfElePV.cpp \
 			   ./pfEleGSF.cpp \
@@ -90,6 +77,20 @@ POTFITSRC 	=  ./pfConfig.cpp     \
 			   ./pfMathSpecial.cpp \
 			   ./pfGPsample.cpp    \
 			   ./pfMain.cpp
+
+			   #./pfLmpDrv.cpp \
+			   ./pfLmpBCC.cpp \
+			   ./pfLmpFCC.cpp \
+			   ./pfLmpHCP.cpp \
+			   ./pfLmpEla.cpp \
+			   ./pfLmpSuf.cpp \
+			   ./pfLmpSufUrlx.cpp \
+			   ./pfLmpGSF.cpp \
+			   ./pfLmpGSFUrlx.cpp \
+			   ./pfLmpPV.cpp \
+			   ./pfLmpVac.cpp \
+			   ./pfLmpItenOpt.cpp \
+			   ./pfLmpItenRun.cpp \
 
 			   # ./pfForceADP.cpp   \
 			   # ./pfForceMEAMtb.cpp  \
