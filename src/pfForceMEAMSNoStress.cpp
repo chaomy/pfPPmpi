@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-19 20:25:26
+ * @Last Modified time: 2018-06-26 16:10:39
  */
 
 #include "pfForce.h"
@@ -28,7 +28,7 @@ double pfHome::pfForce::forceMEAMS(const arma::mat &vv, int tg) {
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
     double efrc = 0.0, eengy = 0.0;
-    error["frc"] = 0.0, error["engy"] = 0.0, error["punish"] = 0.0;
+    error.frc = 0.0, error.engy = 0.0, error.pnsh = 0.0;
     double omax = -1e10, omin = 1e10;
 
     // regulate covarances of second derivatives radius functions
@@ -42,9 +42,9 @@ double pfHome::pfForce::forceMEAMS(const arma::mat &vv, int tg) {
         mn /= (2 * ww + 1);
         cov += square11(vv[i] - mn);
       }
-      error["punish"] += cov;
+      error.pnsh += cov;
     }
-    error["punish"] *= dparams["pweight"];
+    error.pnsh *= weigh.pnsh;
 
     // update errors using robust loss function, (linear + quadratic)
     double rs = 0;
@@ -65,14 +65,14 @@ double pfHome::pfForce::forceMEAMS(const arma::mat &vv, int tg) {
       omax = cnf.rhomx > omax ? cnf.rhomx : omax;
       omin = cnf.rhomi < omin ? cnf.rhomi : omin;
     }
-    eengy *= dparams["eweight"];
+    eengy *= weigh.engy;
     reduce(cmm, omin, ominrho, mpi::minimum<double>(), PFROOT);
     reduce(cmm, omax, omaxrho, mpi::maximum<double>(), PFROOT);
-    reduce(cmm, eengy, error["engy"], std::plus<double>(), PFROOT);
-    reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
+    reduce(cmm, eengy, error.engy, std::plus<double>(), PFROOT);
+    reduce(cmm, efrc, error.frc, std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"] + error["engy"] + error["punish"];
+  return error.frc + error.engy + error.pnsh;
 }
 
 void pfHome::pfForce::forceMEAMS(Config &cnf) {  // main routine
@@ -210,5 +210,4 @@ void pfHome::pfForce::forceMEAMS(Config &cnf) {  // main routine
 //     error["gsf"] +=
 //         500 * (lmpdrv->lgsf["111e110"][i] + lmpdrv->lgsf["111e211"][i]);
 //   error["phy"] += error["gsf"];
-//   error["phy"] *= phyweigh;
 // }

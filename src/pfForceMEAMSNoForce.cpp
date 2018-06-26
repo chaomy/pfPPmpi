@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 23:14:36
+ * @Last Modified time: 2018-06-26 16:03:51
  */
 
 #include "pfForce.h"
@@ -28,7 +28,7 @@ double pfHome::pfForce::forceMEAMSNoForce(const arma::mat &vv, int tg) {
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
     double efrc = 0.0, eengy = 0.0;
-    error["punish"] = 0.0;
+    error.pnsh = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
 
     int ww = 1;
@@ -40,10 +40,10 @@ double pfHome::pfForce::forceMEAMSNoForce(const arma::mat &vv, int tg) {
         mn /= (2 * ww + 1);
         for (int it = -ww; it <= ww; it++) cov += square11(vv[i + it] - mn);
       }
-      error["punish"] += cov / (2 * ww + 1);
-      // error["punish"] += square11(mn);
+      error.pnsh += cov / (2 * ww + 1);
+      // error.pnsh += square11(mn);
     }
-    error["punish"] *= dparams["pweight"];
+    error.pnsh *= weigh.pnsh;
 
     for (int i : locls) {
       Config &cnf = configs[i];
@@ -53,11 +53,11 @@ double pfHome::pfForce::forceMEAMSNoForce(const arma::mat &vv, int tg) {
       ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
     }
 
-    eengy *= dparams["eweight"];
-    reduce(cmm, eengy, error["engy"], std::plus<double>(), PFROOT);
+    eengy *= weigh.engy;
+    reduce(cmm, eengy, error.engy, std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["engy"] + error["punish"];
+  return error.engy + error.pnsh;
 }
 
 void pfHome::pfForce::forceMEAMSNoForce(Config &cnf) {  // It's benchmark one

@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-16 16:00:09
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-16 00:32:15
+ * @Last Modified time: 2018-06-26 16:09:37
  */
 
 #include "pfConf.h"
@@ -44,7 +44,7 @@ void pfHome::pfPhy::calLat(string kk, pfForce& fcdrv, pfConf& cdrv) {
   }
   if (!kk.compare("bcc")) cdrv.ubcc = cdrv.buildbccPrim(la);
   exprs["lat"] = la;
-  error["lat"] = weigh["lat"] * square11(la - targs["lat"]);
+  perr["lat"] = pwgh["lat"] * square11(la - targs["lat"]);
   (fcdrv.*calfrc[sparams["ptype"]])(cdrv.ubcc);
 }
 

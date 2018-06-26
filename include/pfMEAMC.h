@@ -34,7 +34,7 @@ class pfHome::pfForce::pfMEAMC {
   vector<Config>& configs;  // configurations
   unordered_map<string, double>& dparams;
   unordered_map<string, int>& iparams;
-  unordered_map<string, double>& error;
+  Ctrib& error;
   int& nconfs;
   int& locstt;
   int& locend;

@@ -7,10 +7,11 @@ class pfHome::pfPhy {
   pfHome& hm;
   Melem& mele;
   unordered_map<string, string>& sparams;  // string parameters
-  unordered_map<string, double>& weigh;    // weight of errors
+  unordered_map<string, double>& pwgh;     // pwght of errors
   unordered_map<string, double>& exprs;    // lammps errors
   unordered_map<string, double>& targs;    // target values
-  unordered_map<string, double>& error;    // errors
+  unordered_map<string, double>& perr;     // physical errors
+  Ctrib& error;
   unordered_map<string, void (pfHome::pfForce::*)(Config&)>& calfrc;
 
  public:
@@ -18,9 +19,10 @@ class pfHome::pfPhy {
       : hm(x),
         mele(x.mele),
         sparams(x.sparams),
-        weigh(x.weigh),
+        pwgh(x.pwgh),
         exprs(x.exprs),
         targs(x.targs),
+        perr(x.perr),
         error(x.error),
         calfrc(x.calfrc) {}
 

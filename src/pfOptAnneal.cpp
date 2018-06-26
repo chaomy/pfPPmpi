@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-23 20:10:54
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-16 16:39:20
+ * @Last Modified time: 2018-06-26 16:33:09
  */
 
 #include "pfForce.h"
@@ -103,7 +103,7 @@ void pfHome::simAnneal(pfForce& fcdrv, pfIO& io) {
         naccs[n] = 0;
       }
 
-      printf("%3d\t%f\t%3d\t%f\t\t%f\n", loopcnt, T, m + 1, error["frc"],
+      printf("%3d\t%f\t%3d\t%f\t\t%f\n", loopcnt, T, m + 1, error.frc,
              overallobj);
       fflush(stdout);
 
@@ -138,7 +138,6 @@ void pfHome::simAnneal(pfForce& fcdrv, pfIO& io) {
 
   ini = optvv;
   // for growing variables
-  // recorderr.push_back(overallobj);
   // recordStage(scnt++);
 
   v.clear();
@@ -194,11 +193,8 @@ void pfHome::simAnnealSpline(pfForce& fcdrv, pfIO& io) {
         naccs[n] = 0;
       }
 
-      printf("%3d\t%f\t%3d\t%f\t%f\t%f\t%f\n", loopcnt, T, m + 1, error["frc"],
-             error["lat"], error["ela"], overallobj);
-      // error["pv"], overallobj);
-      printf("%f %f %f %f\n", exprs["lat"], exprs["c11"], exprs["c12"],
-             exprs["c44"]);
+      printf("%3d\t%f\t%3d\t%f\t%f\n", loopcnt, T, m + 1, error.frc,
+             overallobj);
       // -mpcf["pv"][5].strs[0],
       // -mpcf["pv"][10].strs[0]);  // 60 GPa
       fflush(stdout);
@@ -244,7 +240,6 @@ void pfHome::simAnnealSpline(pfForce& fcdrv, pfIO& io) {
   }  // while
 
   ini = optvv;
-  // recorderr.push_back(overallobj);
   // recordStage(scnt++);
 
   v.clear();

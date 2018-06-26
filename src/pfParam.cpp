@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-05 22:29:46
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-18 17:54:22
+ * @Last Modified time: 2018-06-26 16:10:10
  */
 
 #include "pfIO.h"
@@ -57,6 +57,10 @@ void pfHome::pfIO::readParam() {
     }
   }
   fid.close();
+
+  weigh.engy = dparams["eweight"];
+  weigh.stss = dparams["sweight"];
+  weigh.pnsh = dparams["pweight"];
 }
 
 /**** parse the command line ****/

@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-10-30 15:31:59
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-20 14:51:35
+ * @Last Modified time: 2018-06-26 16:23:00
  */
 
 #include "pfForce.h"
@@ -71,9 +71,8 @@ void pfHome::calErr(pfForce &fcdrv, pfIO &io) {  // make potential
     (io.*write[sparams["ptype"]])();
 
     ofstream of("err.txt", std::ofstream::out);
-    of << std::setprecision(4) << err << " " << error["frc"] << " "
-       << error["engy"] << " " << error["strs"] << " " << error["punish"]
-       << endl;
+    of << std::setprecision(4) << err << " " << error.frc << " " << error.engy
+       << " " << error.stss << " " << error.pnsh << endl;
     of.close();
     io.writeRadDist();
     io.writeAngDist();
@@ -131,7 +130,7 @@ double pfHome::errFunct(const vector<double> &x) {
   if (sparams["ptype"] == "EAM") {
     gcnt++;
     err = (fcdrv.*calobj[sparams["ptype"]])(x, 1);
-    if (gcnt % pfreq == 0) printf("cnt %d err = %f \n", gcnt++, err);
+    if (gcnt % pfreq == 0) cout << "cnt " << gcnt++ << " err = " << err << endl;
   }
   return err;
 }

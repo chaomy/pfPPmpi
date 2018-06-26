@@ -14,7 +14,8 @@ class pfHome::pfForce {
   vector<int>& smthidx;
   vector<int>& optidx;
   vector<int>& locls;
-  unordered_map<string, double>& error;
+  Ctrib& error;
+  Ctrib& weigh;
   int& locstt;
   int& locend;
   double& omaxrho;
@@ -33,6 +34,7 @@ class pfHome::pfForce {
         optidx(x.optidx),
         locls(x.locls),
         error(x.error),
+        weigh(x.weigh),
         locstt(x.locstt),
         locend(x.locend),
         omaxrho(x.omaxrho),

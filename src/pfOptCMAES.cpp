@@ -2,7 +2,7 @@
  * @Xuthor: chaomy
  * @Date:   2018-01-10 20:08:18
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-19 01:41:32
+ * @Last Modified time: 2018-06-26 15:57:37
  *
  * Modified from mlpack
  * Implementation of the Covariance Matrix Adaptation Evolution Strategy as
@@ -190,9 +190,9 @@ double pfHome::cmaes(arma::mat& iterate, pfForce& fcdrv, pfIO& io) {
 
     // for meams
     cout << "CMA-ES: i = " << i << std::setprecision(12) << " " << overallobj
-         << " " << error["frc"] << " " << error["engy"] << " " << error["strs"]
-         << " " << error["punish"] << " cs " << sigma(idx1) << " " << ominrho
-         << " " << omaxrho << " " << funcs[EMF].xx.front() << " "
+         << " " << error.frc << " " << error.engy << " " << error.stss << " "
+         << error.pnsh << " cs " << sigma(idx1) << " " << ominrho << " "
+         << omaxrho << " " << funcs[EMF].xx.front() << " "
          << funcs[EMF].xx.back() << endl;
 
     if (iterate.n_rows > iterate.n_cols) {  // Update Step Size.

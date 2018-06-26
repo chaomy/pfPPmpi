@@ -17,6 +17,7 @@ class pfHome::pfIO {
   vector<double>& lol;   // 5 + 1  default min values of each function
   vector<int>& startps;  // used in annealing method to update functions
   vector<int>& locls;
+  Ctrib& weigh;
   int& tln;  // total number of atoms
   int& nconfs;
   int& nfuncs;
@@ -36,6 +37,7 @@ class pfHome::pfIO {
         lol(x.lol),
         startps(x.startps),
         locls(x.locls),
+        weigh(x.weigh),
         tln(x.tln),
         nconfs(x.nconfs),
         nfuncs(x.nfuncs) {}

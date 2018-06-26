@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 23:03:46
+ * @Last Modified time: 2018-06-26 15:39:46
  */
 
 #include "pfForce.h"
@@ -26,8 +26,8 @@ double pfHome::pfForce::forceEAM(const arma::mat& vv, int tg) {
 
     for (Func& ff : hm.funcs) ff.s.set_points(ff.xx, ff.yy);
 
-    hm.error["frc"] = 0.0, hm.error["punish"] = 0.0, hm.error["shift"] = 0.0;
-    hm.omaxrho = -1e10, hm.ominrho = 1e10;
+    error.frc = 0.0, error.pnsh = 0.0;
+    omaxrho = -1e10, ominrho = 1e10;
     double efrc = 0.0;
 
     int ls[] = {PHI, RHO};
@@ -38,9 +38,9 @@ double pfHome::pfForce::forceEAM(const arma::mat& vv, int tg) {
         tm += (square11(hm.funcs[it].s.m_b[i]) +
                0.5 * hm.funcs[it].s.m_b[i] * hm.funcs[it].s.m_b[i + 1]);
       tm += square11(hm.funcs[it].s.m_b.back());
-      hm.error["punish"] += tm;  //  * invrg;
+      error.pnsh += tm;  //  * invrg;
     }
-    hm.error["punish"] = exp(hm.error["punish"] / dparams["pweight"]);
+    error.pnsh = exp(error.pnsh / dparams["pweight"]);
 
     for (int i = locstt; i < locend; i++) {
       Config& cnf = configs[i];
@@ -52,19 +52,19 @@ double pfHome::pfForce::forceEAM(const arma::mat& vv, int tg) {
         }
       }
       efrc += square11(cnf.fitengy - cnf.engy);
-      hm.omaxrho = cnf.rhomx > hm.omaxrho ? cnf.rhomx : hm.omaxrho;
-      hm.ominrho = cnf.rhomi < hm.ominrho ? cnf.rhomi : hm.ominrho;
+      omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
+      ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
     }
-    // reduce(cmm, epsf, hm.error["shift"], std::plus<double>(), PFROOT);
-    reduce(cmm, efrc, hm.error["frc"], std::plus<double>(), PFROOT);
+    // reduce(cmm, epsf, error.pnsh, std::plus<double>(), PFROOT);
+    reduce(cmm, efrc, error.frc, std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return hm.error["frc"];  // hm.error["punish"] + hm.error["shift"];
+  return error.frc;  // error.pnsh
 }
 
 double pfHome::pfForce::forceEAM(const arma::mat& vv) {
-  hm.error["frc"] = 0.0, hm.error["punish"] = 0.0, hm.error["shift"] = 0.0;
-  hm.omaxrho = -1e10, hm.ominrho = 1e10;
+  error.frc = 0.0, error.pnsh = 0.0;
+  omaxrho = -1e10, ominrho = 1e10;
   int cnt = 0;
   for (int i = 0; i < hm.funcs.size(); i++) { /* interpolates */
     Func& ff = hm.funcs[i];
@@ -87,7 +87,7 @@ double pfHome::pfForce::forceEAM(const arma::mat& vv) {
       tm += (square11(hm.funcs[it].s.m_b[i]) +
              0.5 * hm.funcs[it].s.m_b[i] * hm.funcs[it].s.m_b[i + 1]);
     tm += square11(hm.funcs[it].s.m_b.back());
-    hm.error["punish"] += 1e-4 * tm * invrg;
+    error.pnsh += 1e-4 * tm * invrg;
   }
 
   for (int i = locstt; i < locend; i++) {
@@ -96,25 +96,25 @@ double pfHome::pfForce::forceEAM(const arma::mat& vv) {
     for (pfAtom& atm : cnf.atoms) {
       for (int it : {X, Y, Z}) {
         atm.fitfrc[it] = atm.phifrc[it] + atm.rhofrc[it] - atm.frc[it];
-        hm.error["frc"] += square11(atm.fitfrc[it] * atm.fweigh[it]);
+        error.frc += square11(atm.fitfrc[it] * atm.fweigh[it]);
       }
     }
-    hm.error["frc"] += square11(cnf.fitengy - cnf.engy);
-    hm.omaxrho = cnf.rhomx > hm.omaxrho ? cnf.rhomx : hm.omaxrho;
-    hm.ominrho = cnf.rhomi < hm.ominrho ? cnf.rhomi : hm.ominrho;
+    error.frc += square11(cnf.fitengy - cnf.engy);
+    omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
+    ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
   }
-  hm.error["shift"] += square11(hm.omaxrho - hm.funcs[EMF].xx.back());
-  hm.error["shift"] += square11(hm.ominrho - hm.funcs[EMF].xx.front());
-  hm.error["frc"] *= 1e2;
-  hm.error["shift"] *= dparams["pshift"] / square11(hm.funcs[EMF].xx.back() -
-                                                    hm.funcs[EMF].xx.front());
+  error.pnsh += square11(omaxrho - hm.funcs[EMF].xx.back());
+  error.pnsh += square11(ominrho - hm.funcs[EMF].xx.front());
+  error.frc *= 1e2;
+  error.pnsh *= dparams["pshift"] /
+                square11(hm.funcs[EMF].xx.back() - hm.funcs[EMF].xx.front());
 
-  double tmp = hm.error["frc"] * (1 + hm.error["punish"]);
+  double tmp = error.frc * (1 + error.pnsh);
 
   cout << " rank " << cmm.rank() << " err  = " << tmp << endl;
-  reduce(cmm, tmp, hm.error["sum"], std::plus<double>(), PFROOT);
+  reduce(cmm, tmp, error.tlt, std::plus<double>(), PFROOT);
   cout << " rank " << cmm.rank() << " err  = " << tmp << endl;
-  return hm.error["sum"];
+  return error.tlt;
 }
 
 void pfHome::pfForce::forceEAM(Config& cnf) {

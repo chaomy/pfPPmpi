@@ -2,11 +2,11 @@
  * @Author: chaomy
  * @Date:   2018-01-29 22:10:28
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 01:50:21
+ * @Last Modified time: 2018-06-26 15:31:50
  */
 
-#include "pfMEAMC.h"
 #include "pfLmpDrv.h"
+#include "pfMEAMC.h"
 
 double pfHome::pfForce::pfMEAMC::forceMEAMC(const arma::mat& vv, int tg) {
   while (true) {
@@ -30,10 +30,10 @@ double pfHome::pfForce::pfMEAMC::forceMEAMC(const arma::mat& vv, int tg) {
       cc.fitengy /= cc.natoms;
       efrc += square11(cc.fitengy - cc.engy);
     }
-    reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
+    reduce(cmm, efrc, error.frc, std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"];
+  return error.frc;
 }
 
 void pfHome::pfForce::pfMEAMC::forceMEAMC(Config& cc) {

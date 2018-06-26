@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2018-02-12 21:51:52
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-18 16:52:29
+ * @Last Modified time: 2018-06-26 15:42:34
  */
 
 #include "pfIO.h"
@@ -35,9 +35,9 @@ void pfHome::GPsample(pfIO& io) {
     for (Func& ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
     (io.*write[sparams["ptype"]])();
-    if (error["phy"] < overallphy) {
+    if (error.tlt < overallphy) {
       std::rename(sparams["lmpfile"].c_str(), "meam.lib.best");
-      overallphy = error["phy"];
+      overallphy = error.tlt;
     }
   }
 

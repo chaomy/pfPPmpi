@@ -2,12 +2,12 @@
  * @Author: chaomy
  * @Date:   2017-12-19 08:58:15
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 22:18:30
+ * @Last Modified time: 2018-06-26 15:53:26
  */
 
 #include "pfConf.h"
-#include "pfPhy.h"
 #include "pfForce.h"
+#include "pfPhy.h"
 
 using std::pow;
 using std::to_string;
@@ -25,11 +25,11 @@ void pfHome::pfPhy::calPV(pfForce& fcdrv, pfConf& cfdrv) {
   for (double dl : vv)
     mpcf["pv"].push_back(cfdrv.addvolm(cfdrv.ubcc, pow(dl, 1. / 3.) - 1.0));
 
-  error["pv"] = 0.0;
+  perr["pv"] = 0.0;
   for (int i = 0; i < mpcf["pv"].size(); i++) {
     auto& ee = mpcf["pv"][i];
     fcdrv.stressMEAM(ee);
     for (int i = 0; i < 6; i++) ee.strs[i] *= EVA3_GPA;
-    error["pv"] += square11(pp[i] + ee.strs[XX]);
+    perr["pv"] += square11(pp[i] + ee.strs[XX]);
   }
 }

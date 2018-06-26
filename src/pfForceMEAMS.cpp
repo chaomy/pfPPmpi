@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-14 23:07:24
+ * @Last Modified time: 2018-06-26 16:03:18
  */
 
 #include "pfForce.h"
@@ -28,7 +28,7 @@ double pfHome::pfForce::forceMEAMSStressPunish(const arma::mat &vv, int tg) {
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
     double efrc = 0.0, eengy = 0.0, estrs = 0.0;
-    error["frc"] = 0.0, error["punish"] = 0.0;
+    error.frc = 0.0, error.pnsh = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
 
     // int ww = 1;
@@ -40,8 +40,8 @@ double pfHome::pfForce::forceMEAMSStressPunish(const arma::mat &vv, int tg) {
     //     mn /= (2 * ww + 1);
     //     for (int it = -ww; it <= ww; it++) cov += square11(vv[i + it] - mn);
     //   }
-    //   error["punish"] += cov / (2 * ww + 1);
-    //   // error["punish"] += square11(mn);
+    //   error.pnsh += cov / (2 * ww + 1);
+    //   // error.pnsh += square11(mn);
     // }
 
     for (int i : locls) {
@@ -63,16 +63,16 @@ double pfHome::pfForce::forceMEAMSStressPunish(const arma::mat &vv, int tg) {
       estrs *= cnf.weigh;
     }
 
-    error["punish"] *= dparams["pweight"];
-    estrs *= dparams["sweight"];
-    eengy *= dparams["eweight"];
+    error.pnsh *= weigh.pnsh;
+    estrs *= weigh.stss;
+    eengy *= weigh.engy;
 
-    reduce(cmm, eengy, error["engy"], std::plus<double>(), PFROOT);
-    reduce(cmm, estrs, error["strs"], std::plus<double>(), PFROOT);
-    reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
+    reduce(cmm, eengy, error.engy, std::plus<double>(), PFROOT);
+    reduce(cmm, estrs, error.stss, std::plus<double>(), PFROOT);
+    reduce(cmm, efrc, error.frc, std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"] + error["engy"] + error["strs"] + error["punish"];
+  return error.frc + error.engy + error.stss + error.pnsh;
 }
 
 double pfHome::pfForce::forceMEAMSStress(const arma::mat &vv, int tg) {
@@ -95,7 +95,7 @@ double pfHome::pfForce::forceMEAMSStress(const arma::mat &vv, int tg) {
     for (Func &ff : funcs) ff.s.set_points(ff.xx, ff.yy);
 
     double efrc = 0.0, eengy = 0.0, estrs = 0.0;
-    error["frc"] = 0.0;
+    error.frc = 0.0;
     omaxrho = -1e10, ominrho = 1e10;
 
     for (int i : locls) {
@@ -116,18 +116,16 @@ double pfHome::pfForce::forceMEAMSStress(const arma::mat &vv, int tg) {
         estrs += square11(cnf.fitstrs[it] - cnf.strs[it]);
       estrs *= cnf.weigh;
     }
-    reduce(cmm, dparams["eweight"] * eengy, error["engy"], std::plus<double>(),
-           PFROOT);
-    reduce(cmm, dparams["sweight"] * estrs, error["strs"], std::plus<double>(),
-           PFROOT);
-    reduce(cmm, efrc, error["frc"], std::plus<double>(), PFROOT);
+    reduce(cmm, weigh.engy * eengy, error.engy, std::plus<double>(), PFROOT);
+    reduce(cmm, weigh.stss * estrs, error.stss, std::plus<double>(), PFROOT);
+    reduce(cmm, efrc, error.frc, std::plus<double>(), PFROOT);
     if (cmm.rank() == PFROOT) break;
   }
-  return error["frc"] + error["engy"] + error["strs"];
+  return error.frc + error.engy + error.stss;
 }
 
 double pfHome::pfForce::forceMEAMS(const arma::mat &vv) {
-  error["frc"] = 0.0, error["punish"] = 0.0, error["shift"] = 0.0;
+  error.frc = 0.0, error.pnsh = 0.0;
   omaxrho = -1e10, ominrho = 1e10;
 
   int cnt = 0;
@@ -143,28 +141,28 @@ double pfHome::pfForce::forceMEAMS(const arma::mat &vv) {
 
   int ls[] = {PHI, RHO, MEAMF};
   for (int it : ls) {
-    for (double ee : funcs[it].s.m_b) error["punish"] += square11(ee);
+    for (double ee : funcs[it].s.m_b) error.pnsh += square11(ee);
     for (int i = 0; i < funcs[it].s.m_b.size() - 1; i++)
-      error["punish"] += 0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1];
+      error.pnsh += 0.5 * funcs[it].s.m_b[i] * funcs[it].s.m_b[i + 1];
   }
 
-  error["frc"] = 0.0;
+  error.frc = 0.0;
   for (Config &cnf : configs) {
     forceMEAMS(cnf);
     for (pfAtom &atm : cnf.atoms)
       for (int it : {X, Y, Z}) {
         atm.fitfrc[it] =
             atm.phifrc[it] + atm.rhofrc[it] + atm.trifrc[it] - atm.frc[it];
-        error["frc"] += square11(atm.fitfrc[it] * atm.fweigh[it]);
+        error.frc += square11(atm.fitfrc[it] * atm.fweigh[it]);
       }
 
     ominrho = cnf.rhomi < ominrho ? cnf.rhomi : ominrho;
     omaxrho = cnf.rhomx > omaxrho ? cnf.rhomx : omaxrho;
-    error["frc"] += square11(cnf.fitengy - cnf.engy);
+    error.frc += square11(cnf.fitengy - cnf.engy);
   }  // cc
-  error["punish"] *= dparams["pweight"];
-  error["frc"] *= 1e2;
-  return error["frc"] + error["punish"];  // + error["shift"];
+  error.pnsh *= weigh.pnsh;
+  error.frc *= 1e2;
+  return error.frc + error.pnsh;
 }
 
 void pfHome::pfForce::forceMEAMSStress(Config &cnf) {

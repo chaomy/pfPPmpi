@@ -41,7 +41,7 @@ class pfHome::pfLMPdrv {
   unordered_map<string, double>& targs;
   unordered_map<string, double>& exprs;
   unordered_map<string, double>& weigh;
-  unordered_map<string, double>& error;
+  Ctrib& error;
   vector<string>& elems;
   mpi::communicator& cmmlm;
   Melem& mele;  // element data

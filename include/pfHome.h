@@ -57,26 +57,16 @@ class pfHome {
   int tln;   // total number of atoms
   int gcnt;  // count the times of calling force calculation
   int scnt;  // count the times of calling simulated annealing
-  int nvars;
-  int nfuncs;
-  int nconfs;
+  int nvars, nfuncs, nconfs;
   int locstt, locend;
   vector<int> locnatoms;
   vector<int> locls;
   vector<int> smthidx;
-  double fsm, phyweigh;
-
-  double ricut;
-  double rocut;
-  double rhcut;
+  double ricut, rocut, rhcut;
   double lorho;
   double hirho;
-  double punish;
-  double physic;
 
-  double ominrho;  // overall min density
-  double omaxrho;  // overall max density
-  double oaverho;  // overall average density
+  double ominrho, omaxrho, oaverho;  //  min,  max, overall average density
 
   /* parameters */
   unordered_map<string, double> dparams;            // double parameters
@@ -87,8 +77,10 @@ class pfHome {
 
   unordered_map<string, double> targs;  // target values
   unordered_map<string, double> exprs;  // lammps errors
-  unordered_map<string, double> weigh;  // weight of errors
-  unordered_map<string, double> error;  // errors
+  unordered_map<string, double> pwgh;   // weight of errors
+  unordered_map<string, double> perr;   // errors of physical parameters
+
+  Ctrib error, weigh;  // errors, weight
 
   /* mapping functions */
   unordered_map<string, void (pfHome::pfForce::*)(Config&)> calfrc;
@@ -100,23 +92,17 @@ class pfHome {
 
   vector<Config> configs;  // configurations
   vector<Func> funcs;      // spline functions
-  // vector<Func> fprec;  to be deleted
 
-  vector<int> startps;  // used in annealing method to update functions
-  vector<int> endps;    // used in annealing method to update functions
-  pfLMPdrv* lmpdrv;     // lammps driver
-  pfOptimizer* optdrv;  // optimizer
-  Melem mele;           // element data
+  vector<int> startps, endps;  // used in annealing method to update functions
+  pfLMPdrv* lmpdrv;            // lammps driver
+  pfOptimizer* optdrv;         // optimizer
+  Melem mele;                  // element data
 
-  vector<double> mfrc;       // min force of each force vectors
-  vector<double> hil;        // 5 + 1  default max values of each function
-  vector<double> lol;        // 5 + 1  default min values of each function
-  vector<double> recorderr;  // growing variable, record error of each run
-  vector<double> ini;        // hold spline node values
-  vector<double> hib;        // hold high bound spline node values
-  vector<double> lob;        // hold low bound spline node values
-  vector<double> deb;        // hib - lob
-  vector<int> optidx;        // functions that to be optimized
+  vector<double> mfrc;      // min force of each force vectors
+  vector<double> hil, lol;  // 5 + 1  default max/min values of each function
+  vector<double> ini;       // hold spline node values
+  vector<double> hib, lob, deb;  //  high/low bound, hi-lo spline node values
+  vector<int> optidx;            // functions that to be optimized
 
  public:
   pfHome(int argc, char* argv[]);
@@ -146,14 +132,14 @@ class pfHome {
   double errFunctGrad(const vector<double>& x, vector<double>& g);
 
   // optimization
-  double encode(const double& val, const int& idx);
-  double decode(const double& val, const int& idx);
-  arma::mat encodev(const arma::mat& vv);
-  arma::mat encodev(const vector<double>& vv);
-  arma::mat decodev(const arma::mat& vv);
-  vector<double> decodestdv(const arma::mat& vv);
-  vector<double> decodestdv(const vector<double>& vv);
-  vector<double> encodestdv(const vector<double>& vv);
+  inline double encode(const double& val, const int& idx);
+  inline double decode(const double& val, const int& idx);
+  inline arma::mat encodev(const arma::mat& vv);
+  inline arma::mat encodev(const vector<double>& vv);
+  inline arma::mat decodev(const arma::mat& vv);
+  inline vector<double> decodestdv(const arma::mat& vv);
+  inline vector<double> decodestdv(const vector<double>& vv);
+  inline vector<double> encodestdv(const vector<double>& vv);
   void simAnneal(pfForce& f, pfIO& io);
   void simAnnealSpline(pfForce& f, pfIO& io);
   void randomize(vector<double>& vv, const int n, const vector<double>& v);
@@ -162,10 +148,10 @@ class pfHome {
   int rescaleEMF(vector<double>& vv, pfForce& fcdrv);
   int rescaleEMF(arma::mat& vv);
   int rescaleRHO(vector<double>& vv);
-  bool checkBoundary(const arma::mat& vv);
-  void checkupdateBoundary(arma::mat& vv);
-  void updateBoundary(const arma::mat& vv);
-  void shiftRHO(vector<double>& vv);
+  bool checkBoundary(const arma::mat&);
+  void checkupdateBoundary(arma::mat&);
+  void updateBoundary(const arma::mat&);
+  void shiftRHO(vector<double>&);
   void shiftEMF(double shift);
   void nloptGlobal(pfIO&);
 
@@ -177,10 +163,10 @@ class pfHome {
   void GPsample(pfIO&);
 
   // CMA-ES
-  void loopcmaes(pfForce& f, pfIO& io);
-  void cntcmaes(pfForce& f, pfIO& io);
-  double cmaes(arma::mat& iterate, pfForce& f, pfIO& io);
-  double testFunc(arma::mat& coordinates);
+  void loopcmaes(pfForce&, pfIO&);
+  void cntcmaes(pfForce&, pfIO&);
+  double cmaes(arma::mat&, pfForce&, pfIO&);
+  double testFunc(arma::mat&);
 
   // random
   double randNormal();
@@ -198,14 +184,47 @@ class pfHome {
   void deleteAtoms();
   void cutoffNeighs();
   void loopBwth();
-  void forceDis();
   void analyLoss();
   void lmpCheck(int i, ofstream& of1);
 
   friend class pfOptimizer;
 };
 
-void inline split(const string& s, const char* delim, vector<string>& v) {
+template <typename TYPE>
+static inline void setall2d(vector<vector<TYPE>>& vv, const TYPE val) {
+  for (auto& v1 : vv)
+    for (auto& v2 : v1) v2 = val;
+}
+
+template <typename TYPE>
+static inline void setall3d(vector<vector<vector<TYPE>>> vv, const TYPE val) {
+  for (auto& v1 : vv)
+    for (auto& v2 : v1)
+      for (auto& v3 : v2) v3 = val;
+}
+
+inline bool pfHome::checkBoundary(const arma::mat& vv) {
+  for (int i = 0; i < nvars; i++)
+    if (vv[i] < 0.1 || vv[i] > 9.9) return true;
+  return false;
+}
+
+inline void pfHome::checkupdateBoundary(arma::mat& vv) {
+  for (int i = 0; i < nvars; i++) {
+    if (vv[i] < 0.1 || vv[i] > 9.9) {
+      double val = decode(vv[i], i);
+      double vari = (fabs(val) >= 1e-8) ? dparams["ivari"] * fabs(val) : 0.001;
+      cout << i << " before update boundary" << lob[i] << " " << hib[i] << endl;
+      lob[i] = val - vari;
+      hib[i] = val + vari;
+      deb[i] = 2 * vari;
+      cout << i << " after update boundary" << lob[i] << " " << hib[i] << endl;
+      vv[i] = 5.0;
+    }
+  }
+}
+
+inline void split(const string& s, const char* delim, vector<string>& v) {
   // duplicate original string, return a char pointer and free  memories
   char* dup = strdup(s.c_str());
   char* token = strtok(dup, delim);
@@ -216,6 +235,16 @@ void inline split(const string& s, const char* delim, vector<string>& v) {
     token = strtok(NULL, delim);
   }
   free(dup);
+}
+
+inline void pfHome::updateBoundary(const arma::mat& vv) {
+  for (int i = 0; i < nvars; i++) {
+    double vari =
+        (fabs(vv[i]) >= 1e-8) ? dparams["ivari"] * fabs(vv[i]) : 0.001;
+    lob[i] = vv[i] - vari;
+    hib[i] = vv[i] + vari;
+    deb[i] = 2 * vari;
+  }
 }
 
 // [0, 10] -> [a, b]  y = a + (b-a) × (1 – cos(π × x / 10)) / 2
@@ -272,50 +301,6 @@ inline vector<double> pfHome::encodestdv(const vector<double>& vv) {
   for (int i = 0; i < nvars; i++)
     rs[i] = 10 * acos(1. - 2. / deb[i] * (vv[i] - lob[i])) * INVPI;
   return rs;
-}
-
-template <typename TYPE>
-static inline void setall2d(vector<vector<TYPE>>& vv, const TYPE val) {
-  for (auto& v1 : vv)
-    for (auto& v2 : v1) v2 = val;
-}
-
-template <typename TYPE>
-static inline void setall3d(vector<vector<vector<TYPE>>> vv, const TYPE val) {
-  for (auto& v1 : vv)
-    for (auto& v2 : v1)
-      for (auto& v3 : v2) v3 = val;
-}
-
-inline bool pfHome::checkBoundary(const arma::mat& vv) {
-  for (int i = 0; i < nvars; i++)
-    if (vv[i] < 0.1 || vv[i] > 9.9) return true;
-  return false;
-}
-
-inline void pfHome::checkupdateBoundary(arma::mat& vv) {
-  for (int i = 0; i < nvars; i++) {
-    if (vv[i] < 0.1 || vv[i] > 9.9) {
-      double val = decode(vv[i], i);
-      double vari = (fabs(val) >= 1e-8) ? dparams["ivari"] * fabs(val) : 0.001;
-      cout << i << " before update boundary" << lob[i] << " " << hib[i] << endl;
-      lob[i] = val - vari;
-      hib[i] = val + vari;
-      deb[i] = 2 * vari;
-      cout << i << " after update boundary" << lob[i] << " " << hib[i] << endl;
-      vv[i] = 5.0;
-    }
-  }
-}
-
-inline void pfHome::updateBoundary(const arma::mat& vv) {
-  for (int i = 0; i < nvars; i++) {
-    double vari =
-        (fabs(vv[i]) >= 1e-8) ? dparams["ivari"] * fabs(vv[i]) : 0.001;
-    lob[i] = vv[i] - vari;
-    hib[i] = vv[i] + vari;
-    deb[i] = 2 * vari;
-  }
 }
 
 #endif  // pfHome_H_

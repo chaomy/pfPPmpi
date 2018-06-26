@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-11-13 15:58:23
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-16 00:21:55
+ * @Last Modified time: 2018-06-26 15:44:15
  */
 
 #include "pfLmpDrv.h"
@@ -16,7 +16,7 @@ pfHome::pfLMPdrv::pfLMPdrv(int argc, char* argv[], pfHome& x)
       targs(x.targs),
       exprs(x.exprs),
       weigh(x.weigh),
-      error(x.error),
+      perr(x.perr),
       elems(x.elems),
       cmmlm(x.cmmlm),
       mele(x.mele),
@@ -57,19 +57,19 @@ void pfHome::pfLMPdrv::calPhyErr() {
                      "bcc2fcc", "bcc2hcp"});
   for (string ee : aa)
     cout << ee << " " << exprs[ee] << " " << targs[ee] << endl;
-  for (string ee : aa) error[ee] = 100 * relerr(exprs[ee], targs[ee]);
-  for (string ee : aa) cout << "error " << ee << " " << error[ee] << endl;
+  for (string ee : aa) perr[ee] = 100 * relerr(exprs[ee], targs[ee]);
+  for (string ee : aa) cout << "perr " << ee << " " << perr[ee] << endl;
 
   if (label["gsf"]) {
-    error["gsf110"] = error["gsf211"] = 0.0;
-    for (double ee : lgsf["111e110"]) error["gsf110"] += ee;
-    error["gsf110"] /= lgsf["111e110"].size();
+    perr["gsf110"] = perr["gsf211"] = 0.0;
+    for (double ee : lgsf["111e110"]) perr["gsf110"] += ee;
+    perr["gsf110"] /= lgsf["111e110"].size();
 
-    for (double ee : lgsf["111e211"]) error["gsf211"] += ee;
-    error["gsf211"] /= lgsf["111e211"].size();
+    for (double ee : lgsf["111e211"]) perr["gsf211"] += ee;
+    perr["gsf211"] /= lgsf["111e211"].size();
 
-    error["gsf110"] *= 100;
-    error["gsf211"] *= 100;
+    perr["gsf110"] *= 100;
+    perr["gsf211"] *= 100;
   }
 
   // usf
@@ -80,10 +80,10 @@ void pfHome::pfLMPdrv::calPhyErr() {
 
   // pv
   if (label["pv"]) {
-    error["pv"] = 0.0;
-    for (double ee : lmpv["Nbe"]) error["pv"] += ee;
-    error["pv"] /= lmpv["Nbe"].size();
-    error["pv"] *= 100;
+    perr["pv"] = 0.0;
+    for (double ee : lmpv["Nbe"]) perr["pv"] += ee;
+    perr["pv"] /= lmpv["Nbe"].size();
+    perr["pv"] *= 100;
   }
 
   if (label["gsf"] && label["pv"]) {  // output
@@ -94,9 +94,9 @@ void pfHome::pfLMPdrv::calPhyErr() {
     fprintf(fid, fmt.c_str(), cnt++, exprs["lat"], exprs["c11"], exprs["c12"],
             exprs["c44"], exprs["suf110"], exprs["suf100"], exprs["suf111"],
             exprs["usf110"], exprs["usf211"], lmpv["Nbp"].back());
-    fprintf(fid, fmt.c_str(), 0, error["lat"], error["c11"], error["c12"],
-            error["c44"], error["suf110"], error["suf100"], error["suf111"],
-            error["gsf110"], error["gsf211"], error["pv"]);
+    fprintf(fid, fmt.c_str(), 0, perr["lat"], perr["c11"], perr["c12"],
+            perr["c44"], perr["suf110"], perr["suf100"], perr["suf111"],
+            perr["gsf110"], perr["gsf211"], perr["pv"]);
     fclose(fid);
   }
 }

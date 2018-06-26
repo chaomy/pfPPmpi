@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 15:52:29
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 15:31:18
+ * @Last Modified time: 2018-06-26 16:25:36
  */
 
 #include "pfForce.h"
@@ -216,18 +216,18 @@ double pfHome::pfForce::forceADP(const vector<double>& vv, int tag) {
       err += square11(atm.fitfrc[2] * atm.fweigh[2]);
     }  // ii
     fitengy /= cnf.natoms;
-    err += dparams["eweight"] * square11(fitengy - cnf.engy);
+    err += weigh.engy * square11(fitengy - cnf.engy);
   }  // cc
 
-  punish = 0.0;
-  // punish += err * (square11(ffs[EMF].xx.front() + ffs[EMF].xx.back() -
-  // omaxrho - ominrho));
-  if (ffs[PHI].g1.front() > 0.0) punish += err * square11(ffs[PHI].g1.front());
-  if (ffs[RHO].g1.front() > 0.0) punish += err * square11(ffs[RHO].g1.front());
-  if (ffs[EMF].g1.front() > 0.0) punish += err * square11(ffs[EMF].g1.front());
-  // if (ffs[EMF].g1.back() < 0.0) punish += err * square11(ffs[EMF].g1.back());
-  punish *= dparams["pratio"];
+  error.pnsh = 0.0;
+  if (ffs[PHI].g1.front() > 0.0)
+    error.pnsh += err * square11(ffs[PHI].g1.front());
+  if (ffs[RHO].g1.front() > 0.0)
+    error.pnsh += err * square11(ffs[RHO].g1.front());
+  if (ffs[EMF].g1.front() > 0.0)
+    error.pnsh += err * square11(ffs[EMF].g1.front());
+  error.pnsh *= dparams["pratio"];
   fclose(ptfile);
-  err += punish;
+  err += error.pnsh;
   return err;
 }

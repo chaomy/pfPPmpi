@@ -2,13 +2,13 @@
  * @Author: chaomy
  * @Date:   2017-11-14 14:24:20
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-18 18:10:09
+ * @Last Modified time: 2018-06-26 16:07:26
  */
 
 #include "pfHome.h"
 
 void pfHome::initTargs() {
-  error["tol"] = 0.0;
+  perr["tol"] = 0.0;
 
   // lattice
   // targs["lat"] = 3.308;
@@ -36,9 +36,9 @@ void pfHome::initTargs() {
   targs["suf110"] = 2.10;
   targs["suf111"] = 2.40;
 
-  weigh["lat"] = 1e2;
-  weigh["c11"] = 10;
-  weigh["c12"] = 10;
-  weigh["c44"] = 10;
-  weigh["suf"] = 1.;
+  pwgh["lat"] = 1e2;
+  pwgh["c11"] = 10;
+  pwgh["c12"] = 10;
+  pwgh["c44"] = 10;
+  pwgh["suf"] = 1.;
 }

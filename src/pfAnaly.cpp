@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-13 09:53:56
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-18 18:33:51
+ * @Last Modified time: 2018-06-26 16:12:43
  */
 
 #include "pfConf.h"
@@ -183,14 +183,6 @@ void pfHome::loopBwth() {
                 atm.frc[Z] * atm.fweigh[Z]);
     fclose(fid);
   }  // i = 1 to 9
-}
-
-void pfHome::forceDis() {
-  vector<double> mtm(3, 0);
-  for (Config& tmpc : configs)
-    for (pfAtom& atm : tmpc.atoms)
-      for (int ii : {0, 1, 2}) mtm[ii] += fabs(atm.frc[ii]) * atm.fweigh[ii];
-  fsm = square11(mfrc[X]) + square11(mfrc[Y]) + square11(mfrc[Z]);
 }
 
 void pfHome::deleteAtoms() { /* delete some atoms (Better Not)*/

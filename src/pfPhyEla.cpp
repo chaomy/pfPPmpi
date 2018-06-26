@@ -2,7 +2,7 @@
  * @Author: chaomy
  * @Date:   2017-12-17 11:13:45
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-16 00:32:11
+ * @Last Modified time: 2018-06-26 16:07:10
  */
 
 #include "pfConf.h"
@@ -65,7 +65,7 @@ void pfHome::pfPhy::calElas(pfForce& fcdrv, pfConf& cfdrv) {
   exprs["c12"] = C12A * tm[0] - C12B * tm[1];
   exprs["c44"] = 0.25 * tm[2];
 
-  error["ela"] = 0.0;
+  perr["ela"] = 0.0;
   for (auto kk : {"c11", "c12", "c44"})
-    error["ela"] += square11(targs[kk] - exprs[kk]) * weigh[kk];
+    perr["ela"] += square11(targs[kk] - exprs[kk]) * pwgh[kk];
 }

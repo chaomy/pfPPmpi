@@ -71,6 +71,14 @@ inline double vecInnProd33(const vector<double> &a, const vector<double> &b) {
   return res;
 }
 
+struct Ctrib {
+  double frc;
+  double engy;
+  double pnsh;
+  double stss;
+  double tlt;
+};
+
 class Angle {
  private:
   friend class boost::serialization::access;
