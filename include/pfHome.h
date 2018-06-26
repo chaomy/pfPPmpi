@@ -50,6 +50,7 @@ class pfHome {
   class pfPhy;
   class pfConf;
   class pfIO;
+  class pfBondOrder;
 
  private:
   int ftn;   // number of atoms used for fitting

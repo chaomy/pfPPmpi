@@ -2,7 +2,7 @@
  * @Author: yangchaoming
  * @Date:   2017-10-23 14:04:42
  * @Last Modified by:   chaomy
- * @Last Modified time: 2018-06-15 17:22:36
+ * @Last Modified time: 2018-06-20 17:03:29
  */
 
 #include "pfConf.h"
@@ -66,7 +66,7 @@ void pfHome::pfConf::initAngles(Config &tmpc) {
 void pfHome::pfConf::wrapAtomPos(Config &tmpc) {
   vector<double> boxsidelo(3), boxsidehi(3), npst(3);
 
-  for (int k : {0, 1, 2}) {
+  for (const int &k : {0, 1, 2}) {
     boxsidelo[k] = 0.0 * tmpc.bvx[k] + 0.0 * tmpc.bvy[k] + 0.0 * tmpc.bvz[k];
     boxsidehi[k] = 1.0 * tmpc.bvx[k] + 1.0 * tmpc.bvy[k] + 1.0 * tmpc.bvz[k];
   }
